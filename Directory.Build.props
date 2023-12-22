@@ -3,6 +3,7 @@
         <Copyright>Copyright © 2023 Your Company</Copyright>
         <NoWarn>$(NoWarn);CS1591</NoWarn>
         <VersionPrefix>1.0.0</VersionPrefix>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
 
     <PropertyGroup Label="Build">
@@ -11,7 +12,18 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
-    <PropertyGroup Label="Dependencies">
-        <PbmVersion>1.3.0</PbmVersion>
-    </PropertyGroup>
+    <!-- ======================================== -->
+    <!-- Production-specific properties and items -->
+
+    <Choose>
+        <When Condition=" !$(MSBuildProjectName.Contains('.tests')) ">
+            <PropertyGroup>
+                <AnalysisLevel>latest-All</AnalysisLevel>
+                <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)signing.snk</AssemblyOriginatorKeyFile>
+                <EnableNETAnalyzers>true</EnableNETAnalyzers>
+                <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+                <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+            </PropertyGroup>
+        </When>
+    </Choose>
 </Project>

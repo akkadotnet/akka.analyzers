@@ -11,6 +11,10 @@ public interface IAkkaCoreContext
     /// Gets the version number of the core Akka.NET assembly.
     /// </summary>
     Version Version { get; }
+    
+    public INamedTypeSymbol? ActorBaseType { get; }
+    public INamedTypeSymbol? ActorRefType { get; }
+    public INamedTypeSymbol? PropsType { get; }
 }
 
 /// <summary>
@@ -25,6 +29,9 @@ public sealed class EmptyCoreContext : IAkkaCoreContext
     public static EmptyCoreContext Instance { get; } = new();
     
     public Version Version { get; } = new();
+    public INamedTypeSymbol? ActorBaseType => null;
+    public INamedTypeSymbol? ActorRefType => null;
+    public INamedTypeSymbol? PropsType => null;
 }
 
 /// <summary>
@@ -36,13 +43,24 @@ public sealed class EmptyCoreContext : IAkkaCoreContext
 /// </remarks>
 public class AkkaCoreContext : IAkkaCoreContext
 {
-    private AkkaCoreContext(Version version)
+    private readonly Lazy<INamedTypeSymbol?> _lazyActorBaseType;
+    private readonly Lazy<INamedTypeSymbol?> _lazyActorRefType;
+    private readonly Lazy<INamedTypeSymbol?> _lazyPropsType;
+    
+    private AkkaCoreContext(Compilation compilation, Version version)
     {
         Version = version;
+        _lazyActorBaseType = new(() => TypeSymbolFactory.ActorBase(compilation));
+        _lazyActorRefType = new(() => TypeSymbolFactory.ActorReference(compilation));
+        _lazyPropsType = new(() => TypeSymbolFactory.Props(compilation));
     }
 
     /// <inheritdoc/>
     public Version Version { get; }
+    
+    public INamedTypeSymbol? ActorBaseType => _lazyActorBaseType.Value;
+    public INamedTypeSymbol? ActorRefType => _lazyActorRefType.Value;
+    public INamedTypeSymbol? PropsType => _lazyPropsType.Value;
 
     public static AkkaCoreContext? Get(
         Compilation compilation,
@@ -58,6 +76,6 @@ public class AkkaCoreContext : IAkkaCoreContext
                 .FirstOrDefault(a => a.Name.Equals("Akka", StringComparison.OrdinalIgnoreCase))
                 ?.Version;
 
-        return version is null ? null : new AkkaCoreContext(version);
+        return version is null ? null : new AkkaCoreContext(compilation, version);
     }
 }

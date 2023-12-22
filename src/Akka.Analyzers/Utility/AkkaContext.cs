@@ -1,5 +1,5 @@
 // -----------------------------------------------------------------------
-//  <copyright file="IAkkaContext.cs" company="Akka.NET Project">
+//  <copyright file="AkkaContext.cs" company="Akka.NET Project">
 //      Copyright (C) 2015-2023 .NET Petabridge, LLC
 //  </copyright>
 // -----------------------------------------------------------------------
@@ -13,6 +13,8 @@ namespace Akka.Analyzers;
 /// </summary>
 public class AkkaContext
 {
+    private IAkkaCoreContext? _akkaCore;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="AkkaContext"/> class.
     /// </summary>
@@ -20,18 +22,23 @@ public class AkkaContext
     /// inspect references</param>
     public AkkaContext(Compilation compilation)
     {
-        AkkaCore = AkkaCoreContext.Get(compilation);   
+        _akkaCore = AkkaCoreContext.Get(compilation);
     }
-    
-    private AkkaContext(){}
-    
+
+    private AkkaContext()
+    {
+    }
+
     /// <summary>
     /// Data about the core Akka.NET library.
     /// </summary>
-    public IAkkaCoreContext? AkkaCore { get; private set; }
-    
+    public IAkkaCoreContext AkkaCore
+    {
+        get { return _akkaCore ??= EmptyCoreContext.Instance; }
+    }
+
     /// <summary>
     /// Does the current compilation context even have Akka.NET installed?
     /// </summary>
-    public bool HasAkkaInstalled  => AkkaCore is not null;
+    public bool HasAkkaInstalled => AkkaCore is not null;
 }

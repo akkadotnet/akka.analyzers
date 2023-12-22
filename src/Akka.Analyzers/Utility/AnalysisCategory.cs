@@ -18,7 +18,7 @@ public enum AnalysisCategory
 
 public static class RuleDescriptors
 {
-    static DiagnosticDescriptor Rule(
+    private static DiagnosticDescriptor Rule(
         string id,
         string title,
         AnalysisCategory category,
@@ -32,11 +32,11 @@ public static class RuleDescriptors
             isEnabledByDefault: true, helpLinkUri: helpLink);
     }
 
-    public static DiagnosticDescriptor AK1000_DoNotNewActors { get; } = Rule("Akka1000",
+    public static DiagnosticDescriptor Ak1000DoNotNewActors { get; } = Rule("Akka1000",
         "Do not use `new` to create actors", AnalysisCategory.ActorDesign, DiagnosticSeverity.Error,
         "Actors must be instantiated using `ActorOf` or `ActorOfAsTestActorRef` via a `Props` class.");
 
-    public static DiagnosticDescriptor AK1001_CloseOverSenderUsingPipeTo { get; } = Rule("Akka1002",
+    public static DiagnosticDescriptor Ak1001CloseOverSenderUsingPipeTo { get; } = Rule("Akka1002",
         "Should always close over `Sender` when using `PipeTo`", AnalysisCategory.ActorDesign, DiagnosticSeverity.Error,
         "When using `PipeTo`, you must always close over `Sender` to ensure that the actor's `Sender` property " +
         "is captured at the time you're scheduling the `PipeTo`, as this value may change asynchronously.");
