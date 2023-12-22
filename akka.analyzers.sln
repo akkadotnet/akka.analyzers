@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "akka.analyzers.App", "src\akka.analyzers.App\akka.analyzers.App.csproj", "{EDFEA62C-AF53-4056-A2F2-E37CEA04B24A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Akka.Analyzers", "src\Akka.Analyzers\Akka.Analyzers.csproj", "{C9D5BDA8-E4AF-4A83-948B-C1010A5592CE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -14,9 +14,9 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{EDFEA62C-AF53-4056-A2F2-E37CEA04B24A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EDFEA62C-AF53-4056-A2F2-E37CEA04B24A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EDFEA62C-AF53-4056-A2F2-E37CEA04B24A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EDFEA62C-AF53-4056-A2F2-E37CEA04B24A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C9D5BDA8-E4AF-4A83-948B-C1010A5592CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9D5BDA8-E4AF-4A83-948B-C1010A5592CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9D5BDA8-E4AF-4A83-948B-C1010A5592CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9D5BDA8-E4AF-4A83-948B-C1010A5592CE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
