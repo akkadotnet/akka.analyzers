@@ -19,6 +19,8 @@ internal static class CodeAnalysisExtensions
         if (akkaContext.AkkaCore.PropsType is null)
             return false;
 
-        return methodSymbol.IsPropsCreateMethod(akkaContext);
+        var semanticModel = operation.SemanticModel;
+        if (semanticModel is null)
+            return false;
     }
 }
