@@ -4,6 +4,8 @@
 //  </copyright>
 // -----------------------------------------------------------------------
 
+using Microsoft.CodeAnalysis;
+
 namespace Akka.Analyzers;
 
 /// <summary>
@@ -11,5 +13,38 @@ namespace Akka.Analyzers;
 /// </summary>
 public interface IAkkaContext
 {
-    IAkkaCoreContext AkkaCoreContext { get; }
+    /// <summary>
+    /// Data about the core Akka.NET library.
+    /// </summary>
+    IAkkaCoreContext? AkkaCore { get; }
+    
+    /// <summary>
+    /// Does the current compilation context even have Akka.NET installed?
+    /// </summary>
+    public bool HasAkkaInstalled { get; }
+}
+
+public class AkkaContext : IAkkaContext
+{
+    private AkkaContext(){}
+   
+    public IAkkaCoreContext? AkkaCore { get; private set; }
+    public bool HasAkkaInstalled  => AkkaCore is not null;
+
+    public static AkkaContext? Get(
+        Compilation compilation,
+        Version? versionOverride = null)
+    {
+        // assert that compilation is not null
+        Guard.AssertIsNotNull(compilation);
+
+        var akkaCoreContext = AkkaCoreContext.Get(compilation, versionOverride);
+        if (akkaCoreContext is null)
+            return null;
+
+        return new AkkaContext
+        {
+            AkkaCore = AkkaCoreContext.Get(compilation, versionOverride)
+        };
+    }
 }
