@@ -25,9 +25,14 @@ internal static class CodeAnalysisExtensions
     //         return false;
     // }
     
-    private bool IsActorBaseSubclass(this INamedTypeSymbol typeSymbol, AkkaContext akkaContext)
+    public static bool IsActorBaseSubclass(this INamedTypeSymbol typeSymbol, AkkaContext akkaContext)
     {
-        var actorBaseType = context.SemanticModel.Compilation.GetTypeByMetadataName("Akka.Actor.ActorBase");
-        return typeSymbol.BaseType.Equals(actorBaseType, SymbolEqualityComparer.Default);
+        Guard.AssertIsNotNull(typeSymbol);
+        Guard.AssertIsNotNull(akkaContext);
+        
+        if(akkaContext.AkkaCore.ActorBaseType is null)
+            return false;
+        
+        return SymbolEqualityComparer.Default.Equals(typeSymbol, akkaContext.AkkaCore.ActorBaseType);
     }
 }

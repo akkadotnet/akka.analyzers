@@ -18,19 +18,51 @@ public class MustNotUseNewKeywordOnActors() : AkkaDiagnosticAnalyzer(RuleDescrip
     {
         Guard.AssertIsNotNull(context);
         Guard.AssertIsNotNull(akkaContext);
-        
+
         context.RegisterSyntaxNodeAction(ctx =>
         {
-            var objectCreation = (ObjectCreationExpressionSyntax) ctx.Node;
-            
-            var typeSymbol = ModelExtensions.GetTypeInfo(ctx.SemanticModel, objectCreation).Type;
-            if (typeSymbol is null)
+            var objectCreation = (ObjectCreationExpressionSyntax)ctx.Node;
+
+            if (ModelExtensions.GetTypeInfo(ctx.SemanticModel, objectCreation).Type is not INamedTypeSymbol typeSymbol)
                 return;
-            
-            if (typeSymbol.IsActorType(akkaContext.AkkaCore))
-            {
-                ctx.ReportDiagnostic(Diagnostic.Create(RuleDescriptors.Ak1000DoNotNewActors, objectCreation.GetLocation()));
-            }
+
+            // Check if it's a subclass of ActorBase
+            if (!typeSymbol.IsActorBaseSubclass(akkaContext))
+                return;
+
+            // Check if it's within the context of Props.Create
+            if (IsInsidePropsCreate(objectCreation))
+                return;
         }, SyntaxKind.ObjectCreationExpression);
+    }
+
+    private static bool IsInsidePropsCreate(ObjectCreationExpressionSyntax objectCreation)
+    {
+        // Traverse upwards in the syntax tree from the object creation expression
+        var currentNode = objectCreation.Parent;
+
+        while (currentNode != null)
+        {
+            // Check if the current node is an ArgumentSyntax, which could be a part of a method call
+            if (currentNode is ArgumentSyntax { Parent.Parent: InvocationExpressionSyntax { Expression: MemberAccessExpressionSyntax
+                        {
+                            Name.Identifier.ValueText: "Create", Expression: IdentifierNameSyntax
+                            {
+                                Identifier.ValueText: "Props"
+                            }
+                        }
+                    }
+                })
+                // Get the parent InvocationExpressionSyntax, if any
+                // Check if the method being called is 'Props.Create'
+            {
+                return true;
+            }
+
+            // Move to the next parent node
+            currentNode = currentNode.Parent;
+        }
+
+        return false;
     }
 }
