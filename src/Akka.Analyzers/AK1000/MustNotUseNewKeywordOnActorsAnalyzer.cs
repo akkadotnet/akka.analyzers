@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-//  <copyright file="MustNotUseNewKeywordOnActors.cs" company="Akka.NET Project">
+//  <copyright file="MustNotUseNewKeywordOnActorsAnalyzer.cs" company="Akka.NET Project">
 //      Copyright (C) 2015-2023 .NET Petabridge, LLC
 //  </copyright>
 // -----------------------------------------------------------------------
@@ -12,7 +12,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace Akka.Analyzers;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public class MustNotUseNewKeywordOnActors() : AkkaDiagnosticAnalyzer(RuleDescriptors.Ak1000DoNotNewActors)
+public class MustNotUseNewKeywordOnActorsAnalyzer() : AkkaDiagnosticAnalyzer(RuleDescriptors.Ak1000DoNotNewActors)
 {
     public override void AnalyzeCompilation(CompilationStartAnalysisContext context, AkkaContext akkaContext)
     {
