@@ -5,22 +5,29 @@
 // -----------------------------------------------------------------------
 
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Akka.Analyzers;
 
 internal static class CodeAnalysisExtensions
 {
-    public static bool IsInsidePropsCreateMethod(this IOperation operation,
-        AkkaContext akkaContext)
+    // public static bool IsInsidePropsCreateMethod(this IOperation operation,
+    //     AkkaContext akkaContext)
+    // {
+    //     Guard.AssertIsNotNull(operation);
+    //     Guard.AssertIsNotNull(akkaContext);
+    //
+    //     if (akkaContext.AkkaCore.PropsType is null)
+    //         return false;
+    //
+    //     var semanticModel = operation.SemanticModel;
+    //     if (semanticModel is null)
+    //         return false;
+    // }
+    
+    private bool IsActorBaseSubclass(this INamedTypeSymbol typeSymbol, AkkaContext akkaContext)
     {
-        Guard.AssertIsNotNull(operation);
-        Guard.AssertIsNotNull(akkaContext);
-
-        if (akkaContext.AkkaCore.PropsType is null)
-            return false;
-
-        var semanticModel = operation.SemanticModel;
-        if (semanticModel is null)
-            return false;
+        var actorBaseType = context.SemanticModel.Compilation.GetTypeByMetadataName("Akka.Actor.ActorBase");
+        return typeSymbol.BaseType.Equals(actorBaseType, SymbolEqualityComparer.Default);
     }
 }
