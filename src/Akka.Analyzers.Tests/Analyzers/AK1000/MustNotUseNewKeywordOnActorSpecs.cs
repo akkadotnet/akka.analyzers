@@ -7,6 +7,8 @@
 using Akka.Analyzers.Tests.Utility;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Testing;
+using static Akka.Analyzers.RuleDescriptors;
+using Verify = Akka.Analyzers.Tests.Utility.AkkaVerifier<Akka.Analyzers.MustNotUseNewKeywordOnActorsAnalyzer>;
 
 namespace Akka.Analyzers.Tests.Analyzers.AK1000;
 
@@ -18,7 +20,11 @@ public class AkkaActorInstantiationAnalyzerTests
         var testCode = @"
 using Akka.Actor;
 
-class MyActor : ActorBase { }
+class MyActor : ActorBase {
+    protected override bool Receive(object message) {
+        return true;
+    }
+}
 
 class Test
 {
@@ -29,10 +35,7 @@ class Test
         IActorRef realActorInstance = sys.ActorOf(props);
     }
 }";
-        await new CSharpAnalyzerTest<MustNotUseNewKeywordOnActorsAnalyzer, DefaultVerifier>
-        {
-            TestCode = testCode,
-        }.RunAsync().ConfigureAwait(true);
+        await Verify.VerifyAnalyzer(testCode).ConfigureAwait(true);
     }
 
     [Fact]
@@ -57,7 +60,7 @@ class Test
             ExpectedDiagnostics =
             {
                 // The diagnostic expected to be raised by the analyzer
-                DiagnosticResult.CompilerError("AkkaActorInstantiation").WithSpan(10, 31, 10, 45).WithArguments("MyActor"),
+                DiagnosticResult.CompilerError(Ak1000DoNotNewActors.Id).WithSpan(10, 31, 10, 45).WithArguments("MyActor"),
             },
             ReferenceAssemblies = ReferenceAssembliesHelper.CurrentAkka
         }.RunAsync().ConfigureAwait(false);
