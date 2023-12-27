@@ -4,9 +4,9 @@
 //  </copyright>
 // -----------------------------------------------------------------------
 
+using Akka.Analyzers.Tests.Utility;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Testing;
-using Microsoft.CodeAnalysis.Testing.Verifiers;
 
 namespace Akka.Analyzers.Tests.Analyzers.AK1000;
 
@@ -29,7 +29,7 @@ class Test
         IActorRef realActorInstance = sys.ActorOf(props);
     }
 }";
-        await new CSharpAnalyzerTest<MustNotUseNewKeywordOnActorsAnalyzer, XUnitVerifier>
+        await new CSharpAnalyzerTest<MustNotUseNewKeywordOnActorsAnalyzer, DefaultVerifier>
         {
             TestCode = testCode,
         }.RunAsync().ConfigureAwait(true);
@@ -51,7 +51,7 @@ class Test
     }
 }";
 
-        await new CSharpAnalyzerTest<MustNotUseNewKeywordOnActorsAnalyzer, XUnitVerifier>
+        await new CSharpAnalyzerTest<MustNotUseNewKeywordOnActorsAnalyzer, DefaultVerifier>
         {
             TestCode = testCode,
             ExpectedDiagnostics =
@@ -59,6 +59,7 @@ class Test
                 // The diagnostic expected to be raised by the analyzer
                 DiagnosticResult.CompilerError("AkkaActorInstantiation").WithSpan(10, 31, 10, 45).WithArguments("MyActor"),
             },
+            ReferenceAssemblies = ReferenceAssembliesHelper.CurrentAkka
         }.RunAsync().ConfigureAwait(false);
     }
 }

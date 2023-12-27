@@ -10,6 +10,11 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <!-- Download packages referenced by ReferenceAssembliesHelper -->
+        <PackageDownload Include="Akka" Version="[1.5.14]" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="Microsoft.NET.Test.Sdk"/>
         <PackageReference Include="xunit"/>
         <PackageReference Include="xunit.runner.visualstudio">
@@ -21,7 +26,8 @@
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
         <PackageReference Include="FluentAssertions"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing.XUnit" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing" />
     </ItemGroup>
 
     <ItemGroup>

@@ -40,5 +40,5 @@ public class AkkaContext
     /// <summary>
     /// Does the current compilation context even have Akka.NET installed?
     /// </summary>
-    public bool HasAkkaInstalled => AkkaCore is not null;
+    public bool HasAkkaInstalled => AkkaCore != EmptyCoreContext.Instance;
 }
