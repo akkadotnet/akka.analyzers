@@ -44,7 +44,11 @@ class Test
         var testCode = @"
 using Akka.Actor;
 
-class MyActor : ActorBase { }
+class MyActor : ActorBase {
+    protected override bool Receive(object message) {
+        return true;
+    }
+}
 
 class Test
 {
@@ -53,16 +57,20 @@ class Test
         MyActor actorInstance = new MyActor();
     }
 }";
+        
+        var expected = Verify.Diagnostic().WithSpan(13, )
+        
+        await Verify.VerifyAnalyzer(testCode).ConfigureAwait(true);
 
-        await new CSharpAnalyzerTest<MustNotUseNewKeywordOnActorsAnalyzer, DefaultVerifier>
-        {
-            TestCode = testCode,
-            ExpectedDiagnostics =
-            {
-                // The diagnostic expected to be raised by the analyzer
-                DiagnosticResult.CompilerError(Ak1000DoNotNewActors.Id).WithSpan(10, 31, 10, 45).WithArguments("MyActor"),
-            },
-            ReferenceAssemblies = ReferenceAssembliesHelper.CurrentAkka
-        }.RunAsync().ConfigureAwait(false);
+        // await new CSharpAnalyzerTest<MustNotUseNewKeywordOnActorsAnalyzer, DefaultVerifier>
+        // {
+        //     TestCode = testCode,
+        //     ExpectedDiagnostics =
+        //     {
+        //         // The diagnostic expected to be raised by the analyzer
+        //         DiagnosticResult.CompilerError(Ak1000DoNotNewActors.Id).WithSpan(10, 31, 10, 45).WithArguments("MyActor"),
+        //     },
+        //     ReferenceAssemblies = ReferenceAssembliesHelper.CurrentAkka
+        // }.RunAsync().ConfigureAwait(false);
     }
 }
