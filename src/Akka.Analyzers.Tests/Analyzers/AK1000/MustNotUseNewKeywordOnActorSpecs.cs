@@ -17,8 +17,7 @@ public class AkkaActorInstantiationAnalyzerTests
     [Fact]
     public async Task Analyzer_Should_Not_Report_Diagnostic_For_Valid_Usage()
     {
-        var testCode = @"
-using Akka.Actor;
+        var testCode = @"using Akka.Actor;
 
 class MyActor : ActorBase {
     protected override bool Receive(object message) {
@@ -41,8 +40,7 @@ class Test
     [Fact]
     public async Task Analyzer_Should_Report_Diagnostic_For_Invalid_Usage()
     {
-        var testCode = @"
-using Akka.Actor;
+        var testCode = @"using Akka.Actor;
 
 class MyActor : ActorBase {
     protected override bool Receive(object message) {
@@ -58,19 +56,10 @@ class Test
     }
 }";
         
-        var expected = Verify.Diagnostic().WithSpan(13, )
+        var expected = Verify.Diagnostic()
+            .WithSpan(13, 9, 13, 47)
+            .WithArguments("MyActor");
         
-        await Verify.VerifyAnalyzer(testCode).ConfigureAwait(true);
-
-        // await new CSharpAnalyzerTest<MustNotUseNewKeywordOnActorsAnalyzer, DefaultVerifier>
-        // {
-        //     TestCode = testCode,
-        //     ExpectedDiagnostics =
-        //     {
-        //         // The diagnostic expected to be raised by the analyzer
-        //         DiagnosticResult.CompilerError(Ak1000DoNotNewActors.Id).WithSpan(10, 31, 10, 45).WithArguments("MyActor"),
-        //     },
-        //     ReferenceAssemblies = ReferenceAssembliesHelper.CurrentAkka
-        // }.RunAsync().ConfigureAwait(false);
+        await Verify.VerifyAnalyzer(testCode, expected).ConfigureAwait(true);
     }
 }
