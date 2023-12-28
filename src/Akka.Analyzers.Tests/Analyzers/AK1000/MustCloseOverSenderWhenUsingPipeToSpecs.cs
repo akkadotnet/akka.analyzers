@@ -61,7 +61,34 @@ public class MustCloseOverSenderWhenUsingPipeToSpecs
                     Sender.Tell(str); // shouldn't flag this
                 });
             }
-        }"
+        }",
+        
+        // Non-Actor class that has an IActorRef Sender property
+        """
+        using Akka.Actor;
+        using System.Threading.Tasks;
+
+        public class MyActor
+        {
+            public MyActor(IActorRef sender)
+            {
+                Sender = sender;
+            }
+        
+            public IActorRef Sender { get; }
+            
+            public void Method()
+            {
+                async Task<int> LocalFunction(){
+                               await Task.Delay(10);
+                               return 11;
+                           }
+        
+                // Sender is immutable on this custom non-Actor class, so shouldn't flag this
+                LocalFunction().PipeTo(Sender); 
+            }
+        }
+        """,
     };
     
     [Theory]
