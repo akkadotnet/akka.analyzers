@@ -33,6 +33,9 @@ public class MustNotUseNewKeywordOnActorsAnalyzer() : AkkaDiagnosticAnalyzer(Rul
             // Check if it's within the context of Props.Create
             if (IsInsidePropsCreate(objectCreation))
                 return;
+            
+            var diagnostic = Diagnostic.Create(RuleDescriptors.Ak1000DoNotNewActors, objectCreation.GetLocation(), typeSymbol.Name);
+            ctx.ReportDiagnostic(diagnostic);
         }, SyntaxKind.ObjectCreationExpression);
     }
 

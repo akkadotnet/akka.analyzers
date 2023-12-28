@@ -40,9 +40,9 @@ public abstract class AkkaDiagnosticAnalyzer(params DiagnosticDescriptor[] descr
 
         context.RegisterCompilationStartAction(ctx =>
         {
-            var xunitContext = CreateAkkaContext(ctx.Compilation);
-            if (ShouldAnalyze(xunitContext))
-                AnalyzeCompilation(ctx, xunitContext);
+            var akkaContext = CreateAkkaContext(ctx.Compilation);
+            if (ShouldAnalyze(akkaContext))
+                AnalyzeCompilation(ctx, akkaContext);
         });
     }
     

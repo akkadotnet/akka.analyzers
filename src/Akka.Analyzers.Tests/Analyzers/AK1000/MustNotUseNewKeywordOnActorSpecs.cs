@@ -72,13 +72,13 @@ class Test
     
     [Theory]
     [MemberData(nameof(SuccessCases))]
-    public async Task Analyzer_Should_Not_Report_Diagnostic_For_Valid_Usage(string testCode)
+    public async Task SuccessCase(string testCode)
     {
         await Verify.VerifyAnalyzer(testCode).ConfigureAwait(true);
     }
 
     [Fact]
-    public async Task Analyzer_Should_Report_Diagnostic_For_Invalid_Usage()
+    public async Task FailureCase()
     {
         var testCode = @"using Akka.Actor;
 
@@ -97,7 +97,7 @@ class Test
 }";
         
         var expected = Verify.Diagnostic()
-            .WithSpan(13, 9, 13, 47)
+            .WithSpan(13, 33, 13, 46)
             .WithArguments("MyActor");
         
         await Verify.VerifyAnalyzer(testCode, expected).ConfigureAwait(true);
