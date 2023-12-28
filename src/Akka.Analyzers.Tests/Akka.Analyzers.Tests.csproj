@@ -40,7 +40,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Fixes\" />
+      <Folder Include="Fixes\AK1000\" />
     </ItemGroup>
 
 </Project>
