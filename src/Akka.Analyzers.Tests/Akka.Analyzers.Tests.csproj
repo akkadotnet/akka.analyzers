@@ -39,8 +39,4 @@
       <ProjectReference Include="..\Akka.Analyzers\Akka.Analyzers.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Fixes\AK1000\" />
-    </ItemGroup>
-
 </Project>

@@ -11,6 +11,8 @@ namespace Akka.Analyzers.Fixes.AK1000;
 public sealed class MustCloseOverSenderWhenUsingPipeToFixer()
     : BatchedCodeFixProvider(RuleDescriptors.Ak1001CloseOverSenderUsingPipeTo.Id)
 {
+    public const string Key_FixPipeToSender = "AK1000_FixPipeToSender";
+    
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
         var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
@@ -29,7 +31,7 @@ public sealed class MustCloseOverSenderWhenUsingPipeToFixer()
             CodeAction.Create(
                 title: "Use local variable for Sender",
                 createChangedDocument: c => UseLocalVariableForSenderAsync(context.Document, invocationExpr, c),
-                equivalenceKey: "Use local variable for Sender"),
+                equivalenceKey: Key_FixPipeToSender),
             diagnostic);
     }
     
