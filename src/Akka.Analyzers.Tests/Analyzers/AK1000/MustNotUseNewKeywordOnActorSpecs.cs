@@ -5,6 +5,7 @@
 // -----------------------------------------------------------------------
 
 using Akka.Analyzers.Tests.Utility;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Testing;
 using static Akka.Analyzers.RuleDescriptors;
@@ -98,7 +99,8 @@ class Test
         
         var expected = Verify.Diagnostic()
             .WithSpan(13, 33, 13, 46)
-            .WithArguments("MyActor");
+            .WithArguments("MyActor")
+            .WithSeverity(DiagnosticSeverity.Error);
         
         await Verify.VerifyAnalyzer(testCode, expected).ConfigureAwait(true);
     }
