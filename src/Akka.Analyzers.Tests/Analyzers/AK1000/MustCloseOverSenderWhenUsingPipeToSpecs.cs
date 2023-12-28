@@ -69,4 +69,35 @@ public class MustCloseOverSenderWhenUsingPipeToSpecs
     {
         await Verify.VerifyAnalyzer(testCode).ConfigureAwait(true);
     }
+
+    public static readonly TheoryData<string> FailureCases = new()
+    {
+        // Receive actor using PipeTo without a closure inside a Receive<T> block
+        @"using Akka.Actor;
+        using System.Threading.Tasks;
+        
+        public sealed class MyActor : ReceiveActor{
+
+            public MyActor(){
+                Receive<string>(str => {
+                    async Task<int> LocalFunction(){
+                        await Task.Delay(10);
+                        return str.Length;
+                    }
+
+                    // incorrect use of closure
+                    LocalFunction().PipeTo(Sender); 
+                });
+            }
+        }",
+    };
+    
+    [Theory]
+    [MemberData(nameof(FailureCases))]
+    public async Task FailureCase(string testCode)
+    {
+        var expected = Verify.Diagnostic().WithSpan(12, 21, 12, 27);
+        
+        await Verify.VerifyAnalyzer(testCode, expected).ConfigureAwait(true);
+    }
 }
