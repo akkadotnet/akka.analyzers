@@ -11,6 +11,7 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Testing;
 
 namespace Akka.Analyzers.Tests.Utility;
@@ -43,9 +44,28 @@ public sealed class AkkaVerifier<TAnalyzer> where TAnalyzer : DiagnosticAnalyzer
         return test.RunAsync();
     }
 
+    public static Task VerifyCodeFix(string before, string after, string fixerActionKey,
+        params DiagnosticResult[] diagnostics)
+    {
+        Guard.AssertIsNotNull(before);
+        Guard.AssertIsNotNull(after);
+
+        var newLine = FormattingOptions.NewLine.DefaultValue;
+        var test = new AkkaTest()
+        {
+#pragma warning disable CA1062 // Guard already does this
+            TestCode = before.Replace("\n", newLine, StringComparison.InvariantCulture),
+            FixedCode = after.Replace("\n", newLine, StringComparison.InvariantCulture),
+#pragma warning restore CA1062
+            CodeActionEquivalenceKey = fixerActionKey
+        };
+        test.TestState.ExpectedDiagnostics.AddRange(diagnostics);
+        return test.RunAsync();
+    }
+
     private sealed class AkkaTest() : TestBase(ReferenceAssembliesHelper.CurrentAkka);
 
-    private class TestBase : CSharpAnalyzerTest<TAnalyzer, DefaultVerifier>
+    private class TestBase : CSharpCodeFixTest<TAnalyzer, EmptyCodeFixProvider, DefaultVerifier>
     {
         protected TestBase(ReferenceAssemblies referenceAssemblies)
         {
@@ -56,6 +76,16 @@ public sealed class AkkaVerifier<TAnalyzer> where TAnalyzer : DiagnosticAnalyzer
 
             // Tests that check for messages should run independent of current system culture.
             CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+        }
+
+        protected override IEnumerable<CodeFixProvider> GetCodeFixProviders()
+        {
+            var analyzer = new TAnalyzer();
+
+            foreach (var provider in CodeFixProviderDiscovery.GetCodeFixProviders(Language))
+                if (analyzer.SupportedDiagnostics.Any(diagnostic =>
+                        provider.FixableDiagnosticIds.Contains(diagnostic.Id)))
+                    yield return provider;
         }
     }
 }
