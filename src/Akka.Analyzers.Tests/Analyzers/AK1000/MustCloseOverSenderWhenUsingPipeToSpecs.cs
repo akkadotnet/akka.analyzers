@@ -71,10 +71,10 @@ public class MustCloseOverSenderWhenUsingPipeToSpecs
         await Verify.VerifyAnalyzer(testCode).ConfigureAwait(true);
     }
 
-    public static readonly TheoryData<string> FailureCases = new()
+    public static readonly TheoryData<(string testData, (int startLine, int startColumn, int endLine, int endColumn) spanData)> FailureCases = new()
     {
         // Receive actor using PipeTo without a closure inside a Receive<T> block
-        @"using Akka.Actor;
+        (@"using Akka.Actor;
         using System.Threading.Tasks;
         
         public sealed class MyActor : ReceiveActor{
@@ -90,18 +90,35 @@ public class MustCloseOverSenderWhenUsingPipeToSpecs
                     LocalFunction().PipeTo(Sender); 
                 });
             }
-        }",
+        }", (14, 37, 14, 43)),
+        
+        // UntypedActor using PipeTo without a closure inside a OnReceive block
+        (@"using Akka.Actor;
+        using System.Threading.Tasks;
+
+        public sealed class MyActor : UntypedActor{
+
+            protected override void OnReceive(object message){
+                async Task<int> LocalFunction(){
+                    await Task.Delay(10);
+                    return message.ToString().Length;
+                }
+
+                // incorrect use of closure
+                LocalFunction().PipeTo(Sender); 
+            }
+        }", (13, 33, 13, 39)),
     };
     
     [Theory]
     [MemberData(nameof(FailureCases))]
-    public async Task FailureCase(string testCode)
+    public async Task FailureCase((string testCode, (int startLine, int startColumn, int endLine, int endColumn) spanData) d)
     {
         var expected = Verify.Diagnostic()
-            .WithSpan(14, 37, 14, 43)
+            .WithSpan(d.spanData.startLine, d.spanData.startColumn, d.spanData.endLine, d.spanData.endColumn)
             .WithArguments("Sender")
             .WithSeverity(DiagnosticSeverity.Error);
         
-        await Verify.VerifyAnalyzer(testCode, expected).ConfigureAwait(true);
+        await Verify.VerifyAnalyzer(d.testCode, expected).ConfigureAwait(true);
     }
 }
