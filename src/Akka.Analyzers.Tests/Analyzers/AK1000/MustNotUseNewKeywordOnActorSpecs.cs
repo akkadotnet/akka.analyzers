@@ -14,10 +14,10 @@ namespace Akka.Analyzers.Tests.Analyzers.AK1000;
 
 public class AkkaActorInstantiationAnalyzerTests
 {
-    [Fact]
-    public async Task Analyzer_Should_Not_Report_Diagnostic_For_Valid_Usage()
+    public static readonly TheoryData<string> SuccessCases = new()
     {
-        var testCode = @"using Akka.Actor;
+        // ActorBase
+        @"using Akka.Actor;
 
 class MyActor : ActorBase {
     protected override bool Receive(object message) {
@@ -33,7 +33,47 @@ class Test
         Props props = Props.Create(() => new MyActor());
         IActorRef realActorInstance = sys.ActorOf(props);
     }
-}";
+}",
+        // UntypedActor
+        @"using Akka.Actor;
+
+class MyActor : UntypedActor {
+    protected override void OnReceive(object message) {
+    }
+}
+
+class Test
+{
+    void Method()
+    {
+        ActorSystem sys = ActorSystem.Create(""MySys"");
+        Props props = Props.Create(() => new MyActor());
+        IActorRef realActorInstance = sys.ActorOf(props);
+    }
+}",
+        @"using Akka.Actor;
+
+class MyActor : ReceiveActor {
+    public MyActor(){
+        ReceiveAny(_ => { });
+    }
+}
+
+class Test
+{
+    void Method()
+    {
+        ActorSystem sys = ActorSystem.Create(""MySys"");
+        Props props = Props.Create(() => new MyActor());
+        IActorRef realActorInstance = sys.ActorOf(props);
+    }
+}"
+    };
+    
+    [Theory]
+    [MemberData(nameof(SuccessCases))]
+    public async Task Analyzer_Should_Not_Report_Diagnostic_For_Valid_Usage(string testCode)
+    {
         await Verify.VerifyAnalyzer(testCode).ConfigureAwait(true);
     }
 
