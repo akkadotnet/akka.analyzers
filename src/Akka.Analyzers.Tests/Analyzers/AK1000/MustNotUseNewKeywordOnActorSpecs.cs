@@ -9,7 +9,7 @@ using Verify = Akka.Analyzers.Tests.Utility.AkkaVerifier<Akka.Analyzers.MustNotU
 
 namespace Akka.Analyzers.Tests.Analyzers.AK1000;
 
-public class AkkaActorInstantiationAnalyzerTests
+public class MustNotUseNewKeywordOnActorsAnalyzerSpecs
 {
     public static readonly TheoryData<string> SuccessCases = new()
     {

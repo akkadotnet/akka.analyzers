@@ -3,7 +3,7 @@ using Verify = Akka.Analyzers.Tests.Utility.AkkaVerifier<Akka.Analyzers.MustClos
 
 namespace Akka.Analyzers.Tests.Analyzers.AK1000;
 
-public class MustCloseOverSenderWhenUsingPipeToSpecs
+public class MustCloseOverSenderWhenUsingPipeToAnalyzerSpecs
 {
     public static readonly TheoryData<string> SuccessCases = new()
     {
