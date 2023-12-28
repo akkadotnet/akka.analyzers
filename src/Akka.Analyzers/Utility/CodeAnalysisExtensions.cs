@@ -33,7 +33,7 @@ internal static class CodeAnalysisExtensions
         if(akkaContext.AkkaCore.ActorBaseType is null)
             return false;
         
-        var currentBaseType = typeSymbol.BaseType;
+        var currentBaseType = typeSymbol;
         while (currentBaseType != null)
         {
             if (SymbolEqualityComparer.Default.Equals(currentBaseType, akkaContext.AkkaCore.ActorBaseType))

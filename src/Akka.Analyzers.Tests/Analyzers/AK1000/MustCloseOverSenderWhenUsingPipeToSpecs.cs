@@ -1,3 +1,4 @@
+using Microsoft.CodeAnalysis;
 using Verify = Akka.Analyzers.Tests.Utility.AkkaVerifier<Akka.Analyzers.MustCloseOverSenderWhenUsingPipeToAnalyzer>;
 
 namespace Akka.Analyzers.Tests.Analyzers.AK1000;
@@ -96,7 +97,10 @@ public class MustCloseOverSenderWhenUsingPipeToSpecs
     [MemberData(nameof(FailureCases))]
     public async Task FailureCase(string testCode)
     {
-        var expected = Verify.Diagnostic().WithSpan(12, 21, 12, 27);
+        var expected = Verify.Diagnostic()
+            .WithSpan(14, 37, 14, 43)
+            .WithArguments("Sender")
+            .WithSeverity(DiagnosticSeverity.Error);
         
         await Verify.VerifyAnalyzer(testCode, expected).ConfigureAwait(true);
     }
