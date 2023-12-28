@@ -18,57 +18,66 @@ public class AkkaActorInstantiationAnalyzerTests
     public static readonly TheoryData<string> SuccessCases = new()
     {
         // ActorBase
-        @"using Akka.Actor;
+        """
+        using Akka.Actor;
 
-class MyActor : ActorBase {
-    protected override bool Receive(object message) {
-        return true;
-    }
-}
+        class MyActor : ActorBase {
+            protected override bool Receive(object message) {
+                return true;
+            }
+        }
 
-class Test
-{
-    void Method()
-    {
-        ActorSystem sys = ActorSystem.Create(""MySys"");
-        Props props = Props.Create(() => new MyActor());
-        IActorRef realActorInstance = sys.ActorOf(props);
-    }
-}",
+        class Test
+        {
+            void Method()
+            {
+                ActorSystem sys = ActorSystem.Create("MySys");
+                Props props = Props.Create(() => new MyActor());
+                IActorRef realActorInstance = sys.ActorOf(props);
+            }
+        }
+        """,
+        
         // UntypedActor
-        @"using Akka.Actor;
+        """
+        using Akka.Actor;
 
-class MyActor : UntypedActor {
-    protected override void OnReceive(object message) {
-    }
-}
+        class MyActor : UntypedActor {
+            protected override void OnReceive(object message) {
+            }
+        }
 
-class Test
-{
-    void Method()
-    {
-        ActorSystem sys = ActorSystem.Create(""MySys"");
-        Props props = Props.Create(() => new MyActor());
-        IActorRef realActorInstance = sys.ActorOf(props);
-    }
-}",
-        @"using Akka.Actor;
+        class Test
+        {
+            void Method()
+            {
+                ActorSystem sys = ActorSystem.Create("MySys");
+                Props props = Props.Create(() => new MyActor());
+                IActorRef realActorInstance = sys.ActorOf(props);
+            }
+        }
+        """,
+        
+        // ReceiveActor
+        """
+        using Akka.Actor;
 
-class MyActor : ReceiveActor {
-    public MyActor(){
-        ReceiveAny(_ => { });
-    }
-}
+        class MyActor : ReceiveActor {
+            public MyActor(){
+                ReceiveAny(_ => { });
+            }
+        }
 
-class Test
-{
-    void Method()
-    {
-        ActorSystem sys = ActorSystem.Create(""MySys"");
-        Props props = Props.Create(() => new MyActor());
-        IActorRef realActorInstance = sys.ActorOf(props);
-    }
-}"
+        class Test
+        {
+            void Method()
+            {
+                ActorSystem sys = ActorSystem.Create("MySys");
+                Props props = Props.Create(() => new MyActor());
+                IActorRef realActorInstance = sys.ActorOf(props);
+            }
+        }
+        """
     };
     
     [Theory]
@@ -81,21 +90,23 @@ class Test
     [Fact]
     public async Task FailureCase()
     {
-        var testCode = @"using Akka.Actor;
+        const string testCode = """
+                                using Akka.Actor;
 
-class MyActor : ActorBase {
-    protected override bool Receive(object message) {
-        return true;
-    }
-}
+                                class MyActor : ActorBase {
+                                    protected override bool Receive(object message) {
+                                        return true;
+                                    }
+                                }
 
-class Test
-{
-    void Method()
-    {
-        MyActor actorInstance = new MyActor();
-    }
-}";
+                                class Test
+                                {
+                                    void Method()
+                                    {
+                                        MyActor actorInstance = new MyActor();
+                                    }
+                                }
+                                """;
         
         var expected = Verify.Diagnostic()
             .WithSpan(13, 33, 13, 46)
