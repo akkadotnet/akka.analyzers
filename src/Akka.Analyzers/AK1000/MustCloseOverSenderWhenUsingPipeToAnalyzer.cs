@@ -6,57 +6,44 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace Akka.Analyzers;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public class MustCloseOverSenderWhenUsingPipeToAnalyzer() : AkkaDiagnosticAnalyzer(RuleDescriptors.Ak1001CloseOverSenderUsingPipeTo)
+public class MustCloseOverSenderWhenUsingPipeToAnalyzer()
+    : AkkaDiagnosticAnalyzer(RuleDescriptors.Ak1001CloseOverSenderUsingPipeTo)
 {
     public override void AnalyzeCompilation(CompilationStartAnalysisContext context, AkkaContext akkaContext)
     {
         Guard.AssertIsNotNull(context);
         Guard.AssertIsNotNull(akkaContext);
-        
+
         context.RegisterSyntaxNodeAction(ctx =>
         {
-            var classDeclaration = (ClassDeclarationSyntax)ctx.Node;
-            var semanticModel = ctx.SemanticModel;
-            var classSymbol = semanticModel.GetDeclaredSymbol(classDeclaration);
+            var invocationExpr = (InvocationExpressionSyntax)ctx.Node;
 
-            if (classSymbol is null || !classSymbol.IsActorBaseSubclass(akkaContext))
-                return; // not an actor, skip
-
-            // Analyze both methods and lambda expressions
-            var members = classDeclaration.DescendantNodes().OfType<MemberDeclarationSyntax>();
-            foreach (var member in members)
+            // Check if it's a PipeTo method call
+            if (invocationExpr.Expression is MemberAccessExpressionSyntax { Name.Identifier.ValueText: "PipeTo" } memberAccessExpr)
             {
-                switch (member)
+                // Check if the containing type is an Akka.NET actor
+                var containingType = ctx.SemanticModel.GetEnclosingSymbol(invocationExpr.SpanStart)?.ContainingType;
+                if (containingType != null && containingType.IsActorBaseSubclass(akkaContext))
                 {
-                    case MethodDeclarationSyntax method:
-                        AnalyzeMethodOrLambda(ctx, method.Body);
-                        break;
-                    case PropertyDeclarationSyntax property:
-                        AnalyzeMethodOrLambda(ctx, property.AccessorList);
-                        break;
+                    // Check if 'this.Sender' is used in the arguments
+                    foreach (var arg in invocationExpr.ArgumentList.Arguments)
+                    {
+                        var symbol = ctx.SemanticModel.GetSymbolInfo(arg.Expression).Symbol;
+                        if (IsThisSenderSymbol(symbol, akkaContext))
+                        {
+                            var diagnostic = Diagnostic.Create(RuleDescriptors.Ak1001CloseOverSenderUsingPipeTo, memberAccessExpr.Name.GetLocation());
+                            ctx.ReportDiagnostic(diagnostic);
+                            break; // Report only once per invocation
+                        }
+                    }
                 }
             }
-
-        },SyntaxKind.ClassDeclaration);
+        }, SyntaxKind.InvocationExpression);
     }
 
-    private static void AnalyzeMethodOrLambda(SyntaxNodeAnalysisContext context, SyntaxNode? node)
+    private static bool IsThisSenderSymbol(ISymbol? symbol, AkkaContext akkaContext)
     {
-        if (node == null) return;
-        
-        var invocations = node.DescendantNodes().OfType<InvocationExpressionSyntax>();
-        foreach (var invocation in invocations)
-        {
-            if (invocation.Expression is not MemberAccessExpressionSyntax
-                {
-                    Name.Identifier.ValueText: "PipeTo"
-                } memberAccessExpr) continue;
-            
-            var dataFlow = context.SemanticModel.AnalyzeDataFlow(node);
-            if (!dataFlow.Captured.Any(symbol => symbol.Name == "Sender")) continue;
-            
-            var diagnostic = Diagnostic.Create(RuleDescriptors.Ak1001CloseOverSenderUsingPipeTo, memberAccessExpr.GetLocation());
-            context.ReportDiagnostic(diagnostic);
-        }
+        // Check if the symbol is 'this.Sender'
+        return symbol is { Name: "Sender", ContainingType.BaseType: not null } && symbol.ContainingType.IsActorBaseSubclass(akkaContext);
     }
 }
