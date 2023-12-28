@@ -1,5 +1,3 @@
-# Akka.NET Console Template
+# Akka.Analyers 
 
-This is a simple template designed to incorporate local [Akka.NET](https://getakka.net/) into a console application.
-
-See https://github.com/akkadotnet/akkadotnet-templates/blob/dev/docs/ConsoleTemplate.md for complete and current documentation on this template.
+A [Roslyn Analyzer](https://github.com/dotnet/roslyn-analyzers) package for [Akka.NET](https://getakka.net/), aimed at helping users avoid common Akka.NET programming mistakes and helping users automatically upgrade their applications to use newer Akka.NET APIs.
