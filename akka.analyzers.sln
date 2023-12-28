@@ -15,6 +15,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{B67B6FBE
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Akka.Analyzers.Tests", "src\Akka.Analyzers.Tests\Akka.Analyzers.Tests.csproj", "{21D3D1DE-CC6D-435C-B025-FB232D3D1A6D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Akka.Analyzers.Fixes", "src\Akka.Analyzers.Fixes\Akka.Analyzers.Fixes.csproj", "{295556B8-6201-46C5-A866-71F2B0693254}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,5 +34,9 @@ Global
 		{21D3D1DE-CC6D-435C-B025-FB232D3D1A6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{21D3D1DE-CC6D-435C-B025-FB232D3D1A6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{21D3D1DE-CC6D-435C-B025-FB232D3D1A6D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{295556B8-6201-46C5-A866-71F2B0693254}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{295556B8-6201-46C5-A866-71F2B0693254}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{295556B8-6201-46C5-A866-71F2B0693254}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{295556B8-6201-46C5-A866-71F2B0693254}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
