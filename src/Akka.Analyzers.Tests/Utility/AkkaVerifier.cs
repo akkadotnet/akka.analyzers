@@ -48,13 +48,10 @@ public sealed class AkkaVerifier<TAnalyzer> where TAnalyzer : DiagnosticAnalyzer
         Guard.AssertIsNotNull(before);
         Guard.AssertIsNotNull(after);
 
-        var newLine = FormattingOptions.NewLine.DefaultValue;
         var test = new AkkaTest()
         {
-#pragma warning disable CA1062 // Guard already does this
-            TestCode = before,//.Replace("\n", newLine, StringComparison.Ordinal),
-            FixedCode = after,//.Replace("\n", newLine, StringComparison.Ordinal),
-#pragma warning restore CA1062
+            TestCode = before,
+            FixedCode = after,
             CodeActionEquivalenceKey = fixerActionKey
         };
         test.TestState.ExpectedDiagnostics.AddRange(diagnostics);
