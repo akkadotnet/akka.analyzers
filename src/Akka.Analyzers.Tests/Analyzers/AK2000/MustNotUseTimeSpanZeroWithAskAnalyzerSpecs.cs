@@ -94,14 +94,11 @@ public static class MyActorCaller{
         return Verify.VerifyAnalyzer(code, expectedDiagnostic);
     }
 
-    // Repeat for each case in your original TheoryData...
-
-    // Example for named argument with other arguments
     [Fact]
     public Task FailureCaseExplicitZeroTimeSpanWithNamedArgumentAndOtherArguments()
     {
         var code =
-            @"using Akka.Actor;
+@"using Akka.Actor;
  using System.Threading.Tasks;
  using System;
 
@@ -110,7 +107,7 @@ public static class MyActorCaller{
          return actor.Ask<string>(message, timeout: TimeSpan.Zero, cancellationToken: default);
     }
 }";
-        var expectedDiagnostic = Verify.Diagnostic().WithLocation(8, 80); // Adjust the line and character positions
+        var expectedDiagnostic = Verify.Diagnostic().WithSpan(7, 44, 7, 66);
         return Verify.VerifyAnalyzer(code, expectedDiagnostic);
     }
 }

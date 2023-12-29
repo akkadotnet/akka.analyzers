@@ -56,41 +56,4 @@ public class MustNotUseTimeSpanZeroWithAskAnalyzer()
             }
         }, SyntaxKind.InvocationExpression);
     }
-
-    private static bool IsMethodAsk(IMethodSymbol methodSymbol, AkkaContext context)
-    {
-        if (!context.HasAkkaInstalled)
-            return false;
-
-        // Check if the method is Ask or Ask<T>
-        return methodSymbol.Name == "Ask" && methodSymbol.ContainingType.ToString().Contains("Akka.Actor");
-    }
-
-    private static bool IsProblematicTimeSpan(ExpressionSyntax? expression, SyntaxNodeAnalysisContext context)
-    {
-        if (expression == null)
-            return false;
-
-        // Handle cases where the argument is a literal or default value
-        var expressionStr = expression.ToString();
-        if (expressionStr is "default(TimeSpan)" or "System.TimeSpan.Zero")
-        {
-            return true;
-        }
-
-        // Handle cases where the argument is a variable
-        if (expression is IdentifierNameSyntax identifierName)
-        {
-            var symbol = context.SemanticModel.GetSymbolInfo(identifierName).Symbol;
-            if (symbol is ILocalSymbol localSymbol)
-            {
-                return localSymbol.DeclaringSyntaxReferences
-                    .Select(r => r.GetSyntax())
-                    .OfType<VariableDeclaratorSyntax>()
-                    .Any(v => IsProblematicTimeSpan(v.Initializer?.Value, context));
-            }
-        }
-
-        return false;
-    }
 }
