@@ -35,8 +35,4 @@
       <ProjectReference Include="..\Akka.Analyzers\Akka.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true" />
     </ItemGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\Akka.Analyzers\Akka.Analyzers.csproj" />
-    </ItemGroup>
-
 </Project>
