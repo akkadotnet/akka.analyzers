@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using Akka.Analyzers.Fixes;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.VisualStudio.Composition;
 
@@ -10,7 +11,7 @@ internal static class CodeFixProviderDiscovery
         () =>
         {
             var discovery = new AttributedPartDiscovery(Resolver.DefaultInstance, isNonPublicSupported: true);
-            var parts = Task.Run(() => discovery.CreatePartsAsync(typeof(CodeAnalysisExtensions).Assembly)).GetAwaiter()
+            var parts = Task.Run(() => discovery.CreatePartsAsync(typeof(BatchedCodeFixProvider).Assembly)).GetAwaiter()
                 .GetResult();
             var catalog = ComposableCatalog.Create(Resolver.DefaultInstance).AddParts(parts);
 
