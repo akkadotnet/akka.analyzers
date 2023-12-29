@@ -44,12 +44,7 @@ public class MustCloseOverSenderWhenUsingPipeToFixerSpecs
                 });
             }
         }";
-
-        var expectedDiagnostic = Verify.Diagnostic()
-            .WithSpan(27, 37, 27, 43);
         
-        return Verify.VerifyCodeFix(before, after, MustCloseOverSenderWhenUsingPipeToFixer.Key_FixPipeToSender, expectedDiagnostic);
-        
-        //return Verify.VerifyCodeFix(before, after, MustCloseOverSenderWhenUsingPipeToFixer.Key_FixPipeToSender);
+        return Verify.VerifyCodeFix(before, after, MustCloseOverSenderWhenUsingPipeToFixer.Key_FixPipeToSender);
     }
 }

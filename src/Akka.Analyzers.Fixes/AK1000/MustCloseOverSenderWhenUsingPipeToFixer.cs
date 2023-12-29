@@ -19,7 +19,9 @@ public sealed class MustCloseOverSenderWhenUsingPipeToFixer()
         if (root is null)
             return;
 
-        var diagnostic = context.Diagnostics.First();
+        var diagnostic = context.Diagnostics.FirstOrDefault();
+        if (diagnostic is null)
+            return;
         var diagnosticSpan = diagnostic.Location.SourceSpan;
 
         // Find the PipeTo invocation expression
