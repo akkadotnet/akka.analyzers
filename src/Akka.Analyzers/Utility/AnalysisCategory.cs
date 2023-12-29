@@ -12,4 +12,8 @@ public enum AnalysisCategory
     /// 1xxx
     /// </summary>
     ActorDesign,
+    /// <summary>
+    /// 2xxx
+    /// </summary>
+    ApiUsage,
 }
