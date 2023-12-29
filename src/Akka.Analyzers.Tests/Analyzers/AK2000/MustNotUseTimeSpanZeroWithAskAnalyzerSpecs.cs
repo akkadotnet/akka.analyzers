@@ -9,7 +9,7 @@ namespace Akka.Analyzers.Tests.Analyzers.AK2000;
 
 public class MustNotUseTimeSpanZeroWithAskAnalyzerSpecs
 {
-    public static readonly TheoryData<string> SuccessCases = new TheoryData<string>()
+    public static readonly TheoryData<string> SuccessCases = new()
     {
         // Explicit non-zero TimeSpan
         @"using Akka.Actor;
