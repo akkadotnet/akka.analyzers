@@ -8,45 +8,47 @@ public class MustCloseOverSenderWhenUsingPipeToFixerSpecs
     [Fact]
     public Task AddClosureInsideReceiveActor()
     {
-        var before = @"using Akka.Actor;
-        using System.Threading.Tasks;
-        
-        public sealed class MyActor : ReceiveActor{
+        var before = 
+@"using Akka.Actor;
+using System.Threading.Tasks;
 
-            public MyActor(){
-                Receive<string>(str => {
-                    async Task<int> LocalFunction(){
-                        await Task.Delay(10);
-                        return str.Length;
-                    }
+public sealed class MyActor : ReceiveActor{
 
-                    // incorrect use of closure
-                    LocalFunction().PipeTo(Sender); 
-                });
+    public MyActor(){
+        Receive<string>(str => {
+            async Task<int> LocalFunction(){
+                await Task.Delay(10);
+                return str.Length;
             }
-        }";
-        
-        var after = @"using Akka.Actor;
-        using System.Threading.Tasks;
-        
-        public sealed class MyActor : ReceiveActor{
 
-            public MyActor(){
-                Receive<string>(str => {
-                    async Task<int> LocalFunction(){
-                        await Task.Delay(10);
-                        return str.Length;
-                    }
+            // incorrect use of closure
+            LocalFunction().PipeTo(Sender); 
+        });
+    }
+}";
+        
+        var after = 
+@"using Akka.Actor;
+using System.Threading.Tasks;
 
-                    // incorrect use of closure
-                    var sender = Sender;
-                    LocalFunction().PipeTo(sender); 
-                });
+public sealed class MyActor : ReceiveActor{
+
+    public MyActor(){
+        Receive<string>(str => {
+            async Task<int> LocalFunction(){
+                await Task.Delay(10);
+                return str.Length;
             }
-        }";
+            var sender = this.Sender;
+
+            // incorrect use of closure            
+            LocalFunction().PipeTo(sender); 
+        });
+    }
+}";
 
         var expectedDiagnostic = Verify.Diagnostic()
-            .WithSpan(27, 37, 27, 43)
+            .WithSpan(27, 29, 27, 35)
             .WithArguments("Sender");
         
         return Verify.VerifyCodeFix(before, after, MustCloseOverSenderWhenUsingPipeToFixer.Key_FixPipeToSender, expectedDiagnostic);
