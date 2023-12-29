@@ -52,8 +52,8 @@ public sealed class AkkaVerifier<TAnalyzer> where TAnalyzer : DiagnosticAnalyzer
         var test = new AkkaTest()
         {
 #pragma warning disable CA1062 // Guard already does this
-            TestCode = before.Replace("\n", newLine, StringComparison.InvariantCulture),
-            FixedCode = after.Replace("\n", newLine, StringComparison.InvariantCulture),
+            TestCode = before,//.Replace("\n", newLine, StringComparison.Ordinal),
+            FixedCode = after,//.Replace("\n", newLine, StringComparison.Ordinal),
 #pragma warning restore CA1062
             CodeActionEquivalenceKey = fixerActionKey
         };

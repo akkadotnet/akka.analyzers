@@ -41,14 +41,14 @@ public sealed class MyActor : ReceiveActor{
             }
             var sender = this.Sender;
 
-            // incorrect use of closure            
+            // incorrect use of closure
             LocalFunction().PipeTo(sender); 
         });
     }
 }";
 
         var expectedDiagnostic = Verify.Diagnostic()
-            .WithSpan(27, 29, 27, 35)
+            .WithSpan(14, 29, 14, 35)
             .WithArguments("Sender");
         
         return Verify.VerifyCodeFix(before, after, MustCloseOverSenderWhenUsingPipeToFixer.Key_FixPipeToSender, expectedDiagnostic);

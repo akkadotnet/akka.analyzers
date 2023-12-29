@@ -24,7 +24,7 @@ internal static class CodeGeneratorUtilities
                 VariableDeclarator(Identifier(parameterName))
                     .WithInitializer(equalsToReplacementNode)
             )
-        ).NormalizeWhitespace();
+        );
 
         return LocalDeclarationStatement(oneItemVariableDeclaration);
     }
