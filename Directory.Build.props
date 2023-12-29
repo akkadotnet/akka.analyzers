@@ -12,6 +12,11 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+        <None Include="$(MSBuildThisFileDirectory)\logo.png" Pack="true" Visible="false" PackagePath="\" />
+        <None Include="$(MSBuildThisFileDirectory)\README.md" Pack="true" Visible="false" PackagePath="\" />
+    </ItemGroup>
+
     <!-- ======================================== -->
     <!-- Production-specific properties and items -->
 
@@ -19,7 +24,6 @@
         <When Condition=" !$(MSBuildProjectName.Contains('.tests')) ">
             <PropertyGroup>
                 <AnalysisLevel>latest-All</AnalysisLevel>
-                <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)signing.snk</AssemblyOriginatorKeyFile>
                 <EnableNETAnalyzers>true</EnableNETAnalyzers>
                 <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
                 <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
