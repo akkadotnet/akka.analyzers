@@ -8,8 +8,8 @@ public class MustCloseOverSenderWhenUsingPipeToFixerSpecs
     [Fact]
     public Task AddClosureInsideReceiveActor()
     {
-        var before = 
-@"using Akka.Actor;
+        var before =
+            @"using Akka.Actor;
 using System.Threading.Tasks;
 
 public sealed class MyActor : ReceiveActor{
@@ -26,9 +26,9 @@ public sealed class MyActor : ReceiveActor{
         });
     }
 }";
-        
-        var after = 
-@"using Akka.Actor;
+
+        var after =
+            @"using Akka.Actor;
 using System.Threading.Tasks;
 
 public sealed class MyActor : ReceiveActor{
@@ -50,9 +50,58 @@ public sealed class MyActor : ReceiveActor{
         var expectedDiagnostic = Verify.Diagnostic()
             .WithSpan(14, 29, 14, 35)
             .WithArguments("Sender");
+
+        return Verify.VerifyCodeFix(before, after, MustCloseOverSenderWhenUsingPipeToFixer.Key_FixPipeToSender,
+            expectedDiagnostic);
+    }
+
+    [Fact]
+    public Task AddClosureInsideUntypedActor()
+    {
+        var before = 
+@"using Akka.Actor;
+using System.Threading.Tasks;
+using System;
+
+public sealed class MyActor : UntypedActor{
+
+    protected override void OnReceive(object message){
+        async Task<int> LocalFunction(){
+            await Task.Delay(10);
+            return message.ToString().Length;
+        }
+
+        Console.WriteLine(Sender);
+        // incorrect use of closure
+        LocalFunction().PipeTo(Sender); 
+    }
+}";
         
-        return Verify.VerifyCodeFix(before, after, MustCloseOverSenderWhenUsingPipeToFixer.Key_FixPipeToSender, expectedDiagnostic);
+        var after = 
+@"using Akka.Actor;
+using System.Threading.Tasks;
+using System;
+
+public sealed class MyActor : UntypedActor{
+
+    protected override void OnReceive(object message){
+        async Task<int> LocalFunction(){
+            await Task.Delay(10);
+            return message.ToString().Length;
+        }
+
+        Console.WriteLine(Sender);
+        var sender = this.Sender;
+        // incorrect use of closure
+        LocalFunction().PipeTo(sender); 
+    }
+}";
         
-        //return Verify.VerifyCodeFix(before, after, MustCloseOverSenderWhenUsingPipeToFixer.Key_FixPipeToSender);
+        var expectedDiagnostic = Verify.Diagnostic()
+            .WithSpan(15, 25, 15, 31)
+            .WithArguments("Sender");
+
+        return Verify.VerifyCodeFix(before, after, MustCloseOverSenderWhenUsingPipeToFixer.Key_FixPipeToSender,
+            expectedDiagnostic);
     }
 }
