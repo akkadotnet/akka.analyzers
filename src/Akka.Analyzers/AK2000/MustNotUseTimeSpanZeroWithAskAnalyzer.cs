@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace Akka.Analyzers.AK2000;
+namespace Akka.Analyzers;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public class MustNotUseTimeSpanZeroWithAskAnalyzer() : AkkaDiagnosticAnalyzer(RuleDescriptors.Ak2000DoNotUseZeroTimeoutWithAsk)
