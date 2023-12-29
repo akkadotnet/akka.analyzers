@@ -34,7 +34,7 @@ public sealed class MustCloseOverSenderWhenUsingPipeToFixer()
                 title: "Use local variable for Sender",
                 createChangedDocument: c => UseLocalVariableForSenderAsync(context.Document, invocationExpr, c),
                 equivalenceKey: Key_FixPipeToSender),
-            diagnostic);
+            context.Diagnostics);
     }
     
     private static async Task<Document> UseLocalVariableForSenderAsync(Document document, InvocationExpressionSyntax invocationExpr, CancellationToken cancellationToken)
