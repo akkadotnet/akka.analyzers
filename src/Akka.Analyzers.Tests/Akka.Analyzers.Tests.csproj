@@ -31,8 +31,10 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Akka.Analyzers.Fixes\Akka.Analyzers.Fixes.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true"/>
-      <ProjectReference Include="..\Akka.Analyzers\Akka.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true" />
+      <ProjectReference Include="..\Akka.Analyzers.Fixes\Akka.Analyzers.Fixes.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true"
+                      SetTargetFramework="TargetFramework=netstandard2.0"/>
+      <ProjectReference Include="..\Akka.Analyzers\Akka.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true"
+                      SetTargetFramework="TargetFramework=netstandard2.0"/>
     </ItemGroup>
 
 </Project>
