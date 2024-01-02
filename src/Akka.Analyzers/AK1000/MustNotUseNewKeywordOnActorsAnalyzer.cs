@@ -45,8 +45,16 @@ public class MustNotUseNewKeywordOnActorsAnalyzer() : AkkaDiagnosticAnalyzer(Rul
         // Traverse upwards in the syntax tree from the object creation expression
         var currentNode = objectCreation.Parent;
 
+        bool insideLambda = false;
+
         while (currentNode != null)
         {
+            // Check if we are inside a lambda expression
+            if (currentNode is LambdaExpressionSyntax)
+            {
+                insideLambda = true;
+            }
+
             // Check if the current node is an InvocationExpressionSyntax
             if (currentNode is InvocationExpressionSyntax invocation)
             {
@@ -65,6 +73,7 @@ public class MustNotUseNewKeywordOnActorsAnalyzer() : AkkaDiagnosticAnalyzer(Rul
             currentNode = currentNode.Parent;
         }
 
-        return false;
+        // If we are inside a lambda, but not inside Props.Create, we assume it might be a legitimate use case
+        return insideLambda;
     }
 }
