@@ -129,6 +129,44 @@ public class MustNotUseNewKeywordOnActorsAnalyzerSpecs
                 IActorRef realActorInstance = sys.ActorOf(props);
             }
         }
+        """,
+        
+        // New expression is _eventually_ passed into Props, but not immediately at the call site
+        """
+        using Akka.Actor;
+        using System;
+        using System.Linq.Expressions;
+        
+        class MyActor : ReceiveActor {
+            private readonly string _name;
+            private readonly int _myVar;
+        
+            public MyActor(string name, int myVar){
+                _name = name;
+                _myVar = myVar;
+                ReceiveAny(_ => {
+                    Sender.Tell(_name + _myVar);
+                });
+            }
+        }
+        
+        class Test
+        {
+            public ActorSystem Sys { get; }
+            
+            public Test(){
+                Sys = ActorSystem.Create("MySys");
+            }
+        
+            IActorRef Method<TActor>(Expression<Func<TActor>> factory) where TActor : ActorBase
+            {
+                return Sys.ActorOf(Props.Create(factory));
+            }
+            
+            public IActorRef StartMyActor(){
+                return Method(() => new MyActor("foo", 1));
+            }
+        }
         """
     };
 
