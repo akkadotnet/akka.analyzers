@@ -12,4 +12,9 @@
       <PackageReference Include="Microsoft.CodeAnalysis" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Analysis\" />
+      <Folder Include="Fixes\" />
+    </ItemGroup>
+
 </Project>
