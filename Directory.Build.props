@@ -7,10 +7,15 @@
         <Authors>Akka.NET Team</Authors>
         <PackageProjectUrl>https://github.com/akkadotnet/akka.analyzers</PackageProjectUrl>
         <PackageReleaseNotes>Version</PackageReleaseNotes>
-        <PackageTags>akka.net, aood</PackageTags>
+        <PackageTags>akka.net, akka.analyzers, akakdotnet, roslyn, analyzers</PackageTags>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <PackageIcon>logo.png</PackageIcon>
+        <Description>
+            Akka.NET Roslyn Analyzers designed to help fix frequent, recurring design problems that may occur
+            in end-user code bases. Also includes helpful upgrade suggestions for migrating between minor and
+            major versions of Akka.NET.
+        </Description>
     </PropertyGroup>
 
     <PropertyGroup Label="Build">
