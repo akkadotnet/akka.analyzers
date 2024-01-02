@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-using Akka.Analyzers.Fixes.AK1000;
+using Akka.Analyzers.Fixes;
 using Verify = Akka.Analyzers.Tests.Utility.AkkaVerifier<Akka.Analyzers.MustCloseOverSenderWhenUsingPipeToAnalyzer>;
 
 namespace Akka.Analyzers.Tests.Fixes.AK1000;

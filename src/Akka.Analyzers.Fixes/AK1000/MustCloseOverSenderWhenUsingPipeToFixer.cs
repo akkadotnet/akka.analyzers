@@ -14,7 +14,7 @@ using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Formatting;
 using static Akka.Analyzers.Fixes.CodeGeneratorUtilities;
 
-namespace Akka.Analyzers.Fixes.AK1000;
+namespace Akka.Analyzers.Fixes;
 
 [ExportCodeFixProvider(LanguageNames.CSharp)]
 [Shared]

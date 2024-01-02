@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
+    <metadata minClientVersion="2.12">
+        <id>Akka.Analyzers</id>
+        <version>$PackageVersion$</version>
+        <title>Akka.NET [Code Analyzers]</title>
+        <authors>Akka</authors>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <license type="expression">Apache-2.0</license>
+        <licenseUrl>https://licenses.nuget.org/Apache-2.0</licenseUrl>
+        <icon>logo.png</icon>
+        <description>$Description$</description>
+        <copyright>Copyright © 2013-2023 Akka.NET Project</copyright>
+        <repository type="git" url="https://github.com/akkadotnet/akka.analyzers"/>
+        <tags>akka.net, akka.analyzers, akakdotnet, roslyn, analyzers</tags>
+        <readme>README.md</readme>
+        <releaseNotes>$ReleaseNotes$</releaseNotes>
+    </metadata>
+    <files>
+        <file target="\" src="..\..\README.md" />
+        <file target="\" src="..\..\logo.png" />
+
+        <file target="analyzers\dotnet\cs\" src="..\Akka.Analyzers\bin\$Configuration$\netstandard2.0\Akka.Analyzers.dll" />
+        <file target="analyzers\dotnet\cs\" src="..\Akka.Analyzers.Fixes\bin\$Configuration$\netstandard2.0\Akka.Analyzers.Fixes.dll" />
+<!--        <file target="tools\" src="..\xunit.analyzers.fixes\tools\*.ps1" />-->
+    </files>
+</package>

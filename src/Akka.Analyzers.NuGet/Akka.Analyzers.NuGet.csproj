@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <NuspecFile>Akka.Analyzers.nuspec</NuspecFile>
+        <NuspecProperties>
+            Configuration=$(Configuration);
+            PackageVersion=$(VersionPrefix);
+            ReleaseNotes=$(PackageReleaseNotes);
+            Description=$(Description);
+        </NuspecProperties>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Akka.Analyzers.Fixes\Akka.Analyzers.Fixes.csproj"/>
+      <ProjectReference Include="..\Akka.Analyzers\Akka.Analyzers.csproj"/>
+    </ItemGroup>
+</Project>
