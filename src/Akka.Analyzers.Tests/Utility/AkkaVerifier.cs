@@ -1,7 +1,7 @@
 ﻿// -----------------------------------------------------------------------
 //  <copyright file="AkkaVerifier.cs" company="Akka.NET Project">
-//      Copyright (C) 2015-2023 .NET Petabridge, LLC
-//  </copyright>
+//      Copyright (C) 2013-2024 .NET Foundation <https://github.com/akkadotnet/akka.net>
+// </copyright>
 // -----------------------------------------------------------------------
 
 using System.Diagnostics.CodeAnalysis;
@@ -9,7 +9,6 @@ using System.Globalization;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Testing;
 
 namespace Akka.Analyzers.Tests.Utility;
@@ -18,10 +17,12 @@ namespace Akka.Analyzers.Tests.Utility;
 public sealed class AkkaVerifier<TAnalyzer> where TAnalyzer : DiagnosticAnalyzer, new()
 {
     /// <summary>
-    /// Creates a diagnostic result for the diagnostic referenced in <see cref="TAnalyzer"/>.
+    ///     Creates a diagnostic result for the diagnostic referenced in <see cref="TAnalyzer" />.
     /// </summary>
-    public static DiagnosticResult Diagnostic() =>
-        CSharpCodeFixVerifier<TAnalyzer, EmptyCodeFixProvider, DefaultVerifier>.Diagnostic();
+    public static DiagnosticResult Diagnostic()
+    {
+        return CSharpCodeFixVerifier<TAnalyzer, EmptyCodeFixProvider, DefaultVerifier>.Diagnostic();
+    }
 
     public static Task VerifyAnalyzer(string source, params DiagnosticResult[] diagnostics)
     {
@@ -48,7 +49,7 @@ public sealed class AkkaVerifier<TAnalyzer> where TAnalyzer : DiagnosticAnalyzer
         Guard.AssertIsNotNull(before);
         Guard.AssertIsNotNull(after);
 
-        var test = new AkkaTest()
+        var test = new AkkaTest
         {
             TestCode = before,
             FixedCode = after,

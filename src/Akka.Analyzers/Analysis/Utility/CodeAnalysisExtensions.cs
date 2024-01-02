@@ -1,11 +1,10 @@
 ﻿// -----------------------------------------------------------------------
 //  <copyright file="CodeAnalysisExtensions.cs" company="Akka.NET Project">
-//      Copyright (C) 2015-2023 .NET Petabridge, LLC
-//  </copyright>
+//      Copyright (C) 2013-2024 .NET Foundation <https://github.com/akkadotnet/akka.net>
+// </copyright>
 // -----------------------------------------------------------------------
 
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Akka.Analyzers;
 
@@ -24,22 +23,19 @@ internal static class CodeAnalysisExtensions
     //     if (semanticModel is null)
     //         return false;
     // }
-    
+
     public static bool IsActorBaseSubclass(this INamedTypeSymbol typeSymbol, AkkaContext akkaContext)
     {
         Guard.AssertIsNotNull(typeSymbol);
         Guard.AssertIsNotNull(akkaContext);
-        
-        if(akkaContext.AkkaCore.ActorBaseType is null)
+
+        if (akkaContext.AkkaCore.ActorBaseType is null)
             return false;
-        
+
         var currentBaseType = typeSymbol;
         while (currentBaseType != null)
         {
-            if (SymbolEqualityComparer.Default.Equals(currentBaseType, akkaContext.AkkaCore.ActorBaseType))
-            {
-                return true;
-            }
+            if (SymbolEqualityComparer.Default.Equals(currentBaseType, akkaContext.AkkaCore.ActorBaseType)) return true;
             currentBaseType = currentBaseType.BaseType;
         }
 

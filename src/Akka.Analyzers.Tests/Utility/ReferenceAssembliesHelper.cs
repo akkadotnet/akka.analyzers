@@ -1,20 +1,19 @@
 ﻿// -----------------------------------------------------------------------
 //  <copyright file="ReferenceAssembliesHelper.cs" company="Akka.NET Project">
-//      Copyright (C) 2015-2023 .NET Petabridge, LLC
-//  </copyright>
+//      Copyright (C) 2013-2024 .NET Foundation <https://github.com/akkadotnet/akka.net>
+// </copyright>
 // -----------------------------------------------------------------------
 
-using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.Testing;
 
 namespace Akka.Analyzers.Tests.Utility;
 
 /// <summary>
-/// Used to help us load the correct reference assemblies for the versions of Akka.NET being tested.
+///     Used to help us load the correct reference assemblies for the versions of Akka.NET being tested.
 /// </summary>
 /// <remarks>
-/// When making changes to any of these assemblies, make sure to update the 'PackageDownload' elements
-/// inside of the 'Akka.Analyzers.Tests.csproj' file.
+///     When making changes to any of these assemblies, make sure to update the 'PackageDownload' elements
+///     inside of the 'Akka.Analyzers.Tests.csproj' file.
 /// </remarks>
 internal static class ReferenceAssembliesHelper
 {

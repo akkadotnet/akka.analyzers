@@ -1,3 +1,9 @@
+// -----------------------------------------------------------------------
+//  <copyright file="MustCloseOverSenderWhenUsingPipeToAnalyzerSpecs.cs" company="Akka.NET Project">
+//      Copyright (C) 2013-2024 .NET Foundation <https://github.com/akkadotnet/akka.net>
+// </copyright>
+// -----------------------------------------------------------------------
+
 using Microsoft.CodeAnalysis;
 using Verify = Akka.Analyzers.Tests.Utility.AkkaVerifier<Akka.Analyzers.MustCloseOverSenderWhenUsingPipeToAnalyzer>;
 
@@ -62,7 +68,7 @@ public class MustCloseOverSenderWhenUsingPipeToAnalyzerSpecs
                 });
             }
         }",
-        
+
         // Non-Actor class that has an IActorRef Sender property
         """
         using Akka.Actor;
@@ -85,23 +91,18 @@ public class MustCloseOverSenderWhenUsingPipeToAnalyzerSpecs
                            }
         
                 // Sender is immutable on this custom non-Actor class, so shouldn't flag this
-                LocalFunction().PipeTo(Sender); 
+                LocalFunction().PipeTo(Sender);
             }
         }
-        """,
+        """
     };
-    
-    [Theory]
-    [MemberData(nameof(SuccessCases))]
-    public async Task SuccessCase(string testCode)
-    {
-        await Verify.VerifyAnalyzer(testCode).ConfigureAwait(true);
-    }
 
-    public static readonly TheoryData<(string testData, (int startLine, int startColumn, int endLine, int endColumn) spanData)> FailureCases = new()
-    {
-        // Receive actor using PipeTo without a closure inside a Receive<T> block
-        (@"using Akka.Actor;
+    public static readonly
+        TheoryData<(string testData, (int startLine, int startColumn, int endLine, int endColumn) spanData)>
+        FailureCases = new()
+        {
+            // Receive actor using PipeTo without a closure inside a Receive<T> block
+            (@"using Akka.Actor;
         using System.Threading.Tasks;
         
         public sealed class MyActor : ReceiveActor{
@@ -118,9 +119,9 @@ public class MustCloseOverSenderWhenUsingPipeToAnalyzerSpecs
                 });
             }
         }", (14, 37, 14, 43)),
-        
-        // UntypedActor using PipeTo without a closure inside a OnReceive block
-        (@"using Akka.Actor;
+
+            // UntypedActor using PipeTo without a closure inside a OnReceive block
+            (@"using Akka.Actor;
         using System.Threading.Tasks;
 
         public sealed class MyActor : UntypedActor{
@@ -134,18 +135,26 @@ public class MustCloseOverSenderWhenUsingPipeToAnalyzerSpecs
                 // incorrect use of closure
                 LocalFunction().PipeTo(Sender); 
             }
-        }", (13, 33, 13, 39)),
-    };
-    
+        }", (13, 33, 13, 39))
+        };
+
+    [Theory]
+    [MemberData(nameof(SuccessCases))]
+    public async Task SuccessCase(string testCode)
+    {
+        await Verify.VerifyAnalyzer(testCode).ConfigureAwait(true);
+    }
+
     [Theory]
     [MemberData(nameof(FailureCases))]
-    public async Task FailureCase((string testCode, (int startLine, int startColumn, int endLine, int endColumn) spanData) d)
+    public async Task FailureCase(
+        (string testCode, (int startLine, int startColumn, int endLine, int endColumn) spanData) d)
     {
         var expected = Verify.Diagnostic()
             .WithSpan(d.spanData.startLine, d.spanData.startColumn, d.spanData.endLine, d.spanData.endColumn)
             .WithArguments("Sender")
             .WithSeverity(DiagnosticSeverity.Error);
-        
+
         await Verify.VerifyAnalyzer(d.testCode, expected).ConfigureAwait(true);
     }
 }

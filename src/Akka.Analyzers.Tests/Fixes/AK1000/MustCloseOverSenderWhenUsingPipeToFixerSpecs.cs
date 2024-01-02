@@ -1,3 +1,9 @@
+// -----------------------------------------------------------------------
+//  <copyright file="MustCloseOverSenderWhenUsingPipeToFixerSpecs.cs" company="Akka.NET Project">
+//      Copyright (C) 2013-2024 .NET Foundation <https://github.com/akkadotnet/akka.net>
+// </copyright>
+// -----------------------------------------------------------------------
+
 using Akka.Analyzers.Fixes.AK1000;
 using Verify = Akka.Analyzers.Tests.Utility.AkkaVerifier<Akka.Analyzers.MustCloseOverSenderWhenUsingPipeToAnalyzer>;
 
@@ -58,8 +64,8 @@ public sealed class MyActor : ReceiveActor{
     [Fact]
     public Task AddClosureInsideUntypedActor()
     {
-        var before = 
-@"using Akka.Actor;
+        var before =
+            @"using Akka.Actor;
 using System.Threading.Tasks;
 using System;
 
@@ -76,9 +82,9 @@ public sealed class MyActor : UntypedActor{
         LocalFunction().PipeTo(Sender); 
     }
 }";
-        
-        var after = 
-@"using Akka.Actor;
+
+        var after =
+            @"using Akka.Actor;
 using System.Threading.Tasks;
 using System;
 
@@ -96,7 +102,7 @@ public sealed class MyActor : UntypedActor{
         LocalFunction().PipeTo(sender); 
     }
 }";
-        
+
         var expectedDiagnostic = Verify.Diagnostic()
             .WithSpan(15, 25, 15, 31)
             .WithArguments("Sender");

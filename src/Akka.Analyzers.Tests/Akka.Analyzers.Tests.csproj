@@ -11,7 +11,7 @@
 
     <ItemGroup>
         <!-- Download packages referenced by ReferenceAssembliesHelper -->
-        <PackageDownload Include="Akka" Version="[1.5.14]" />
+        <PackageDownload Include="Akka" Version="[1.5.14]"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -26,12 +26,12 @@
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
         <PackageReference Include="FluentAssertions"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Akka.Analyzers\Akka.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true"/>
+        <ProjectReference Include="..\Akka.Analyzers\Akka.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true"/>
     </ItemGroup>
 
 </Project>
