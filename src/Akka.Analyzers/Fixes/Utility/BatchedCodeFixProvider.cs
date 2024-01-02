@@ -1,3 +1,9 @@
+// -----------------------------------------------------------------------
+//  <copyright file="BatchedCodeFixProvider.cs" company="Akka.NET Project">
+//      Copyright (C) 2013-2024 .NET Foundation <https://github.com/akkadotnet/akka.net>
+// </copyright>
+// -----------------------------------------------------------------------
+
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.CodeFixes;
 
@@ -7,6 +13,8 @@ public abstract class BatchedCodeFixProvider(params string[] diagnostics) : Code
 {
     public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = diagnostics.ToImmutableArray();
 
-    public sealed override FixAllProvider GetFixAllProvider() =>
-        WellKnownFixAllProviders.BatchFixer;
+    public sealed override FixAllProvider GetFixAllProvider()
+    {
+        return WellKnownFixAllProviders.BatchFixer;
+    }
 }

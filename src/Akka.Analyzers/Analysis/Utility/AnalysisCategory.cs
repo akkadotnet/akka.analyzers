@@ -1,7 +1,7 @@
 ﻿// -----------------------------------------------------------------------
 //  <copyright file="AnalysisCategory.cs" company="Akka.NET Project">
-//      Copyright (C) 2015-2023 .NET Petabridge, LLC
-//  </copyright>
+//      Copyright (C) 2013-2024 .NET Foundation <https://github.com/akkadotnet/akka.net>
+// </copyright>
 // -----------------------------------------------------------------------
 
 namespace Akka.Analyzers;
@@ -9,11 +9,12 @@ namespace Akka.Analyzers;
 public enum AnalysisCategory
 {
     /// <summary>
-    /// 1xxx
+    ///     1xxx
     /// </summary>
     ActorDesign,
+
     /// <summary>
-    /// 2xxx
+    ///     2xxx
     /// </summary>
-    ApiUsage,
+    ApiUsage
 }

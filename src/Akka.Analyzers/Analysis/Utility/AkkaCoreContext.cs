@@ -1,33 +1,39 @@
-﻿using Microsoft.CodeAnalysis;
+﻿// -----------------------------------------------------------------------
+//  <copyright file="AkkaCoreContext.cs" company="Akka.NET Project">
+//      Copyright (C) 2013-2024 .NET Foundation <https://github.com/akkadotnet/akka.net>
+// </copyright>
+// -----------------------------------------------------------------------
+
+using Microsoft.CodeAnalysis;
 
 namespace Akka.Analyzers;
 
 /// <summary>
-/// Provides information about the core Akka.dll
+///     Provides information about the core Akka.dll
 /// </summary>
 public interface IAkkaCoreContext
 {
     /// <summary>
-    /// Gets the version number of the core Akka.NET assembly.
+    ///     Gets the version number of the core Akka.NET assembly.
     /// </summary>
     Version Version { get; }
-    
+
     public INamedTypeSymbol? ActorBaseType { get; }
     public INamedTypeSymbol? ActorRefType { get; }
     public INamedTypeSymbol? PropsType { get; }
 }
 
 /// <summary>
-/// No-op context for Akka.NET core dll.
+///     No-op context for Akka.NET core dll.
 /// </summary>
 public sealed class EmptyCoreContext : IAkkaCoreContext
 {
     private EmptyCoreContext()
     {
     }
-    
+
     public static EmptyCoreContext Instance { get; } = new();
-    
+
     public Version Version { get; } = new();
     public INamedTypeSymbol? ActorBaseType => null;
     public INamedTypeSymbol? ActorRefType => null;
@@ -35,29 +41,29 @@ public sealed class EmptyCoreContext : IAkkaCoreContext
 }
 
 /// <summary>
-/// Default AkkaCoreContext.
+///     Default AkkaCoreContext.
 /// </summary>
 /// <remarks>
-/// At some point in the future, this class may be sub-classed or extended with additional
-/// properties to include data about specific major versions of Akka.NET.
+///     At some point in the future, this class may be sub-classed or extended with additional
+///     properties to include data about specific major versions of Akka.NET.
 /// </remarks>
 public class AkkaCoreContext : IAkkaCoreContext
 {
     private readonly Lazy<INamedTypeSymbol?> _lazyActorBaseType;
     private readonly Lazy<INamedTypeSymbol?> _lazyActorRefType;
     private readonly Lazy<INamedTypeSymbol?> _lazyPropsType;
-    
+
     private AkkaCoreContext(Compilation compilation, Version version)
     {
         Version = version;
-        _lazyActorBaseType = new(() => TypeSymbolFactory.ActorBase(compilation));
-        _lazyActorRefType = new(() => TypeSymbolFactory.ActorReference(compilation));
-        _lazyPropsType = new(() => TypeSymbolFactory.Props(compilation));
+        _lazyActorBaseType = new Lazy<INamedTypeSymbol?>(() => TypeSymbolFactory.ActorBase(compilation));
+        _lazyActorRefType = new Lazy<INamedTypeSymbol?>(() => TypeSymbolFactory.ActorReference(compilation));
+        _lazyPropsType = new Lazy<INamedTypeSymbol?>(() => TypeSymbolFactory.Props(compilation));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public Version Version { get; }
-    
+
     public INamedTypeSymbol? ActorBaseType => _lazyActorBaseType.Value;
     public INamedTypeSymbol? ActorRefType => _lazyActorRefType.Value;
     public INamedTypeSymbol? PropsType => _lazyPropsType.Value;

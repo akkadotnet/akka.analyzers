@@ -1,7 +1,7 @@
 ﻿// -----------------------------------------------------------------------
 //  <copyright file="MustNotUseNewKeywordOnActorsAnalyzer.cs" company="Akka.NET Project">
-//      Copyright (C) 2015-2023 .NET Petabridge, LLC
-//  </copyright>
+//      Copyright (C) 2013-2024 .NET Foundation <https://github.com/akkadotnet/akka.net>
+// </copyright>
 // -----------------------------------------------------------------------
 
 using Microsoft.CodeAnalysis;
@@ -33,8 +33,9 @@ public class MustNotUseNewKeywordOnActorsAnalyzer() : AkkaDiagnosticAnalyzer(Rul
             // Check if it's within the context of Props.Create
             if (IsInsidePropsCreate(objectCreation))
                 return;
-            
-            var diagnostic = Diagnostic.Create(RuleDescriptors.Ak1000DoNotNewActors, objectCreation.GetLocation(), typeSymbol.Name);
+
+            var diagnostic = Diagnostic.Create(RuleDescriptors.Ak1000DoNotNewActors, objectCreation.GetLocation(),
+                typeSymbol.Name);
             ctx.ReportDiagnostic(diagnostic);
         }, SyntaxKind.ObjectCreationExpression);
     }
@@ -47,7 +48,11 @@ public class MustNotUseNewKeywordOnActorsAnalyzer() : AkkaDiagnosticAnalyzer(Rul
         while (currentNode != null)
         {
             // Check if the current node is an ArgumentSyntax, which could be a part of a method call
-            if (currentNode is ArgumentSyntax { Parent.Parent: InvocationExpressionSyntax { Expression: MemberAccessExpressionSyntax
+            if (currentNode is ArgumentSyntax
+                {
+                    Parent.Parent: InvocationExpressionSyntax
+                    {
+                        Expression: MemberAccessExpressionSyntax
                         {
                             Name.Identifier.ValueText: "Create", Expression: IdentifierNameSyntax
                             {
@@ -58,9 +63,7 @@ public class MustNotUseNewKeywordOnActorsAnalyzer() : AkkaDiagnosticAnalyzer(Rul
                 })
                 // Get the parent InvocationExpressionSyntax, if any
                 // Check if the method being called is 'Props.Create'
-            {
                 return true;
-            }
 
             // Move to the next parent node
             currentNode = currentNode.Parent;

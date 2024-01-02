@@ -1,7 +1,7 @@
 ﻿// -----------------------------------------------------------------------
 //  <copyright file="MustNotUseTimeSpanZeroWithAskAnalyzer.cs" company="Akka.NET Project">
-//      Copyright (C) 2015-2023 .NET Petabridge, LLC
-//  </copyright>
+//      Copyright (C) 2013-2024 .NET Foundation <https://github.com/akkadotnet/akka.net>
+// </copyright>
 // -----------------------------------------------------------------------
 
 using Microsoft.CodeAnalysis;
@@ -26,9 +26,7 @@ public class MustNotUseTimeSpanZeroWithAskAnalyzer()
 
             if (ctx.SemanticModel.GetSymbolInfo(invocationExpr).Symbol is IMethodSymbol { Name: "Ask" } methodSymbol &&
                 methodSymbol.Parameters.Any(p => p.Type.ToString() == "System.TimeSpan?"))
-            {
                 foreach (var argument in invocationExpr.ArgumentList.Arguments)
-                {
                     if (ctx.SemanticModel.GetTypeInfo(argument.Expression).Type is INamedTypeSymbol argType &&
                         argType.ConstructedFrom.ToString() == "System.TimeSpan")
                     {
@@ -52,8 +50,6 @@ public class MustNotUseTimeSpanZeroWithAskAnalyzer()
                             }
                         }
                     }
-                }
-            }
         }, SyntaxKind.InvocationExpression);
     }
 }

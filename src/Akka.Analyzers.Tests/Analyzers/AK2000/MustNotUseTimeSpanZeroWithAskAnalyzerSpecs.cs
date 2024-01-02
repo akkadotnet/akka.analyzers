@@ -1,7 +1,7 @@
 ﻿// -----------------------------------------------------------------------
 //  <copyright file="MustNotUseTimeSpanZeroWithAskAnalyzerSpecs.cs" company="Akka.NET Project">
-//      Copyright (C) 2015-2023 .NET Petabridge, LLC
-//  </copyright>
+//      Copyright (C) 2013-2024 .NET Foundation <https://github.com/akkadotnet/akka.net>
+// </copyright>
 // -----------------------------------------------------------------------
 
 using Verify = Akka.Analyzers.Tests.Utility.AkkaVerifier<Akka.Analyzers.AK2000.MustNotUseTimeSpanZeroWithAskAnalyzer>;
@@ -58,7 +58,7 @@ public class MustNotUseTimeSpanZeroWithAskAnalyzerSpecs
         var expectedDiagnostic = Verify.Diagnostic().WithSpan(7, 44, 7, 57); // Adjust the line and character positions
         return Verify.VerifyAnalyzer(code, expectedDiagnostic);
     }
-    
+
     [Fact]
     public Task FailureCaseExplicitZeroTimeSpanNonGeneric()
     {
@@ -75,8 +75,8 @@ public class MustNotUseTimeSpanZeroWithAskAnalyzerSpecs
         var expectedDiagnostic = Verify.Diagnostic().WithSpan(7, 36, 7, 49); // Adjust the line and character positions
         return Verify.VerifyAnalyzer(code, expectedDiagnostic);
     }
-    
-    
+
+
     [Fact]
     public Task FailureCaseExplicitZeroTimeSpanWithNamedArgumentAndOtherArguments()
     {
@@ -98,7 +98,7 @@ public class MustNotUseTimeSpanZeroWithAskAnalyzerSpecs
     public Task FailureCaseTimeSpanVariableSetToDefault()
     {
         var code =
-@"using Akka.Actor;
+            @"using Akka.Actor;
 using System.Threading.Tasks;
 using System;
 
@@ -111,7 +111,7 @@ public static class MyActorCaller{
         var expectedDiagnostic = Verify.Diagnostic().WithLocation(7, 19); // Adjust accordingly
         return Verify.VerifyAnalyzer(code, expectedDiagnostic);
     }
-    
+
     [Fact(Skip = "Variable analysis not yet implemented")]
     public Task FailureCaseTimeSpanVariableSetToTimeSpanZero()
     {

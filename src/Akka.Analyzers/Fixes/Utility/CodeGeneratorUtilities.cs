@@ -1,10 +1,9 @@
 ﻿// -----------------------------------------------------------------------
 //  <copyright file="CodeGeneratorUtilities.cs" company="Akka.NET Project">
-//      Copyright (C) 2015-2023 .NET Petabridge, LLC
-//  </copyright>
+//      Copyright (C) 2013-2024 .NET Foundation <https://github.com/akkadotnet/akka.net>
+// </copyright>
 // -----------------------------------------------------------------------
 
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 

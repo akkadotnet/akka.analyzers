@@ -1,7 +1,7 @@
 ﻿// -----------------------------------------------------------------------
-//  <copyright file="MustNotUseNewKeywordOnActorSpecs.cs" company="Akka.NET Project">
-//      Copyright (C) 2015-2023 .NET Petabridge, LLC
-//  </copyright>
+//  <copyright file="MustNotUseNewKeywordOnActorsAnalyzerSpecs.cs" company="Akka.NET Project">
+//      Copyright (C) 2013-2024 .NET Foundation <https://github.com/akkadotnet/akka.net>
+// </copyright>
 // -----------------------------------------------------------------------
 
 using Microsoft.CodeAnalysis;
@@ -33,7 +33,7 @@ public class MustNotUseNewKeywordOnActorsAnalyzerSpecs
             }
         }
         """,
-        
+
         // UntypedActor
         """
         using Akka.Actor;
@@ -53,7 +53,7 @@ public class MustNotUseNewKeywordOnActorsAnalyzerSpecs
             }
         }
         """,
-        
+
         // ReceiveActor
         """
         using Akka.Actor;
@@ -75,7 +75,7 @@ public class MustNotUseNewKeywordOnActorsAnalyzerSpecs
         }
         """
     };
-    
+
     [Theory]
     [MemberData(nameof(SuccessCases))]
     public async Task SuccessCase(string testCode)
@@ -103,12 +103,12 @@ public class MustNotUseNewKeywordOnActorsAnalyzerSpecs
                                     }
                                 }
                                 """;
-        
+
         var expected = Verify.Diagnostic()
             .WithSpan(13, 33, 13, 46)
             .WithArguments("MyActor")
             .WithSeverity(DiagnosticSeverity.Error);
-        
+
         await Verify.VerifyAnalyzer(testCode, expected).ConfigureAwait(true);
     }
 }
