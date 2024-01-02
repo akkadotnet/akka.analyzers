@@ -9,5 +9,4 @@
     <ItemGroup>
       <PackageReference Include="Microsoft.CodeAnalysis" />
     </ItemGroup>
-
 </Project>

@@ -1,29 +1,47 @@
 <Project>
-    <PropertyGroup>
-        <Copyright>Copyright © 2023 Your Company</Copyright>
-        <NoWarn>$(NoWarn);CS1591;NU1701;CA1707;</NoWarn>
-        <VersionPrefix>1.0.0</VersionPrefix>
-        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    </PropertyGroup>
+  <PropertyGroup>
+    <Copyright>Copyright © 2013-2023 Akka.NET Project</Copyright>
+    <NoWarn>$(NoWarn);CS1591;NU1701;CA1707;</NoWarn>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Authors>Akka.NET Team</Authors>
+    <PackageProjectUrl>https://github.com/akkadotnet/akka.analyzers</PackageProjectUrl>
+    <PackageReleaseNotes>Added first set of Roslyn Analyzers and fixes for Akka.NET:
 
-    <PropertyGroup Label="Build">
-        <LangVersion>latest</LangVersion>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-    </PropertyGroup>
+* [AK1000: must not `new` up actor types outside of `Props.Create`](https://github.com/Aaronontheweb/akka.analyzers/pull/3)
+* [AK1001: must close over `Sender` when using `PipeTo`](https://github.com/Aaronontheweb/akka.analyzers/pull/5)
+* [AK2000: `Ask` should never have `TimeSpan.Zero`](https://github.com/Aaronontheweb/akka.analyzers/issues/11)
 
-    <!-- ======================================== -->
-    <!-- Production-specific properties and items -->
-
-    <Choose>
-        <When Condition=" !$(MSBuildProjectName.Contains('.tests')) ">
-            <PropertyGroup>
-                <AnalysisLevel>latest-All</AnalysisLevel>
-                <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)signing.snk</AssemblyOriginatorKeyFile>
-                <EnableNETAnalyzers>true</EnableNETAnalyzers>
-                <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-                <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
-            </PropertyGroup>
-        </When>
-    </Choose>
+This is a pre-release package - we will work on incorporating this directly into the core [Akka.NET NuGet packages](https://www.nuget.org/packages/Akka).</PackageReleaseNotes>
+    <PackageTags>akka.net, akka.analyzers, akakdotnet, roslyn, analyzers</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageIcon>logo.png</PackageIcon>
+    <Description>
+            Akka.NET Roslyn Analyzers designed to help fix frequent, recurring design problems that may occur
+            in end-user code bases. Also includes helpful upgrade suggestions for migrating between minor and
+            major versions of Akka.NET.
+        </Description>
+  </PropertyGroup>
+  <PropertyGroup Label="Build">
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)\logo.png" Pack="true" Visible="false" PackagePath="\" />
+    <None Include="$(MSBuildThisFileDirectory)\README.md" Pack="true" Visible="false" PackagePath="\" />
+  </ItemGroup>
+  <!-- ======================================== -->
+  <!-- Production-specific properties and items -->
+  <Choose>
+    <When Condition=" !$(MSBuildProjectName.Contains('.tests')) ">
+      <PropertyGroup>
+        <AnalysisLevel>latest-All</AnalysisLevel>
+        <EnableNETAnalyzers>true</EnableNETAnalyzers>
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+      </PropertyGroup>
+    </When>
+  </Choose>
 </Project>
