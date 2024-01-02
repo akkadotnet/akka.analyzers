@@ -31,7 +31,7 @@ public class MustNotUseNewKeywordOnActorsAnalyzer() : AkkaDiagnosticAnalyzer(Rul
                 return;
 
             // Check if it's within the context of Props.Create
-            if (IsInsidePropsCreate(objectCreation))
+            if (IsInsidePropsCreate(objectCreation, ctx.SemanticModel, akkaContext))
                 return;
 
             var diagnostic = Diagnostic.Create(RuleDescriptors.Ak1000DoNotNewActors, objectCreation.GetLocation(),
@@ -40,30 +40,26 @@ public class MustNotUseNewKeywordOnActorsAnalyzer() : AkkaDiagnosticAnalyzer(Rul
         }, SyntaxKind.ObjectCreationExpression);
     }
 
-    private static bool IsInsidePropsCreate(ObjectCreationExpressionSyntax objectCreation)
+    private static bool IsInsidePropsCreate(ObjectCreationExpressionSyntax objectCreation, SemanticModel semanticModel, AkkaContext akkaContext)
     {
         // Traverse upwards in the syntax tree from the object creation expression
         var currentNode = objectCreation.Parent;
 
         while (currentNode != null)
         {
-            // Check if the current node is an ArgumentSyntax, which could be a part of a method call
-            if (currentNode is ArgumentSyntax
+            // Check if the current node is an InvocationExpressionSyntax
+            if (currentNode is InvocationExpressionSyntax invocation)
+            {
+                // Get the symbol for the method being invoked
+
+                // Check if the method symbol is for Akka.Actor.Props.Create
+                if (semanticModel.GetSymbolInfo(invocation).Symbol is IMethodSymbol invokedMethodSymbol &&
+                    SymbolEqualityComparer.Default.Equals(invokedMethodSymbol.ContainingType, akkaContext.AkkaCore.PropsType) &&
+                    invokedMethodSymbol.Name == "Create")
                 {
-                    Parent.Parent: InvocationExpressionSyntax
-                    {
-                        Expression: MemberAccessExpressionSyntax
-                        {
-                            Name.Identifier.ValueText: "Create", Expression: IdentifierNameSyntax
-                            {
-                                Identifier.ValueText: "Props"
-                            }
-                        }
-                    }
-                })
-                // Get the parent InvocationExpressionSyntax, if any
-                // Check if the method being called is 'Props.Create'
-                return true;
+                    return true;
+                }
+            }
 
             // Move to the next parent node
             currentNode = currentNode.Parent;

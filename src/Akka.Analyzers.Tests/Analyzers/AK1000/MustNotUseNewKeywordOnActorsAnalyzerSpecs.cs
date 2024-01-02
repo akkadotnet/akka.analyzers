@@ -73,6 +73,62 @@ public class MustNotUseNewKeywordOnActorsAnalyzerSpecs
                 IActorRef realActorInstance = sys.ActorOf(props);
             }
         }
+        """,
+        
+        // ReceiveActor with CTOR arguments
+        """
+        using Akka.Actor;
+        
+        class MyActor : ReceiveActor {
+            private readonly string _name;
+            private readonly int _myVar;
+        
+            public MyActor(string name, int myVar){
+                _name = name;
+                _myVar = myVar;
+                ReceiveAny(_ => {
+                    Sender.Tell(_name + _myVar);
+                });
+            }
+        }
+        
+        class Test
+        {
+            void Method()
+            {
+                ActorSystem sys = ActorSystem.Create("MySys");
+                Props props = Props.Create(() => new MyActor("foo", 1));
+                IActorRef realActorInstance = sys.ActorOf(props);
+            }
+        }
+        """,
+        
+        // ReceiveActor with explicit Akka.Actor.Props invocation (found this in real-world use)
+        """
+        using Akka.Actor;
+
+        class MyActor : ReceiveActor {
+            private readonly string _name;
+            private readonly int _myVar;
+        
+            public MyActor(string name, int myVar){
+                _name = name;
+                _myVar = myVar;
+                ReceiveAny(_ => {
+                    Sender.Tell(_name + _myVar);
+                });
+            }
+        }
+
+        class Test
+        {
+            void Method()
+            {
+                ActorSystem sys = ActorSystem.Create("MySys");
+                Akka.Actor.Props props = Akka.Actor.Props.Create(() => new MyActor("foo", 1));
+                IActorRef realActorInstance = sys.ActorOf(props);
+            }
+        }
         """
     };
 
