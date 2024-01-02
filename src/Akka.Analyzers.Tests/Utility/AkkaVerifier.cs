@@ -13,6 +13,10 @@ using Microsoft.CodeAnalysis.Testing;
 
 namespace Akka.Analyzers.Tests.Utility;
 
+/**
+ * Code inspired by https://github.com/xunit/xunit.analyzers/blob/main/src/xunit.analyzers.tests/Utility/CSharpVerifier.cs
+ */
+
 [SuppressMessage("Design", "CA1000:Do not declare static members on generic types")]
 public sealed class AkkaVerifier<TAnalyzer> where TAnalyzer : DiagnosticAnalyzer, new()
 {

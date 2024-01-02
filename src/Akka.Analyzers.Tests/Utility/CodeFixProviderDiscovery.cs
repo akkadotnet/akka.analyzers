@@ -11,6 +11,10 @@ using Microsoft.VisualStudio.Composition;
 
 namespace Akka.Analyzers.Tests.Utility;
 
+/**
+ * Code copied from https://github.com/xunit/xunit.analyzers/blob/main/src/xunit.analyzers.tests/Utility/CodeFixProviderDiscovery.cs
+ */
+
 internal static class CodeFixProviderDiscovery
 {
     private static readonly Lazy<IExportProviderFactory> ExportProviderFactory = new(
