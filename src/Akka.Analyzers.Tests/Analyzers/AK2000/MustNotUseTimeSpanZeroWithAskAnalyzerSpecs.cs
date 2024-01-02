@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-using Verify = Akka.Analyzers.Tests.Utility.AkkaVerifier<Akka.Analyzers.AK2000.MustNotUseTimeSpanZeroWithAskAnalyzer>;
+using Verify = Akka.Analyzers.Tests.Utility.AkkaVerifier<Akka.Analyzers.MustNotUseTimeSpanZeroWithAskAnalyzer>;
 
 namespace Akka.Analyzers.Tests.Analyzers.AK2000;
 
