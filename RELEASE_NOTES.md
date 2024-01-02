@@ -1,3 +1,7 @@
+#### 0.1.1 January 2nd 2024 ####
+
+Fixed Roslyn NuGet package format for analyzers only.
+
 #### 0.1.0 January 2nd 2024 ####
 
 Added first set of Roslyn Analyzers and fixes for Akka.NET:
