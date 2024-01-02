@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+<!--        <NuspecFile>Akka.Analyzers.nuspec</NuspecFile>-->
+<!--        <NuspecProperties>-->
+<!--            Configuration=$(Configuration);-->
+<!--            PackageVersion=$(PackageVersion);-->
+<!--            ReleaseNotes=$(PackageReleaseNotes);-->
+<!--            Description=$(Description);-->
+<!--        </NuspecProperties>-->
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Akka.Analyzers.Fixes\Akka.Analyzers.Fixes.csproj" OutputItemType="Analyzer"/>
+      <ProjectReference Include="..\Akka.Analyzers\Akka.Analyzers.csproj" OutputItemType="Analyzer"/>
+    </ItemGroup>
+
+    <!-- Include the DLLs from the referenced projects into the NuGet package -->
+    <Target Name="CopyAnalyzerAssemblies" BeforeTargets="Pack">
+        <ItemGroup>
+            <!-- Ensure that the paths here are correct and point to the actual build output of the analyzer projects -->
+            <AnalyzerAssemblies Include="$(OutputPath)\..\Akka.Analyzers.Fixes\bin\$(Configuration)\netstandard2.0\*.dll" />
+            <AnalyzerAssemblies Include="$(OutputPath)\..\Akka.Analyzers\bin\$(Configuration)\netstandard2.0\*.dll" />
+        </ItemGroup>
+        <Copy SourceFiles="@(AnalyzerAssemblies)" DestinationFolder="$(PackageDir)/analyzers/dotnet/cs" SkipUnchangedFiles="true" />
+    </Target>
+
+</Project>
