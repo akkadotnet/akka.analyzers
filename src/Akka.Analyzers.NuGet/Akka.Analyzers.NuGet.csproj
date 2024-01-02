@@ -13,8 +13,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Akka.Analyzers.Fixes\Akka.Analyzers.Fixes.csproj" OutputItemType="Analyzer"/>
-      <ProjectReference Include="..\Akka.Analyzers\Akka.Analyzers.csproj" OutputItemType="Analyzer"/>
+      <ProjectReference Include="..\Akka.Analyzers.Fixes\Akka.Analyzers.Fixes.csproj"/>
+      <ProjectReference Include="..\Akka.Analyzers\Akka.Analyzers.csproj"/>
     </ItemGroup>
 
     <!-- Include the DLLs from the referenced projects into the NuGet package -->
