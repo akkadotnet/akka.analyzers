@@ -10,9 +10,3 @@ $releaseNotes = Get-ReleaseNotes -MarkdownFile (Join-Path -Path $PSScriptRoot -C
 UpdateVersionAndReleaseNotes -ReleaseNotesResult $releaseNotes -XmlFilePath (Join-Path -Path $PSScriptRoot -ChildPath "Directory.Build.props") 
 
 Write-Output "Added release notes $releaseNotes"
-
-######################################################################
-# Step 2: Build updated solution
-######################################################################
-dotnet clean
-dotnet build -c Release
