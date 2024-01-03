@@ -21,6 +21,10 @@ public interface IAkkaCoreContext
     public INamedTypeSymbol? ActorBaseType { get; }
     public INamedTypeSymbol? ActorRefType { get; }
     public INamedTypeSymbol? PropsType { get; }
+    
+    public INamedTypeSymbol? ActorContextType { get; }
+    
+    public INamedTypeSymbol? IndirectActorProducerType { get; }
 }
 
 /// <summary>
@@ -38,6 +42,10 @@ public sealed class EmptyCoreContext : IAkkaCoreContext
     public INamedTypeSymbol? ActorBaseType => null;
     public INamedTypeSymbol? ActorRefType => null;
     public INamedTypeSymbol? PropsType => null;
+    
+    public INamedTypeSymbol? ActorContextType => null;
+    
+    public INamedTypeSymbol? IndirectActorProducerType => null;
 }
 
 /// <summary>
@@ -52,6 +60,8 @@ public class AkkaCoreContext : IAkkaCoreContext
     private readonly Lazy<INamedTypeSymbol?> _lazyActorBaseType;
     private readonly Lazy<INamedTypeSymbol?> _lazyActorRefType;
     private readonly Lazy<INamedTypeSymbol?> _lazyPropsType;
+    private readonly Lazy<INamedTypeSymbol?> _lazyActorContextType;
+    private readonly Lazy<INamedTypeSymbol?> _lazyIIndirectActorProducerType;
 
     private AkkaCoreContext(Compilation compilation, Version version)
     {
@@ -59,6 +69,8 @@ public class AkkaCoreContext : IAkkaCoreContext
         _lazyActorBaseType = new Lazy<INamedTypeSymbol?>(() => TypeSymbolFactory.ActorBase(compilation));
         _lazyActorRefType = new Lazy<INamedTypeSymbol?>(() => TypeSymbolFactory.ActorReference(compilation));
         _lazyPropsType = new Lazy<INamedTypeSymbol?>(() => TypeSymbolFactory.Props(compilation));
+        _lazyActorContextType = new Lazy<INamedTypeSymbol?>(() => TypeSymbolFactory.ActorContext(compilation));
+        _lazyIIndirectActorProducerType = new Lazy<INamedTypeSymbol?>(() => TypeSymbolFactory.IndirectActorProducer(compilation));
     }
 
     /// <inheritdoc />
@@ -67,6 +79,10 @@ public class AkkaCoreContext : IAkkaCoreContext
     public INamedTypeSymbol? ActorBaseType => _lazyActorBaseType.Value;
     public INamedTypeSymbol? ActorRefType => _lazyActorRefType.Value;
     public INamedTypeSymbol? PropsType => _lazyPropsType.Value;
+    
+    public INamedTypeSymbol? ActorContextType => _lazyActorContextType.Value;
+    
+    public INamedTypeSymbol? IndirectActorProducerType => _lazyIIndirectActorProducerType.Value;
 
     public static AkkaCoreContext? Get(
         Compilation compilation,
