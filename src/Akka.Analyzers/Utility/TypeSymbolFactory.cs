@@ -27,4 +27,16 @@ public static class TypeSymbolFactory
         return Guard.AssertIsNotNull(compilation)
             .GetTypeByMetadataName("Akka.Actor.Props");
     }
+    
+    public static INamedTypeSymbol? ActorContext(Compilation compilation)
+    {
+        return Guard.AssertIsNotNull(compilation)
+            .GetTypeByMetadataName("Akka.Actor.IActorContext");
+    }
+    
+    public static INamedTypeSymbol? IndirectActorProducer(Compilation compilation)
+    {
+        return Guard.AssertIsNotNull(compilation)
+            .GetTypeByMetadataName("Akka.Actor.IIndirectActorProducer");
+    }
 }

@@ -31,7 +31,7 @@ public class MustNotUseNewKeywordOnActorsAnalyzer() : AkkaDiagnosticAnalyzer(Rul
                 return;
 
             // Check if it's within the context of Props.Create
-            if (IsInsidePropsCreate(objectCreation, ctx.SemanticModel, akkaContext))
+            if (IsInsidePropsCreate(objectCreation, ctx.SemanticModel, akkaContext) || IsWithinIndirectActorProducerProduce(objectCreation, ctx.SemanticModel, akkaContext))
                 return;
 
             var diagnostic = Diagnostic.Create(RuleDescriptors.Ak1000DoNotNewActors, objectCreation.GetLocation(),
@@ -39,6 +39,24 @@ public class MustNotUseNewKeywordOnActorsAnalyzer() : AkkaDiagnosticAnalyzer(Rul
             ctx.ReportDiagnostic(diagnostic);
         }, SyntaxKind.ObjectCreationExpression);
     }
+    
+    private static bool IsWithinIndirectActorProducerProduce(ObjectCreationExpressionSyntax objectCreation, SemanticModel semanticModel, AkkaContext akkaContext)
+    {
+        var enclosingMethod = objectCreation.Ancestors().OfType<MethodDeclarationSyntax>().FirstOrDefault();
+        if (enclosingMethod == null)
+            return false;
+
+        if (semanticModel.GetDeclaredSymbol(enclosingMethod) is not { Name: "Produce" } methodSymbol)
+            return false;
+
+        var containingType = methodSymbol.ContainingType;
+        if (containingType == null)
+            return false;
+
+        // Check if the containing type implements IIndirectActorProducer
+        return containingType.AllInterfaces.Any(i => SymbolEqualityComparer.Default.Equals(i, akkaContext.AkkaCore.IndirectActorProducerType));
+    }
+
 
     private static bool IsInsidePropsCreate(ObjectCreationExpressionSyntax objectCreation, SemanticModel semanticModel, AkkaContext akkaContext)
     {
