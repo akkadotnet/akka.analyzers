@@ -167,6 +167,43 @@ public class MustNotUseNewKeywordOnActorsAnalyzerSpecs
                 return Method(() => new MyActor("foo", 1));
             }
         }
+        """,
+        
+        // IIndirectActorProducer - won't often be found in user code, but should be supported
+        """
+        using Akka.Actor;
+        using System;
+        
+        public class TestProducer : IIndirectActorProducer
+        {
+            public TestProducer()
+            {
+            }
+
+            public ActorBase Produce()
+            {
+                return new PropsTestActor();
+            }
+
+            public Type ActorType
+            {
+                get { return typeof(PropsTestActor); }
+            }
+
+
+            public void Release(ActorBase actor)
+            {
+                actor = null;
+            }
+        }
+
+        public class PropsTestActor : ActorBase
+        {
+            protected override bool Receive(object message)
+            {
+                return true;
+            }
+        }
         """
     };
 
