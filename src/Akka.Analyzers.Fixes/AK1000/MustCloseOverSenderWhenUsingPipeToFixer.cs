@@ -80,7 +80,8 @@ public sealed class MustCloseOverSenderWhenUsingPipeToFixer()
         var newArguments = SyntaxFactory.SeparatedList(arguments.Select(arg =>
         {
             // Check if the argument is 'this.Sender'
-            if (arg.Expression is IdentifierNameSyntax { Identifier.ValueText: "Sender" })
+            if (arg.Expression is IdentifierNameSyntax { Identifier.ValueText: "Sender" } or
+                MemberAccessExpressionSyntax { Name.Identifier.ValueText: "Sender" }) // need the right side of the "or" for `this.Sender"
             {
                 return newRecipientArgument;
             }
