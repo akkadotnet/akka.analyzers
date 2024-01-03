@@ -30,7 +30,7 @@ public static class RuleDescriptors
         "Do not use `new` to create actors", AnalysisCategory.ActorDesign, DiagnosticSeverity.Error,
         "Actors must be instantiated using `ActorOf` or `ActorOfAsTestActorRef` via a `Props` class.");
 
-    public static DiagnosticDescriptor Ak1001CloseOverSenderUsingPipeTo { get; } = Rule("Ak1001",
+    public static DiagnosticDescriptor Ak1001CloseOverSenderUsingPipeTo { get; } = Rule("AK1001",
         "Should always close over `Sender` when using `PipeTo`", AnalysisCategory.ActorDesign, DiagnosticSeverity.Error,
         "When using `PipeTo`, you must always close over `Sender` to ensure that the actor's `Sender` property " +
         "is captured at the time you're scheduling the `PipeTo`, as this value may change asynchronously.");
@@ -39,7 +39,7 @@ public static class RuleDescriptors
     
     #region AK2000 Rules
 
-    public static DiagnosticDescriptor Ak2000DoNotUseZeroTimeoutWithAsk { get; } = Rule("Ak2000",
+    public static DiagnosticDescriptor Ak2000DoNotUseZeroTimeoutWithAsk { get; } = Rule("AK2000",
         "Do not use `Ask` with `TimeSpan.Zero` for timeout.", AnalysisCategory.ApiUsage, DiagnosticSeverity.Error,
         "When using `Ask`, you must always specify a timeout value greater than `TimeSpan.Zero`.");
 
