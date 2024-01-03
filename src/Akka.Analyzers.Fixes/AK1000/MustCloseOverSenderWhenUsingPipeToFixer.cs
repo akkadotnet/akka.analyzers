@@ -70,13 +70,26 @@ public sealed class MustCloseOverSenderWhenUsingPipeToFixer()
         // Insert the local variable declaration at the found insertion point
         editor.InsertBefore(insertionPoint, senderVariable);
 
-        // in the invocationExpr, replace the old argument list with a new one that uses the new local variable
-        // Replace the invocation arguments with the new local variable
-        var newArgumentList = SyntaxFactory.ArgumentList(
-            SyntaxFactory.SingletonSeparatedList(
-                SyntaxFactory.Argument(
-                    SyntaxFactory.IdentifierName("sender"))));
+        // Identify the 'recipient' argument - assuming it's the first argument
+        var arguments = invocationExpr.ArgumentList.Arguments;
 
+        // Create a new argument to replace the 'recipient' argument
+        var newRecipientArgument = SyntaxFactory.Argument(SyntaxFactory.IdentifierName("sender"));
+
+        // Building a new list of arguments
+        var newArguments = SyntaxFactory.SeparatedList(arguments.Select(arg =>
+        {
+            // Check if the argument is 'this.Sender'
+            if (arg.Expression is IdentifierNameSyntax { Identifier.ValueText: "Sender" })
+            {
+                return newRecipientArgument;
+            }
+
+            // For all other arguments, keep them as-is
+            return arg;
+        }));
+
+        var newArgumentList = SyntaxFactory.ArgumentList(newArguments);
         var newInvocationExpr = invocationExpr.WithArgumentList(newArgumentList);
 
         // Make sure to replace the old invocation with the new one
