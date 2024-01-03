@@ -22,6 +22,6 @@
 
         <file target="analyzers\dotnet\cs\" src="..\Akka.Analyzers\bin\$Configuration$\netstandard2.0\Akka.Analyzers.dll" />
         <file target="analyzers\dotnet\cs\" src="..\Akka.Analyzers.Fixes\bin\$Configuration$\netstandard2.0\Akka.Analyzers.Fixes.dll" />
-<!--        <file target="tools\" src="..\xunit.analyzers.fixes\tools\*.ps1" />-->
+        <file target="tools\" src="..\Akka.Analyzers.Fixes\tools\*.ps1" />
     </files>
 </package>
