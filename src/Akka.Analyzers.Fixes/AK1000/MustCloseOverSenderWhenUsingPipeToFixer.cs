@@ -77,7 +77,7 @@ public sealed class MustCloseOverSenderWhenUsingPipeToFixer()
         var newRecipientArgument = SyntaxFactory.Argument(SyntaxFactory.IdentifierName("sender"));
 
         // Building a new list of arguments
-        var newArguments = SyntaxFactory.SeparatedList<ArgumentSyntax>(arguments.Select(arg =>
+        var newArguments = SyntaxFactory.SeparatedList(arguments.Select(arg =>
         {
             // Check if the argument is 'this.Sender'
             if (arg.Expression is IdentifierNameSyntax { Identifier.ValueText: "Sender" })

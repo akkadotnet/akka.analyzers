@@ -135,7 +135,24 @@ public class MustCloseOverSenderWhenUsingPipeToAnalyzerSpecs
                 // incorrect use of closure
                 LocalFunction().PipeTo(Sender); 
             }
-        }", (13, 33, 13, 39))
+        }", (13, 33, 13, 39)),
+
+            // Actor is using Sender as the "sender" property on PipeTo, rather than the recipient
+            (@"using Akka.Actor;
+        using System.Threading.Tasks;
+
+        public sealed class MyActor : UntypedActor{
+
+            protected override void OnReceive(object message){
+                async Task<int> LocalFunction(){
+                    await Task.Delay(10);
+                    return message.ToString().Length;
+                }
+
+                // incorrect use of closure
+                LocalFunction().PipeTo(Self, Sender); 
+            }
+        }", (13, 33, 13, 39)),
         };
 
     [Theory]
