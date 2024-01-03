@@ -1,3 +1,9 @@
+#### 0.1.2 January 3rd 2024 ####
+
+* [Resolved issues with `AK1001` Code Fix overwriting other `PipeTo` arguments](https://github.com/akkadotnet/akka.analyzers/issues/32)
+* Updated `AK1001` to also check if `Sender` is being used as the `PipeTo` `IActorRef sender` argument, which is now also handled by both the analyzer and the Code Fix.
+* Corrected casing on all issue numbers.
+
 #### 0.1.1 January 2nd 2024 ####
 
 Fixed Roslyn NuGet package format for analyzers and code fixes per https://learn.microsoft.com/en-us/nuget/guides/analyzers-conventions
