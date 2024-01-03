@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <Copyright>Copyright © 2013-2023 Akka.NET Project</Copyright>
+    <Copyright>Copyright © 2013-2024 Akka.NET Project</Copyright>
     <NoWarn>$(NoWarn);CS1591;NU1701;CA1707;</NoWarn>
     <VersionPrefix>0.1.1</VersionPrefix>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
