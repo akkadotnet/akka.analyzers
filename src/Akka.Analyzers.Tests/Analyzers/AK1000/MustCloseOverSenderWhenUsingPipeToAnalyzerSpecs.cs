@@ -153,6 +153,34 @@ public class MustCloseOverSenderWhenUsingPipeToAnalyzerSpecs
                 LocalFunction().PipeTo(Self, Sender); 
             }
         }", (13, 33, 13, 39)),
+
+            // Actor is using Sender as the "sender" property on PipeTo, rather than the recipient
+            ( // Actor is using this.Sender rather than just "Sender"
+                """
+                using Akka.Actor;
+                using System.Threading.Tasks;
+
+                public class MyActor
+                {
+                    public MyActor(IActorRef sender)
+                    {
+                        Sender = sender;
+                    }
+                
+                    public IActorRef Sender { get; }
+                    
+                    public void Method()
+                    {
+                        async Task<int> LocalFunction(){
+                           await Task.Delay(10);
+                           return 11;
+                       }
+                
+                        // Sender is immutable on this custom non-Actor class, so shouldn't flag this
+                        LocalFunction().PipeTo(this.Sender);
+                    }
+                }
+                """, (13, 33, 13, 39))
         };
 
     [Theory]

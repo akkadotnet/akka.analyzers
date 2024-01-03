@@ -229,7 +229,7 @@ public sealed class MyActor : UntypedActor{
 
         Console.WriteLine(Sender);
         // incorrect use of closure
-        LocalFunction().PipeTo(Sender, Sender); 
+        LocalFunction().PipeTo(this.Sender, Sender); 
     }
 }";
 
