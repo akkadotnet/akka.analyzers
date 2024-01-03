@@ -159,28 +159,20 @@ public class MustCloseOverSenderWhenUsingPipeToAnalyzerSpecs
                 """
                 using Akka.Actor;
                 using System.Threading.Tasks;
-
-                public class MyActor
-                {
-                    public MyActor(IActorRef sender)
-                    {
-                        Sender = sender;
-                    }
                 
-                    public IActorRef Sender { get; }
-                    
-                    public void Method()
-                    {
+                public sealed class MyActor : UntypedActor{
+                
+                    protected override void OnReceive(object message){
                         async Task<int> LocalFunction(){
-                           await Task.Delay(10);
-                           return 11;
-                       }
+                            await Task.Delay(10);
+                            return message.ToString().Length;
+                        }
                 
-                        // Sender is immutable on this custom non-Actor class, so shouldn't flag this
-                        LocalFunction().PipeTo(this.Sender);
+                        // incorrect use of closure
+                        LocalFunction().PipeTo(this.Sender); 
                     }
                 }
-                """, (13, 33, 13, 39))
+                """, (13, 25, 13, 31))
         };
 
     [Theory]
