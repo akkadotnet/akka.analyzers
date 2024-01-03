@@ -1,6 +1,6 @@
 #### 0.1.1 January 2nd 2024 ####
 
-Fixed Roslyn NuGet package format for analyzers only.
+Fixed Roslyn NuGet package format for analyzers and code fixes per https://learn.microsoft.com/en-us/nuget/guides/analyzers-conventions
 
 #### 0.1.0 January 2nd 2024 ####
 
