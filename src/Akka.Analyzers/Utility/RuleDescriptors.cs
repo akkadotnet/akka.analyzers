@@ -17,8 +17,7 @@ public static class RuleDescriptors
         DiagnosticSeverity defaultSeverity,
         string messageFormat)
     {
-        // TODO: need real help links for each rule code
-        var helpLink = "https://getakka.net/";
+        var helpLink = "https://getakka.net/articles/debugging/rules/" + id.ToUpperInvariant() + ".html";
 
         return new DiagnosticDescriptor(id, title, messageFormat, category.ToString(), defaultSeverity,
             true, helpLinkUri: helpLink);
