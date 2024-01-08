@@ -43,8 +43,13 @@ public class MustNotUseAutomaticallyHandledMessagesInsideMessageExtractor()
             
             foreach (var extractorMethod in messageExtractorMethods)
             {
-                if (methodSymbol.ContainingType.AllInterfaces.Any(i => SymbolEqualityComparer.Default.Equals(i, messageExtractorSymbol)) &&
-                    SymbolEqualityComparer.Default.Equals(methodSymbol.OverriddenMethod, extractorMethod))
+                var containingTypeIsMessageExtractor = methodSymbol.ContainingType.AllInterfaces.Any(i =>
+                    SymbolEqualityComparer.Default.Equals(i, messageExtractorSymbol));
+                
+                var methodOverridesMessageExtractorMethod = methodSymbol.OverriddenMethod != null &&
+                                                            SymbolEqualityComparer.Default.Equals(methodSymbol.OverriddenMethod, extractorMethod);
+                
+                if (containingTypeIsMessageExtractor && methodOverridesMessageExtractorMethod)
                 {
                     // Retrieve all the descendant nodes of the method that are expressions
                     var descendantNodes = methodDeclaration.DescendantNodes().OfType<ExpressionSyntax>();
