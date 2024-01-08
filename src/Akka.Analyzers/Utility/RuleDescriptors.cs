@@ -41,6 +41,10 @@ public static class RuleDescriptors
     public static DiagnosticDescriptor Ak2000DoNotUseZeroTimeoutWithAsk { get; } = Rule("AK2000",
         "Do not use `Ask` with `TimeSpan.Zero` for timeout.", AnalysisCategory.ApiUsage, DiagnosticSeverity.Error,
         "When using `Ask`, you must always specify a timeout value greater than `TimeSpan.Zero`.");
+    
+    public static DiagnosticDescriptor Ak2001DoNotUseAutomaticallyHandledMessagesInShardMessageExtractor { get; } = Rule("AK2001",
+        "Do not use automatically handled messages in `ShardMessageExtractor`.", AnalysisCategory.ApiUsage, DiagnosticSeverity.Error,
+        "When using `ShardMessageExtractor`, you must not use messages that are automatically handled by Akka.NET such as `Shard.StartEntity` and `ShardingEnvelope`.");
 
     #endregion
 
