@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-//  <copyright file="MustNotHandleAutomaticallyHandledMessagesInMessageExtractorSpecs.cs" company="Akka.NET Project">
+//  <copyright file="MustNotHandleAutomaticallyHandledMessagesInMessageExtractorAnalyzerSpecs.cs" company="Akka.NET Project">
 //      Copyright (C) 2013-2024 .NET Foundation <https://github.com/akkadotnet/akka.net>
 // </copyright>
 // -----------------------------------------------------------------------
@@ -9,7 +9,7 @@ using Verify = Akka.Analyzers.Tests.Utility.AkkaVerifier<Akka.Analyzers.MustNotU
 
 namespace Akka.Analyzers.Tests.Analyzers.AK2000;
 
-public class MustNotHandleAutomaticallyHandledMessagesInMessageExtractorSpecs
+public class MustNotHandleAutomaticallyHandledMessagesInMessageExtractorAnalyzerSpecs
 {
 	public static readonly TheoryData<string> SuccessCases = new()
 	{
