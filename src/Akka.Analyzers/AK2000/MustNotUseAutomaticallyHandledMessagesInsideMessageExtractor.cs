@@ -35,8 +35,7 @@ public class MustNotUseAutomaticallyHandledMessagesInsideMessageExtractor()
 
             var invocationExpr = (InvocationExpressionSyntax)ctx.Node;
             var semanticModel = ctx.SemanticModel;
-            var methodSymbol = semanticModel.GetSymbolInfo(invocationExpr).Symbol as IMethodSymbol;
-            if (methodSymbol == null)
+            if (semanticModel.GetSymbolInfo(invocationExpr).Symbol is not IMethodSymbol methodSymbol)
                 return; // couldn't find the symbol, bail out quickly
 
             var hashCodeMessageExtractorSymbol =

@@ -11,10 +11,8 @@ namespace Akka.Analyzers.Tests.Analyzers.AK2000;
 
 public class MustNotHandleAutomaticallyHandledMessagesInMessageExtractorSpecs
 {
-    [Fact]
-    public Task SuccessCase()
-    {
-        var code = 
+	public static readonly TheoryData<string> SuccessCases = new()
+	{
 """
 using Akka.Cluster.Sharding;
 
@@ -37,8 +35,32 @@ public sealed class ShardMessageExtractor : HashCodeMessageExtractor
         return null;
     }
 }
-""";
-        
+""",
+"""
+using Akka.Cluster.Sharding;
+
+public class MsgExtractorCreator{
+    IMessageExtractor Create(){
+       IMessageExtractor messageExtractor = HashCodeMessageExtractor.Create(100, msg =>
+       {
+        	if (msg is string s) {
+        		return s;
+        	}
+        	else{
+        		return null;
+        	}
+        });
+    
+        return messageExtractor;
+    }
+}
+"""
+	};
+	
+    [Theory]
+    [MemberData(nameof(SuccessCases))]
+    public Task SuccessCase(string code)
+    {
         return Verify.VerifyAnalyzer(code);
     }
 
