@@ -25,11 +25,56 @@ public class MustNotUseAutomaticallyHandledMessagesInsideMessageExtractor()
             if (akkaContext.HasAkkaClusterShardingInstalled == false)
                 return; // exit early if we don't have Akka.Cluster.Sharding installed
 
-            AnalyzeMethod(ctx, akkaContext);
+            AnalyzeMethodDeclaration(ctx, akkaContext);
         }, SyntaxKind.MethodDeclaration);
+
+        context.RegisterSyntaxNodeAction(ctx =>
+        {
+            if (akkaContext.HasAkkaClusterShardingInstalled == false)
+                return; // exit early if we don't have Akka.Cluster.Sharding installed
+
+            var invocationExpr = (InvocationExpressionSyntax)ctx.Node;
+            var semanticModel = ctx.SemanticModel;
+            var methodSymbol = semanticModel.GetSymbolInfo(invocationExpr).Symbol as IMethodSymbol;
+            if (methodSymbol == null)
+                return; // couldn't find the symbol, bail out quickly
+
+            var hashCodeMessageExtractorSymbol =
+                context.Compilation.GetTypeByMetadataName("Akka.Cluster.Sharding.HashCodeMessageExtractor");
+            if (hashCodeMessageExtractorSymbol == null)
+                return; // couldn't find the type
+
+            if (SymbolEqualityComparer.Default.Equals(methodSymbol.ContainingType, hashCodeMessageExtractorSymbol) &&
+                methodSymbol is { IsStatic: true, Name: "Create" })
+            {
+                
+                // we are invoking the HashCodeMessageExtractor.Create method if we've made it this far
+                AnalyzeLambdaExpressions(invocationExpr.ArgumentList.Arguments, ctx, akkaContext);
+            }
+        }, SyntaxKind.InvocationExpression);
     }
 
-    private static void AnalyzeMethod(SyntaxNodeAnalysisContext ctx, AkkaContext akkaContext)
+    private static void AnalyzeLambdaExpressions(SeparatedSyntaxList<ArgumentSyntax> argumentListArguments, SyntaxNodeAnalysisContext ctx, AkkaContext akkaContext)
+    {
+        var forbiddenTypes = GetForbiddenTypes(akkaContext);
+        var reportedLocations = new HashSet<Location>();
+        
+        foreach (var argument in argumentListArguments)
+        {
+            // if the argument is a lambda expression, we need to analyze it
+            if (argument.Expression is LambdaExpressionSyntax lambdaExpression)
+            {
+                var descendantNodes = lambdaExpression.DescendantNodes();
+                
+                foreach (var node in descendantNodes)
+                {
+                    AnalyzeDeclaredVariableNodes(ctx, node, forbiddenTypes, reportedLocations);
+                }
+            }
+        }
+    }
+
+    private static void AnalyzeMethodDeclaration(SyntaxNodeAnalysisContext ctx, AkkaContext akkaContext)
     {
         var methodDeclaration = (MethodDeclarationSyntax)ctx.Node;
         var semanticModel = ctx.SemanticModel;
@@ -51,11 +96,10 @@ public class MustNotUseAutomaticallyHandledMessagesInsideMessageExtractor()
             .Where(m => m.Name is "EntityMessage" or "EntityId")
             .ToArray();
 
-        var forbiddenTypes = new[]
-            { akkaContext.AkkaClusterSharding.StartEntityType, akkaContext.AkkaClusterSharding.ShardEnvelopeType };
-            
+        INamedTypeSymbol?[] forbiddenTypes = GetForbiddenTypes(akkaContext);
+
         var reportedLocations = new HashSet<Location>();
-            
+
         // we know for sure that we are inside a message extractor now
         foreach (var interfaceMember in methodSymbol.ContainingType.AllInterfaces.SelectMany(i =>
                      i.GetMembers().OfType<IMethodSymbol>()))
@@ -76,6 +120,13 @@ public class MustNotUseAutomaticallyHandledMessagesInsideMessageExtractor()
         }
     }
 
+    private static INamedTypeSymbol?[] GetForbiddenTypes(AkkaContext akkaContext)
+    {
+        var forbiddenTypes = new[]
+            { akkaContext.AkkaClusterSharding.StartEntityType, akkaContext.AkkaClusterSharding.ShardEnvelopeType };
+        return forbiddenTypes;
+    }
+
     private static void AnalyzeDeclaredVariableNodes(SyntaxNodeAnalysisContext ctx, SyntaxNode node,
         INamedTypeSymbol?[] forbiddenTypes, HashSet<Location> reportedLocations)
     {
@@ -90,9 +141,9 @@ public class MustNotUseAutomaticallyHandledMessagesInsideMessageExtractor()
                 if (forbiddenTypes.Any(t => SymbolEqualityComparer.Default.Equals(t, variableType)))
                 {
                     var location = declarationPatternSyntax.GetLocation();
-                                        
+
                     // duplicate
-                    if(reportedLocations.Contains(location))
+                    if (reportedLocations.Contains(location))
                         break;
                     var diagnostic = Diagnostic.Create(
                         RuleDescriptors
