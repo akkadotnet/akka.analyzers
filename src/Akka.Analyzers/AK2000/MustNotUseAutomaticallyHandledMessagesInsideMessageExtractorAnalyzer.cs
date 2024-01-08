@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-//  <copyright file="MustNotUseAutomaticallyHandledMessagesInsideMessageExtractor.cs" company="Akka.NET Project">
+//  <copyright file="MustNotUseAutomaticallyHandledMessagesInsideMessageExtractorAnalyzer.cs" company="Akka.NET Project">
 //      Copyright (C) 2013-2024 .NET Foundation <https://github.com/akkadotnet/akka.net>
 // </copyright>
 // -----------------------------------------------------------------------
@@ -12,7 +12,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace Akka.Analyzers;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public class MustNotUseAutomaticallyHandledMessagesInsideMessageExtractor()
+public class MustNotUseAutomaticallyHandledMessagesInsideMessageExtractorAnalyzer()
     : AkkaDiagnosticAnalyzer(RuleDescriptors.Ak2001DoNotUseAutomaticallyHandledMessagesInShardMessageExtractor)
 {
     public override void AnalyzeCompilation(CompilationStartAnalysisContext context, AkkaContext akkaContext)

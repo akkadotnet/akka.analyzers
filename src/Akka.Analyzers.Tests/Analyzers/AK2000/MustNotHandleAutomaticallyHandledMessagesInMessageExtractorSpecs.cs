@@ -5,7 +5,7 @@
 // -----------------------------------------------------------------------
 
 using Microsoft.CodeAnalysis.Testing;
-using Verify = Akka.Analyzers.Tests.Utility.AkkaVerifier<Akka.Analyzers.MustNotUseAutomaticallyHandledMessagesInsideMessageExtractor>;
+using Verify = Akka.Analyzers.Tests.Utility.AkkaVerifier<Akka.Analyzers.MustNotUseAutomaticallyHandledMessagesInsideMessageExtractorAnalyzer>;
 
 namespace Akka.Analyzers.Tests.Analyzers.AK2000;
 
