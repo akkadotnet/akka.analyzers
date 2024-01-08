@@ -18,6 +18,10 @@ public interface IAkkaClusterShardingContext
     INamedTypeSymbol? ClusterShardingType { get; }
     
     INamedTypeSymbol? IMessageExtractorType { get; }
+    
+    INamedTypeSymbol? ShardEnvelopeType { get; }
+    
+    INamedTypeSymbol? StartEntityType { get; }
 }
 
 /// <summary>
@@ -34,6 +38,8 @@ public sealed class EmptyAkkaClusterShardingContext : IAkkaClusterShardingContex
     public Version Version { get; } = new();
     public INamedTypeSymbol? ClusterShardingType => null;
     public INamedTypeSymbol? IMessageExtractorType => null;
+    public INamedTypeSymbol? ShardEnvelopeType => null;
+    public INamedTypeSymbol? StartEntityType => null;
 }
 
 /// <summary>
@@ -43,16 +49,22 @@ public sealed class AkkaClusterShardingContext : IAkkaClusterShardingContext
 {
     private readonly Lazy<INamedTypeSymbol?> _lazyClusterShardingType;
     private readonly Lazy<INamedTypeSymbol?> _lazyMessageExtractorType;
+    private readonly Lazy<INamedTypeSymbol?> _lazyShardEnvelopeType;
+    private readonly Lazy<INamedTypeSymbol?> _lazyStartEntityType;
     
     public Version Version { get; }
     public INamedTypeSymbol? ClusterShardingType => _lazyClusterShardingType.Value;
     public INamedTypeSymbol? IMessageExtractorType => _lazyMessageExtractorType.Value;
-    
+    public INamedTypeSymbol? ShardEnvelopeType => _lazyShardEnvelopeType.Value;
+    public INamedTypeSymbol? StartEntityType => _lazyStartEntityType.Value;
+
     private AkkaClusterShardingContext(Compilation compilation, Version version)
     {
         Version = version;
         _lazyClusterShardingType = new Lazy<INamedTypeSymbol?>(() => TypeSymbolFactory.AkkaClusterSharding(compilation));
         _lazyMessageExtractorType = new Lazy<INamedTypeSymbol?>(() => TypeSymbolFactory.AkkaMessageExtractor(compilation));
+        _lazyShardEnvelopeType = new Lazy<INamedTypeSymbol?>(() => TypeSymbolFactory.AkkaShardEnvelope(compilation));
+        _lazyStartEntityType = new Lazy<INamedTypeSymbol?>(() => TypeSymbolFactory.AkkaStartEntity(compilation));
     }
     
     public static IAkkaClusterShardingContext? Get(Compilation compilation, Version? versionOverride = null)
