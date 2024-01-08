@@ -254,4 +254,67 @@ public sealed class ShardMessageExtractor : HashCodeMessageExtractor
         return Verify.VerifyCodeFix(before, after, MustNotUseAutomaticallyHandledMessagesInsideMessageExtractorFixer.Key_FixAutomaticallyHandledShardedMessage,
             expectedDiagnostic);
     }
+    
+    [Fact]
+    public Task RemoveTwoSwitchExpressionArms()
+    {
+        var before =
+            """
+            using Akka.Cluster.Sharding;
+            public sealed class ShardMessageExtractor : HashCodeMessageExtractor
+            {
+                /// <summary>
+                /// We only ever run with a maximum of two nodes, so ~10 shards per node
+                /// </summary>
+                public ShardMessageExtractor(int shardCount = 20) : base(shardCount)
+                {
+                }
+            
+                public override string EntityId(object message)
+                {
+                    return message switch
+                    {
+                        string sharded => sharded,
+                        ShardingEnvelope e => e.EntityId,
+                        ShardRegion.StartEntity start => start.EntityId,
+                        _ => null,
+                    };
+                }
+            }
+            """;
+
+        var after =
+            """
+            using Akka.Cluster.Sharding;
+            public sealed class ShardMessageExtractor : HashCodeMessageExtractor
+            {
+                /// <summary>
+                /// We only ever run with a maximum of two nodes, so ~10 shards per node
+                /// </summary>
+                public ShardMessageExtractor(int shardCount = 20) : base(shardCount)
+                {
+                }
+            
+                public override string EntityId(object message)
+                {
+                    return message switch
+                    {
+                        string sharded => sharded,
+                        _ => null,
+                    };
+                }
+            }
+            """;
+
+        var expectedDiagnostics = new[]
+        {
+            Verify.Diagnostic()
+                .WithSpan(16, 13, 16, 31),
+            Verify.Diagnostic()
+                .WithSpan(17, 13, 17, 42),
+        };
+
+        return Verify.VerifyCodeFix(before, after, MustNotUseAutomaticallyHandledMessagesInsideMessageExtractorFixer.Key_FixAutomaticallyHandledShardedMessage,
+            expectedDiagnostics);
+    }
 }
