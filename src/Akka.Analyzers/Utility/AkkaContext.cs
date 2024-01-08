@@ -12,9 +12,11 @@ namespace Akka.Analyzers;
 ///     Provides information about the Akka.NET context (i.e. which libraries, which versions) in which the analyzer is
 ///     running.
 /// </summary>
-public class AkkaContext
+public sealed class AkkaContext
 {
     private IAkkaCoreContext? _akkaCore;
+    private IAkkaClusterContext? _akkaCluster;
+    private IAkkaClusterShardingContext? _akkaClusterSharding;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="AkkaContext" /> class.
@@ -26,6 +28,8 @@ public class AkkaContext
     public AkkaContext(Compilation compilation)
     {
         _akkaCore = AkkaCoreContext.Get(compilation);
+        _akkaCluster = AkkaClusterContext.Get(compilation);
+        _akkaClusterSharding = AkkaClusterShardingContext.Get(compilation);
     }
 
     private AkkaContext()
@@ -44,4 +48,30 @@ public class AkkaContext
     ///     Does the current compilation context even have Akka.NET installed?
     /// </summary>
     public bool HasAkkaInstalled => AkkaCore != EmptyCoreContext.Instance;
+    
+    /// <summary>
+    /// Symbol data and availability for Akka.Cluster.
+    /// </summary>
+    public IAkkaClusterContext AkkaCluster
+    {
+        get { return _akkaCluster ??= EmptyClusterContext.Instance; }
+    }
+    
+    /// <summary>
+    /// Does the current compilation context have Akka.Cluster installed?
+    /// </summary>
+    public bool HasAkkaClusterInstalled => AkkaCluster != EmptyClusterContext.Instance;
+    
+    /// <summary>
+    /// Symbol data and availability for Akka.Cluster.Sharding.
+    /// </summary>
+    public IAkkaClusterShardingContext AkkaClusterSharding
+    {
+        get { return _akkaClusterSharding ??= EmptyAkkaClusterShardingContext.Instance; }
+    }
+    
+    /// <summary>
+    /// Does the current compilation context have Akka.Cluster.Sharding installed?
+    /// </summary>
+    public bool HasAkkaClusterShardingInstalled => AkkaClusterSharding != EmptyAkkaClusterShardingContext.Instance;
 }
