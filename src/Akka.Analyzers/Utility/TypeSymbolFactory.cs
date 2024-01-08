@@ -79,12 +79,12 @@ public static class TypeSymbolFactory
     public static INamedTypeSymbol? AkkaShardEnvelope(Compilation compilation)
     {
         return Guard.AssertIsNotNull(compilation)
-            .GetTypeByMetadataName("Akka.Cluster.Sharding.ShardEnvelope");
+            .GetTypeByMetadataName("Akka.Cluster.Sharding.ShardingEnvelope");
     }
 
     public static INamedTypeSymbol? AkkaStartEntity(Compilation compilation)
     {
         return Guard.AssertIsNotNull(compilation)
-            .GetTypeByMetadataName("Akka.Cluster.Sharding.Shard+StartEntity");
+            .GetTypeByMetadataName("Akka.Cluster.Sharding.ShardRegion+StartEntity");
     }
 }

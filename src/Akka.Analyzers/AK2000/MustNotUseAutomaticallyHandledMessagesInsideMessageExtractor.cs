@@ -48,8 +48,9 @@ public class MustNotUseAutomaticallyHandledMessagesInsideMessageExtractor()
 
             var forbiddenTypes = new[]
                 { akkaContext.AkkaClusterSharding.StartEntityType, akkaContext.AkkaClusterSharding.ShardEnvelopeType };
-
-
+            
+            var reportedLocations = new HashSet<Location>();
+            
             // we know for sure that we are inside a message extractor now
             foreach (var interfaceMember in methodSymbol.ContainingType.AllInterfaces.SelectMany(i =>
                          i.GetMembers().OfType<IMethodSymbol>()))
@@ -67,30 +68,24 @@ public class MustNotUseAutomaticallyHandledMessagesInsideMessageExtractor()
                             {
                                 case DeclarationPatternSyntax declarationPatternSyntax:
                                 {
-                                    
                                     // get the symbol for the declarationPatternSyntax.Type
                                     var variableType = semanticModel.GetTypeInfo(declarationPatternSyntax.Type).Type;
-                                    
+
                                     if (forbiddenTypes.Any(t => SymbolEqualityComparer.Default.Equals(t, variableType)))
                                     {
+                                        var location = declarationPatternSyntax.GetLocation();
+                                        
+                                        // duplicate
+                                        if(reportedLocations.Contains(location))
+                                            break;
                                         var diagnostic = Diagnostic.Create(
-                                            RuleDescriptors.Ak2001DoNotUseAutomaticallyHandledMessagesInShardMessageExtractor,
-                                            declarationPatternSyntax.GetLocation());
+                                            RuleDescriptors
+                                                .Ak2001DoNotUseAutomaticallyHandledMessagesInShardMessageExtractor,
+                                            location);
                                         ctx.ReportDiagnostic(diagnostic);
+                                        reportedLocations.Add(location);
                                     }
-                                    break;
-                                }
-                                case CasePatternSwitchLabelSyntax casePatternSwitchLabel:
-                                {
-                                    // check to see if the variable described inside the `case` pattern is a forbidden type
-                                    var variableType = semanticModel.GetTypeInfo(casePatternSwitchLabel.Pattern).Type;
-                                    if (forbiddenTypes.Any(t => SymbolEqualityComparer.Default.Equals(t, variableType)))
-                                    {
-                                        var diagnostic = Diagnostic.Create(
-                                            RuleDescriptors.Ak2001DoNotUseAutomaticallyHandledMessagesInShardMessageExtractor,
-                                            casePatternSwitchLabel.GetLocation());
-                                        ctx.ReportDiagnostic(diagnostic);
-                                    }
+
                                     break;
                                 }
                             }

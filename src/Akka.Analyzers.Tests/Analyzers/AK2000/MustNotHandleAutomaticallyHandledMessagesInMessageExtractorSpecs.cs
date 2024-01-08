@@ -42,10 +42,11 @@ public sealed class ShardMessageExtractor : HashCodeMessageExtractor
     }
 
     public static readonly
-        TheoryData<(string testData, (int startLine, int startColumn, int endLine, int endColumn) spanData)>
+        TheoryData<(string testData, (int startLine, int startColumn, int endLine, int endColumn)[] spanData)>
         FailureCases = new()
         {
             (
+// Simple message extractor edge case
 """
 using Akka.Cluster.Sharding;
 public sealed class ShardMessageExtractor : HashCodeMessageExtractor
@@ -72,15 +73,22 @@ public sealed class ShardMessageExtractor : HashCodeMessageExtractor
         return null;
     }
 }
-""", (13, 23, 13, 37)),
+""", new[]{(18, 24, 18, 42)}),
+            
+        // message extractor created by HashCode.MessageExtractor delegate
+        
         };
     
     [Theory]
     [MemberData(nameof(FailureCases))]
-    public async Task FailureCase((string testData, (int startLine, int startColumn, int endLine, int endColumn) spanData) d)
+    public async Task FailureCase((string testData, (int startLine, int startColumn, int endLine, int endColumn)[] spanData) d)
     {
         var (testData, spanData) = d;
-        var expectedDiagnostic = Verify.Diagnostic().WithSpan(spanData.startLine, spanData.startColumn, spanData.endLine, spanData.endColumn);
+        var expectedDiagnostic = Verify.Diagnostic();
+            
+        // there can be multiple violations per test case
+        foreach(var (startLine, startColumn, endLine, endColumn) in spanData)
+            expectedDiagnostic = expectedDiagnostic.WithSpan(startLine, startColumn, endLine, endColumn);
         await Verify.VerifyAnalyzer(testData, expectedDiagnostic).ConfigureAwait(true);
     }
 }
