@@ -30,41 +30,53 @@ public class MustNotUseAutomaticallyHandledMessagesInsideMessageExtractor()
             var methodSymbol = semanticModel.GetDeclaredSymbol(methodDeclaration);
 
             INamedTypeSymbol? messageExtractorSymbol = akkaContext.AkkaClusterSharding.IMessageExtractorType;
-            
+
             if (methodSymbol == null || messageExtractorSymbol == null)
                 return;
-            
+
+            var containingTypeIsMessageExtractor = methodSymbol.ContainingType.AllInterfaces.Any(i =>
+                SymbolEqualityComparer.Default.Equals(i, messageExtractorSymbol));
+
+            if (!containingTypeIsMessageExtractor)
+                return;
+
             var messageExtractorMethods = messageExtractorSymbol.GetMembers()
                 .OfType<IMethodSymbol>()
-                .Where(m => m.Name is "EntityMessage" or "EntityId");
-            
+                .Where(m => m.Name is "EntityMessage" or "EntityId")
+                .ToArray();
+
             var forbiddenTypes = new[]
                 { akkaContext.AkkaClusterSharding.StartEntityType, akkaContext.AkkaClusterSharding.ShardEnvelopeType };
-            
-            foreach (var extractorMethod in messageExtractorMethods)
+
+
+            // we know for sure that we are inside a message extractor now
+            foreach (var interfaceMember in methodSymbol.ContainingType.Interfaces.SelectMany(i =>
+                         i.GetMembers().OfType<IMethodSymbol>()))
             {
-                var containingTypeIsMessageExtractor = methodSymbol.ContainingType.AllInterfaces.Any(i =>
-                    SymbolEqualityComparer.Default.Equals(i, messageExtractorSymbol));
-                
-                var methodOverridesMessageExtractorMethod = methodSymbol.OverriddenMethod != null &&
-                                                            SymbolEqualityComparer.Default.Equals(methodSymbol.OverriddenMethod, extractorMethod);
-                
-                if (containingTypeIsMessageExtractor && methodOverridesMessageExtractorMethod)
+                foreach (var extractorMethod in messageExtractorMethods)
                 {
-                    // Retrieve all the descendant nodes of the method that are expressions
-                    var descendantNodes = methodDeclaration.DescendantNodes().OfType<ExpressionSyntax>();
-
-                    foreach (var expression in descendantNodes)
+                    if (SymbolEqualityComparer.Default.Equals(methodSymbol, interfaceMember) &&
+                        SymbolEqualityComparer.Default.Equals(interfaceMember, extractorMethod))
                     {
-                        var typeInfo = ctx.SemanticModel.GetTypeInfo(expression);
+                        // Retrieve all the descendant nodes of the method that are expressions
+                        var descendantNodes = methodDeclaration.DescendantNodes().OfType<ExpressionSyntax>();
 
-                        // Check if the type of the expression matches any of the forbidden type symbols
-                        if (forbiddenTypes.Any(forbiddenType => SymbolEqualityComparer.Default.Equals(typeInfo.Type, forbiddenType)))
+                        foreach (var expression in descendantNodes)
                         {
-                            var diagnostic = Diagnostic.Create(RuleDescriptors.Ak2001DoNotUseAutomaticallyHandledMessagesInShardMessageExtractor,
-                                expression.GetLocation());
-                            ctx.ReportDiagnostic(diagnostic);
+                            var typeInfo = ctx.SemanticModel.GetTypeInfo(expression);
+
+                            // Check if the type of the expression matches any of the forbidden type symbols
+                            if (forbiddenTypes.Any(forbiddenType =>
+                                    SymbolEqualityComparer.Default.Equals(typeInfo.Type, forbiddenType)))
+                            {
+                                var diagnostic = Diagnostic.Create(
+                                    RuleDescriptors.Ak2001DoNotUseAutomaticallyHandledMessagesInShardMessageExtractor,
+                                    expression.GetLocation());
+                                ctx.ReportDiagnostic(diagnostic);
+                            }
                         }
+
+                        return;
                     }
                 }
             }
