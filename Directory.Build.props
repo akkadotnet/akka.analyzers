@@ -2,13 +2,12 @@
   <PropertyGroup>
     <Copyright>Copyright © 2013-2024 Akka.NET Project</Copyright>
     <NoWarn>$(NoWarn);CS1591;NU1701;CA1707;</NoWarn>
-    <VersionPrefix>0.1.2</VersionPrefix>
+    <VersionPrefix>0.2.0</VersionPrefix>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Authors>Akka.NET Team</Authors>
     <PackageProjectUrl>https://github.com/akkadotnet/akka.analyzers</PackageProjectUrl>
-    <PackageReleaseNotes>* [Resolved issues with `AK1001` Code Fix overwriting other `PipeTo` arguments](https://github.com/akkadotnet/akka.analyzers/issues/32)
-* Updated `AK1001` to also check if `Sender` is being used as the `PipeTo` `IActorRef sender` argument, which is now also handled by both the analyzer and the Code Fix.
-* Corrected casing on all issue numbers.</PackageReleaseNotes>
+    <PackageReleaseNotes>* [Added Uris for all error messages flagged by Akka.Analyzers](https://github.com/akkadotnet/akka.analyzers/issues/6)
+* [Implemented `AK2001`: detect when automatically handled messages are being handled inside `MessageExtractor` / `IMessageExtractor` (Cluster.Sharding)](https://github.com/akkadotnet/akka.analyzers/issues/42)</PackageReleaseNotes>
     <PackageTags>akka.net, akka.analyzers, akakdotnet, roslyn, analyzers</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
