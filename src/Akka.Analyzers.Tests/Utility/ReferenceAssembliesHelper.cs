@@ -31,8 +31,9 @@ internal static class ReferenceAssembliesHelper
                 Path.Combine("ref", "net8.0")
             );
 
+        // TODO: does this bring all other transitive dependencies?
         CurrentAkka = defaultAssemblies.AddPackages(
-            [new PackageIdentity("Akka", "1.5.14")]
+            [new PackageIdentity("Akka", "1.5.14"), new PackageIdentity("Akka.Cluster.Sharding", "1.5.14")]
         );
     }
 }

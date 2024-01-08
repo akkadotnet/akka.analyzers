@@ -39,4 +39,52 @@ public static class TypeSymbolFactory
         return Guard.AssertIsNotNull(compilation)
             .GetTypeByMetadataName("Akka.Actor.IIndirectActorProducer");
     }
+    
+    public static INamedTypeSymbol? AkkaCluster(Compilation compilation)
+    {
+        return Guard.AssertIsNotNull(compilation)
+            .GetTypeByMetadataName("Akka.Cluster.Cluster");
+    }
+    
+    public static INamedTypeSymbol? AkkaClusterSingletonManager(Compilation compilation)
+    {
+        return Guard.AssertIsNotNull(compilation)
+            .GetTypeByMetadataName("Akka.Cluster.Tools.Singleton.ClusterSingletonManager");
+    }
+    
+    public static INamedTypeSymbol? AkkaClusterSingletonProxy(Compilation compilation)
+    {
+        return Guard.AssertIsNotNull(compilation)
+            .GetTypeByMetadataName("Akka.Cluster.Tools.Singleton.ClusterSingletonProxy");
+    }
+    
+    public static INamedTypeSymbol? AkkaClusterClient(Compilation compilation)
+    {
+        return Guard.AssertIsNotNull(compilation)
+            .GetTypeByMetadataName("Akka.Cluster.Tools.Client.ClusterClient");
+    }
+    
+    public static INamedTypeSymbol? AkkaClusterSharding(Compilation compilation)
+    {
+        return Guard.AssertIsNotNull(compilation)
+            .GetTypeByMetadataName("Akka.Cluster.Sharding.ClusterSharding");
+    }
+    
+    public static INamedTypeSymbol? AkkaMessageExtractor(Compilation compilation)
+    {
+        return Guard.AssertIsNotNull(compilation)
+            .GetTypeByMetadataName("Akka.Cluster.Sharding.IMessageExtractor");
+    }
+
+    public static INamedTypeSymbol? AkkaShardEnvelope(Compilation compilation)
+    {
+        return Guard.AssertIsNotNull(compilation)
+            .GetTypeByMetadataName("Akka.Cluster.Sharding.ShardingEnvelope");
+    }
+
+    public static INamedTypeSymbol? AkkaStartEntity(Compilation compilation)
+    {
+        return Guard.AssertIsNotNull(compilation)
+            .GetTypeByMetadataName("Akka.Cluster.Sharding.ShardRegion+StartEntity");
+    }
 }
