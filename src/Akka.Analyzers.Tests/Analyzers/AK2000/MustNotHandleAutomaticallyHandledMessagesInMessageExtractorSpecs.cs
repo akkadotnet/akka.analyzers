@@ -4,6 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using Microsoft.CodeAnalysis.Testing;
 using Verify = Akka.Analyzers.Tests.Utility.AkkaVerifier<Akka.Analyzers.MustNotUseAutomaticallyHandledMessagesInsideMessageExtractor>;
 
 namespace Akka.Analyzers.Tests.Analyzers.AK2000;
@@ -46,7 +47,7 @@ public sealed class ShardMessageExtractor : HashCodeMessageExtractor
         FailureCases = new()
         {
             (
-// Simple message extractor edge case
+// Simple message extractor edge case - using `if` statements
 """
 using Akka.Cluster.Sharding;
 public sealed class ShardMessageExtractor : HashCodeMessageExtractor
@@ -74,6 +75,104 @@ public sealed class ShardMessageExtractor : HashCodeMessageExtractor
     }
 }
 """, new[]{(18, 24, 18, 42)}),
+            (
+"""
+using Akka.Cluster.Sharding;
+public sealed class ShardMessageExtractor : HashCodeMessageExtractor
+{
+    /// <summary>
+    /// We only ever run with a maximum of two nodes, so ~10 shards per node
+    /// </summary>
+    public ShardMessageExtractor(int shardCount = 20) : base(shardCount)
+    {
+    }
+
+    public override string EntityId(object message)
+    {
+        switch(message)
+        {
+            case string sharded:
+                return sharded;
+            case ShardingEnvelope e:
+                return e.EntityId;
+            default:
+                return null;
+        }
+    }
+}
+""", new[]{(17, 18, 17, 36)}),
+            
+            // message extractor that uses a switch expression
+            (
+"""
+using Akka.Cluster.Sharding;
+public sealed class ShardMessageExtractor : HashCodeMessageExtractor
+{
+    /// <summary>
+    /// We only ever run with a maximum of two nodes, so ~10 shards per node
+    /// </summary>
+    public ShardMessageExtractor(int shardCount = 20) : base(shardCount)
+    {
+    }
+
+    public override string EntityId(object message)
+    {
+        return message switch
+        {
+            string sharded => sharded,
+            ShardingEnvelope e => e.EntityId,
+            _ => null,
+        };
+    }
+}
+""", new[]{(16, 13, 16, 31)}),
+            
+        // multiple violations (one in each method)
+        (
+"""
+using Akka.Cluster.Sharding;
+
+public sealed class ShardMessageExtractor : HashCodeMessageExtractor
+{
+	/// <summary>
+	/// We only ever run with a maximum of two nodes, so ~10 shards per node
+	/// </summary>
+	public ShardMessageExtractor(int shardCount = 20) : base(shardCount)
+	{
+	}
+
+	public override string EntityId(object message)
+	{
+		switch (message)
+		{
+			case string sharded:
+				return sharded;
+			case ShardingEnvelope e:
+				return e.EntityId;
+			default:
+				return null;
+		}
+	}
+
+	public override object EntityMessage(object message)
+	{
+		switch (message)
+		{
+			case string sharded:
+				return sharded;
+			case ShardingEnvelope e:
+				return e.Message;
+			default:
+				return null;
+		}
+	}
+}
+""",
+        new[]
+        {
+            (18, 9, 18, 27),  
+            (31, 9, 31, 27)
+        }),
             
         // message extractor created by HashCode.MessageExtractor delegate
         (
@@ -98,7 +197,10 @@ public class MsgExtractorCreator{
         return messageExtractor;
     }
 }
-""", new[]{(18, 24, 18, 42)})
+""", new[]
+{
+    (18, 24, 18, 42)
+})
         };
     
     [Theory]
@@ -106,11 +208,15 @@ public class MsgExtractorCreator{
     public async Task FailureCase((string testData, (int startLine, int startColumn, int endLine, int endColumn)[] spanData) d)
     {
         var (testData, spanData) = d;
-        var expectedDiagnostic = Verify.Diagnostic();
+        DiagnosticResult[] expectedDiagnostics = new DiagnosticResult[spanData.Length];
+        var currentDiagnosticIndex = 0;
             
         // there can be multiple violations per test case
-        foreach(var (startLine, startColumn, endLine, endColumn) in spanData)
-            expectedDiagnostic = expectedDiagnostic.WithSpan(startLine, startColumn, endLine, endColumn);
-        await Verify.VerifyAnalyzer(testData, expectedDiagnostic).ConfigureAwait(true);
+        foreach (var (startLine, startColumn, endLine, endColumn) in spanData)
+        {
+            expectedDiagnostics[currentDiagnosticIndex++] = Verify.Diagnostic().WithSpan(startLine, startColumn, endLine, endColumn);
+        }
+            
+        await Verify.VerifyAnalyzer(testData, expectedDiagnostics).ConfigureAwait(true);
     }
 }
