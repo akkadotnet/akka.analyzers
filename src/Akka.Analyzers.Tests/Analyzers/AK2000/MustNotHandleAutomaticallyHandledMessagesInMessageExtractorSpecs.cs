@@ -226,6 +226,59 @@ public sealed class ShardMessageExtractor : HashCodeMessageExtractor
             (33, 9, 33, 27),
             (35, 9, 35, 38),
         }),
+        
+        // custom IMessageExtractor implementation
+        (
+"""
+using Akka.Cluster.Sharding;
+using System;
+
+public sealed class ShardMessageExtractor : IMessageExtractor
+{
+	/// <summary>
+	/// We only ever run with a maximum of two nodes, so ~10 shards per node
+	/// </summary>
+	public ShardMessageExtractor()
+	{
+	}
+
+	public string EntityId(object message)
+	{
+		switch (message)
+		{
+			case string sharded:
+				return sharded;
+			case ShardingEnvelope e:
+				return e.EntityId;
+			default:
+				return null;
+		}
+	}
+
+	public object EntityMessage(object message)
+	{
+		switch (message)
+		{
+			case string sharded:
+				return sharded;
+			case ShardingEnvelope e:
+				return e.Message;
+			default:
+				return null;
+		}
+	}
+
+	public string ShardId(object message)
+	{
+		return Random.Shared.Next(0,10).ToString();
+	}
+}
+""", new[]
+{
+	(19, 9, 19, 27),  
+	(32, 9, 32, 27)
+}
+	    ),
             
         // message extractor created by HashCode.MessageExtractor delegate
         (
