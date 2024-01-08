@@ -160,8 +160,8 @@ public sealed class ShardMessageExtractor : HashCodeMessageExtractor
 		{
 			case string sharded:
 				return sharded;
-			case ShardingEnvelope e:
-				return e.Message;
+			case ShardRegion.StartEntity e:
+				return e;
 			default:
 				return null;
 		}
@@ -171,7 +171,60 @@ public sealed class ShardMessageExtractor : HashCodeMessageExtractor
         new[]
         {
             (18, 9, 18, 27),  
-            (31, 9, 31, 27)
+            (31, 9, 31, 34)
+        }),
+        
+        // combo mode - handle both types of forbidden messages in both methods
+        (
+"""
+using Akka.Cluster.Sharding;
+
+public sealed class ShardMessageExtractor : HashCodeMessageExtractor
+{
+	/// <summary>
+	/// We only ever run with a maximum of two nodes, so ~10 shards per node
+	/// </summary>
+	public ShardMessageExtractor(int shardCount = 20) : base(shardCount)
+	{
+	}
+
+	public override string EntityId(object message)
+	{
+		switch (message)
+		{
+			case string sharded:
+				return sharded;
+			case ShardingEnvelope e:
+				return e.EntityId;
+			case ShardRegion.StartEntity start:
+				return start.EntityId;
+			default:
+				return null;
+		}
+	}
+
+	public override object EntityMessage(object message)
+	{
+		switch (message)
+		{
+			case string sharded:
+				return sharded;
+			case ShardingEnvelope e:
+				return e.Message;
+			case ShardRegion.StartEntity start:
+				return start;
+			default:
+				return null;
+		}
+	}
+}
+""",
+        new[]
+        {
+            (18, 9, 18, 27),  
+            (20, 9, 20, 38),
+            (33, 9, 33, 27),
+            (35, 9, 35, 38),
         }),
             
         // message extractor created by HashCode.MessageExtractor delegate
