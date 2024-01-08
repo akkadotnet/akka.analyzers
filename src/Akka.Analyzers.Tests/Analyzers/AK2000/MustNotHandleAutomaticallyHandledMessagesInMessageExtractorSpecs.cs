@@ -76,7 +76,29 @@ public sealed class ShardMessageExtractor : HashCodeMessageExtractor
 """, new[]{(18, 24, 18, 42)}),
             
         // message extractor created by HashCode.MessageExtractor delegate
-        
+        (
+"""
+using Akka.Cluster.Sharding;
+
+public class MsgExtractorCreator{
+    IMessageExtractor Create(){
+       IMessageExtractor messageExtractor = HashCodeMessageExtractor.Create(100, msg =>
+       {
+        	if (msg is string s) {
+        		return s;
+        	}
+        	else if (msg is ShardingEnvelope shard) {
+        		return shard.EntityId;
+        	}
+        	else{
+        		return null;
+        	}
+        });
+    
+        return messageExtractor;
+    }
+}
+""", new[]{(18, 24, 18, 42)})
         };
     
     [Theory]
