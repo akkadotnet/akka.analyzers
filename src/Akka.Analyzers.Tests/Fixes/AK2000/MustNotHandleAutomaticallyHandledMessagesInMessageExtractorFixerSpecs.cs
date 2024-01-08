@@ -73,6 +73,69 @@ public sealed class ShardMessageExtractor : HashCodeMessageExtractor
         return Verify.VerifyCodeFix(before, after, MustNotUseAutomaticallyHandledMessagesInsideMessageExtractorFixer.Key_FixAutomaticallyHandledShardedMessage,
             expectedDiagnostic);
     }
+
+    [Fact]
+    public Task RemoveIfWithAdditionalFiltering()
+    {
+        var before =
+            """
+            using Akka.Cluster.Sharding;
+            public sealed class ShardMessageExtractor : HashCodeMessageExtractor
+            {
+                /// <summary>
+                /// We only ever run with a maximum of two nodes, so ~10 shards per node
+                /// </summary>
+                public ShardMessageExtractor(int shardCount = 20) : base(shardCount)
+                {
+                }
+            
+                public override string EntityId(object message)
+                {
+                    if(message is string sharded)
+                    {
+                        return sharded;
+                    }
+            
+                    if (message is ShardingEnvelope e && e.EntityId.StartsWith("a"))
+                    {
+                        return e.EntityId;
+                    }
+            
+                    return null;
+                }
+            }
+            """;
+
+        var after =
+            """
+            using Akka.Cluster.Sharding;
+            public sealed class ShardMessageExtractor : HashCodeMessageExtractor
+            {
+                /// <summary>
+                /// We only ever run with a maximum of two nodes, so ~10 shards per node
+                /// </summary>
+                public ShardMessageExtractor(int shardCount = 20) : base(shardCount)
+                {
+                }
+            
+                public override string EntityId(object message)
+                {
+                    if(message is string sharded)
+                    {
+                        return sharded;
+                    }
+            
+                    return null;
+                }
+            }
+            """;
+            
+        var expectedDiagnostic = Verify.Diagnostic()
+            .WithSpan(18, 24, 18, 42);
+
+        return Verify.VerifyCodeFix(before, after, MustNotUseAutomaticallyHandledMessagesInsideMessageExtractorFixer.Key_FixAutomaticallyHandledShardedMessage,
+            expectedDiagnostic);
+    }
     
     [Fact]
     public Task RemoveElseIfStatementFromMessageExtractor()
@@ -190,6 +253,68 @@ public sealed class ShardMessageExtractor : HashCodeMessageExtractor
     }
 }
 """;
+            
+        var expectedDiagnostic = Verify.Diagnostic()
+            .WithSpan(17, 18, 17, 36);
+
+        return Verify.VerifyCodeFix(before, after, MustNotUseAutomaticallyHandledMessagesInsideMessageExtractorFixer.Key_FixAutomaticallyHandledShardedMessage,
+            expectedDiagnostic);
+    }
+    
+    [Fact]
+    public Task RemoveCaseStatementWithAdditionalFilteringFromMessageExtractorWithSwitch()
+    {
+        var before =
+            """
+            using Akka.Cluster.Sharding;
+            public sealed class ShardMessageExtractor : HashCodeMessageExtractor
+            {
+                /// <summary>
+                /// We only ever run with a maximum of two nodes, so ~10 shards per node
+                /// </summary>
+                public ShardMessageExtractor(int shardCount = 20) : base(shardCount)
+                {
+                }
+            
+                public override string EntityId(object message)
+                {
+                    switch(message)
+                    {
+                        case string sharded:
+                            return sharded;
+                        case ShardingEnvelope e when e.EntityId.StartsWith("a"):
+                            return e.EntityId;
+                        default:
+                            return null;
+                    }
+                }
+            }
+            """;
+
+        var after =
+            """
+            using Akka.Cluster.Sharding;
+            public sealed class ShardMessageExtractor : HashCodeMessageExtractor
+            {
+                /// <summary>
+                /// We only ever run with a maximum of two nodes, so ~10 shards per node
+                /// </summary>
+                public ShardMessageExtractor(int shardCount = 20) : base(shardCount)
+                {
+                }
+            
+                public override string EntityId(object message)
+                {
+                    switch(message)
+                    {
+                        case string sharded:
+                            return sharded;
+                        default:
+                            return null;
+                    }
+                }
+            }
+            """;
             
         var expectedDiagnostic = Verify.Diagnostic()
             .WithSpan(17, 18, 17, 36);
