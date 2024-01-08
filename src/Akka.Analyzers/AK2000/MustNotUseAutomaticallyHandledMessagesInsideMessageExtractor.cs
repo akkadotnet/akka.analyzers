@@ -4,7 +4,6 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -26,73 +25,85 @@ public class MustNotUseAutomaticallyHandledMessagesInsideMessageExtractor()
             if (akkaContext.HasAkkaClusterShardingInstalled == false)
                 return; // exit early if we don't have Akka.Cluster.Sharding installed
 
-            var methodDeclaration = (MethodDeclarationSyntax)ctx.Node;
-            var semanticModel = ctx.SemanticModel;
-            var methodSymbol = semanticModel.GetDeclaredSymbol(methodDeclaration);
+            AnalyzeMethod(ctx, akkaContext);
+        }, SyntaxKind.MethodDeclaration);
+    }
 
-            INamedTypeSymbol? messageExtractorSymbol = akkaContext.AkkaClusterSharding.IMessageExtractorType;
+    private static void AnalyzeMethod(SyntaxNodeAnalysisContext ctx, AkkaContext akkaContext)
+    {
+        var methodDeclaration = (MethodDeclarationSyntax)ctx.Node;
+        var semanticModel = ctx.SemanticModel;
+        var methodSymbol = semanticModel.GetDeclaredSymbol(methodDeclaration);
 
-            if (methodSymbol == null || messageExtractorSymbol == null)
-                return;
+        INamedTypeSymbol? messageExtractorSymbol = akkaContext.AkkaClusterSharding.IMessageExtractorType;
 
-            var containingTypeIsMessageExtractor = methodSymbol.ContainingType.AllInterfaces.Any(i =>
-                SymbolEqualityComparer.Default.Equals(i, messageExtractorSymbol));
+        if (methodSymbol == null || messageExtractorSymbol == null)
+            return;
 
-            if (!containingTypeIsMessageExtractor)
-                return;
+        var containingTypeIsMessageExtractor = methodSymbol.ContainingType.AllInterfaces.Any(i =>
+            SymbolEqualityComparer.Default.Equals(i, messageExtractorSymbol));
 
-            var messageExtractorMethods = messageExtractorSymbol.GetMembers()
-                .OfType<IMethodSymbol>()
-                .Where(m => m.Name is "EntityMessage" or "EntityId")
-                .ToArray();
+        if (!containingTypeIsMessageExtractor)
+            return;
 
-            var forbiddenTypes = new[]
-                { akkaContext.AkkaClusterSharding.StartEntityType, akkaContext.AkkaClusterSharding.ShardEnvelopeType };
+        var messageExtractorMethods = messageExtractorSymbol.GetMembers()
+            .OfType<IMethodSymbol>()
+            .Where(m => m.Name is "EntityMessage" or "EntityId")
+            .ToArray();
+
+        var forbiddenTypes = new[]
+            { akkaContext.AkkaClusterSharding.StartEntityType, akkaContext.AkkaClusterSharding.ShardEnvelopeType };
             
-            var reportedLocations = new HashSet<Location>();
+        var reportedLocations = new HashSet<Location>();
             
-            // we know for sure that we are inside a message extractor now
-            foreach (var interfaceMember in methodSymbol.ContainingType.AllInterfaces.SelectMany(i =>
-                         i.GetMembers().OfType<IMethodSymbol>()))
+        // we know for sure that we are inside a message extractor now
+        foreach (var interfaceMember in methodSymbol.ContainingType.AllInterfaces.SelectMany(i =>
+                     i.GetMembers().OfType<IMethodSymbol>()))
+        {
+            foreach (var extractorMethod in messageExtractorMethods)
             {
-                foreach (var extractorMethod in messageExtractorMethods)
+                if (SymbolEqualityComparer.Default.Equals(interfaceMember, extractorMethod))
                 {
-                    if (SymbolEqualityComparer.Default.Equals(interfaceMember, extractorMethod))
+                    // Retrieve all the descendant nodes of the method that are expressions
+                    var descendantNodes = methodDeclaration.DescendantNodes();
+
+                    foreach (var node in descendantNodes)
                     {
-                        // Retrieve all the descendant nodes of the method that are expressions
-                        var descendantNodes = methodDeclaration.DescendantNodes();
-
-                        foreach (var node in descendantNodes)
-                        {
-                            switch (node)
-                            {
-                                case DeclarationPatternSyntax declarationPatternSyntax:
-                                {
-                                    // get the symbol for the declarationPatternSyntax.Type
-                                    var variableType = semanticModel.GetTypeInfo(declarationPatternSyntax.Type).Type;
-
-                                    if (forbiddenTypes.Any(t => SymbolEqualityComparer.Default.Equals(t, variableType)))
-                                    {
-                                        var location = declarationPatternSyntax.GetLocation();
-                                        
-                                        // duplicate
-                                        if(reportedLocations.Contains(location))
-                                            break;
-                                        var diagnostic = Diagnostic.Create(
-                                            RuleDescriptors
-                                                .Ak2001DoNotUseAutomaticallyHandledMessagesInShardMessageExtractor,
-                                            location);
-                                        ctx.ReportDiagnostic(diagnostic);
-                                        reportedLocations.Add(location);
-                                    }
-
-                                    break;
-                                }
-                            }
-                        }
+                        AnalyzeDeclaredVariableNodes(ctx, node, forbiddenTypes, reportedLocations);
                     }
                 }
             }
-        }, SyntaxKind.MethodDeclaration);
+        }
+    }
+
+    private static void AnalyzeDeclaredVariableNodes(SyntaxNodeAnalysisContext ctx, SyntaxNode node,
+        INamedTypeSymbol?[] forbiddenTypes, HashSet<Location> reportedLocations)
+    {
+        var semanticModel = ctx.SemanticModel;
+        switch (node)
+        {
+            case DeclarationPatternSyntax declarationPatternSyntax:
+            {
+                // get the symbol for the declarationPatternSyntax.Type
+                var variableType = semanticModel.GetTypeInfo(declarationPatternSyntax.Type).Type;
+
+                if (forbiddenTypes.Any(t => SymbolEqualityComparer.Default.Equals(t, variableType)))
+                {
+                    var location = declarationPatternSyntax.GetLocation();
+                                        
+                    // duplicate
+                    if(reportedLocations.Contains(location))
+                        break;
+                    var diagnostic = Diagnostic.Create(
+                        RuleDescriptors
+                            .Ak2001DoNotUseAutomaticallyHandledMessagesInShardMessageExtractor,
+                        location);
+                    ctx.ReportDiagnostic(diagnostic);
+                    reportedLocations.Add(location);
+                }
+
+                break;
+            }
+        }
     }
 }

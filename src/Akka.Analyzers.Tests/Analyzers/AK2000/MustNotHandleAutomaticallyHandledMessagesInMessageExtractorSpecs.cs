@@ -314,7 +314,7 @@ public class MsgExtractorCreator{
     public async Task FailureCase((string testData, (int startLine, int startColumn, int endLine, int endColumn)[] spanData) d)
     {
         var (testData, spanData) = d;
-        DiagnosticResult[] expectedDiagnostics = new DiagnosticResult[spanData.Length];
+        var expectedDiagnostics = new DiagnosticResult[spanData.Length];
         var currentDiagnosticIndex = 0;
             
         // there can be multiple violations per test case
