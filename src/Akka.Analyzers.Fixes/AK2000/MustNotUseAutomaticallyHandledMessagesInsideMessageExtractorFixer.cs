@@ -56,7 +56,7 @@ public class MustNotUseAutomaticallyHandledMessagesInsideMessageExtractorFixer()
     {
         while (node != null)
         {
-            if (node is IfStatementSyntax || node is CaseSwitchLabelSyntax || node is SwitchExpressionArmSyntax)
+            if (node is IfStatementSyntax || node is SwitchSectionSyntax || node is SwitchExpressionArmSyntax)
             {
                 // special case - have to check for else if here
                 if(node.Parent is ElseClauseSyntax)
