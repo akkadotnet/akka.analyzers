@@ -1,3 +1,8 @@
+#### 0.2.0 January 8th 2024 ####
+
+* [Added Uris for all error messages flagged by Akka.Analyzers](https://github.com/akkadotnet/akka.analyzers/issues/6)
+* [Implemented `AK2001`: detect when automatically handled messages are being handled inside `MessageExtractor` / `IMessageExtractor` (Cluster.Sharding)](https://github.com/akkadotnet/akka.analyzers/issues/42)
+
 #### 0.1.2 January 3rd 2024 ####
 
 * [Resolved issues with `AK1001` Code Fix overwriting other `PipeTo` arguments](https://github.com/akkadotnet/akka.analyzers/issues/32)
