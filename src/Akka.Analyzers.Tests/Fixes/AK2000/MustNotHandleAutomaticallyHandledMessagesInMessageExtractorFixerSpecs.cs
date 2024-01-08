@@ -199,6 +199,75 @@ public sealed class ShardMessageExtractor : HashCodeMessageExtractor
     }
     
     [Fact]
+    public Task RemoveTwoCaseStatementsFromMessageExtractorWithSwitch()
+    {
+        var before =
+            """
+            using Akka.Cluster.Sharding;
+            public sealed class ShardMessageExtractor : HashCodeMessageExtractor
+            {
+                /// <summary>
+                /// We only ever run with a maximum of two nodes, so ~10 shards per node
+                /// </summary>
+                public ShardMessageExtractor(int shardCount = 20) : base(shardCount)
+                {
+                }
+            
+                public override string EntityId(object message)
+                {
+                    switch(message)
+                    {
+                        case string sharded:
+                            return sharded;
+                        case ShardingEnvelope e:
+                            return e.EntityId;
+                        case ShardRegion.StartEntity start:
+                            return start.EntityId;
+                        default:
+                            return null;
+                    }
+                }
+            }
+            """;
+
+        var after =
+            """
+            using Akka.Cluster.Sharding;
+            public sealed class ShardMessageExtractor : HashCodeMessageExtractor
+            {
+                /// <summary>
+                /// We only ever run with a maximum of two nodes, so ~10 shards per node
+                /// </summary>
+                public ShardMessageExtractor(int shardCount = 20) : base(shardCount)
+                {
+                }
+            
+                public override string EntityId(object message)
+                {
+                    switch(message)
+                    {
+                        case string sharded:
+                            return sharded;
+                        default:
+                            return null;
+                    }
+                }
+            }
+            """;
+            
+        var expectedDiagnostics = new[]
+        {
+            Verify.Diagnostic()
+                .WithSpan(17, 18, 17, 36),
+            Verify.Diagnostic()
+                .WithSpan(19, 18, 19, 47),
+        };
+
+        return Verify.VerifyCodeFix(before, after, MustNotUseAutomaticallyHandledMessagesInsideMessageExtractorFixer.Key_FixAutomaticallyHandledShardedMessage,
+            expectedDiagnostics);
+    }
+    
+    [Fact]
     public Task RemoveSwitchExpressionArm()
     {
         var before =
