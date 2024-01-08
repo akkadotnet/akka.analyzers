@@ -4,6 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -50,33 +51,50 @@ public class MustNotUseAutomaticallyHandledMessagesInsideMessageExtractor()
 
 
             // we know for sure that we are inside a message extractor now
-            foreach (var interfaceMember in methodSymbol.ContainingType.Interfaces.SelectMany(i =>
+            foreach (var interfaceMember in methodSymbol.ContainingType.AllInterfaces.SelectMany(i =>
                          i.GetMembers().OfType<IMethodSymbol>()))
             {
                 foreach (var extractorMethod in messageExtractorMethods)
                 {
-                    if (SymbolEqualityComparer.Default.Equals(methodSymbol, interfaceMember) &&
-                        SymbolEqualityComparer.Default.Equals(interfaceMember, extractorMethod))
+                    if (SymbolEqualityComparer.Default.Equals(interfaceMember, extractorMethod))
                     {
                         // Retrieve all the descendant nodes of the method that are expressions
-                        var descendantNodes = methodDeclaration.DescendantNodes().OfType<ExpressionSyntax>();
+                        var descendantNodes = methodDeclaration.DescendantNodes();
 
-                        foreach (var expression in descendantNodes)
+                        foreach (var node in descendantNodes)
                         {
-                            var typeInfo = ctx.SemanticModel.GetTypeInfo(expression);
-
-                            // Check if the type of the expression matches any of the forbidden type symbols
-                            if (forbiddenTypes.Any(forbiddenType =>
-                                    SymbolEqualityComparer.Default.Equals(typeInfo.Type, forbiddenType)))
+                            switch (node)
                             {
-                                var diagnostic = Diagnostic.Create(
-                                    RuleDescriptors.Ak2001DoNotUseAutomaticallyHandledMessagesInShardMessageExtractor,
-                                    expression.GetLocation());
-                                ctx.ReportDiagnostic(diagnostic);
+                                case DeclarationPatternSyntax declarationPatternSyntax:
+                                {
+                                    
+                                    // get the symbol for the declarationPatternSyntax.Type
+                                    var variableType = semanticModel.GetTypeInfo(declarationPatternSyntax.Type).Type;
+                                    
+                                    if (forbiddenTypes.Any(t => SymbolEqualityComparer.Default.Equals(t, variableType)))
+                                    {
+                                        var diagnostic = Diagnostic.Create(
+                                            RuleDescriptors.Ak2001DoNotUseAutomaticallyHandledMessagesInShardMessageExtractor,
+                                            declarationPatternSyntax.GetLocation());
+                                        ctx.ReportDiagnostic(diagnostic);
+                                    }
+                                    break;
+                                }
+                                case CasePatternSwitchLabelSyntax casePatternSwitchLabel:
+                                {
+                                    // check to see if the variable described inside the `case` pattern is a forbidden type
+                                    var variableType = semanticModel.GetTypeInfo(casePatternSwitchLabel.Pattern).Type;
+                                    if (forbiddenTypes.Any(t => SymbolEqualityComparer.Default.Equals(t, variableType)))
+                                    {
+                                        var diagnostic = Diagnostic.Create(
+                                            RuleDescriptors.Ak2001DoNotUseAutomaticallyHandledMessagesInShardMessageExtractor,
+                                            casePatternSwitchLabel.GetLocation());
+                                        ctx.ReportDiagnostic(diagnostic);
+                                    }
+                                    break;
+                                }
                             }
                         }
-
-                        return;
                     }
                 }
             }
