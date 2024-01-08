@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Akka.Analyzers.Fixes.AK2000;
+namespace Akka.Analyzers.Fixes;
 
 [ExportCodeFixProvider(LanguageNames.CSharp)]
 [Shared]
