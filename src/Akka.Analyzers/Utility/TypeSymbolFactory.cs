@@ -69,4 +69,10 @@ public static class TypeSymbolFactory
         return Guard.AssertIsNotNull(compilation)
             .GetTypeByMetadataName("Akka.Cluster.Sharding.ClusterSharding");
     }
+    
+    public static INamedTypeSymbol? AkkaMessageExtractor(Compilation compilation)
+    {
+        return Guard.AssertIsNotNull(compilation)
+            .GetTypeByMetadataName("Akka.Cluster.Sharding.IMessageExtractor");
+    }
 }
