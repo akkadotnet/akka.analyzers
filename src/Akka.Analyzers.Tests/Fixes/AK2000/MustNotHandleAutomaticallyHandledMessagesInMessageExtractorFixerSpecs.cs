@@ -123,7 +123,7 @@ public sealed class ShardMessageExtractor : HashCodeMessageExtractor
                     {
                         return sharded;
                     }
-            
+                    
                     return null;
                 }
             }

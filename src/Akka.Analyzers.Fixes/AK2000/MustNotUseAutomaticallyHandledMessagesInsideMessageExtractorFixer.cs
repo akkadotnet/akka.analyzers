@@ -9,6 +9,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.VisualBasic.Syntax;
+using IfStatementSyntax = Microsoft.CodeAnalysis.CSharp.Syntax.IfStatementSyntax;
 
 namespace Akka.Analyzers.Fixes;
 
@@ -56,6 +58,9 @@ public class MustNotUseAutomaticallyHandledMessagesInsideMessageExtractorFixer()
         {
             if (node is IfStatementSyntax || node is CaseSwitchLabelSyntax || node is SwitchExpressionArmSyntax)
             {
+                // special case - have to check for else if here
+                if(node.Parent is ElseClauseSyntax)
+                    return node.Parent;
                 return node;
             }
             node = node.Parent;
