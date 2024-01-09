@@ -1,3 +1,7 @@
+#### 0.2.1 January 9th 2024 ####
+
+* [Resolved `AK2001`: `if` statements not cleanly managed by Code Fix](https://github.com/akkadotnet/akka.analyzers/pull/46)
+
 #### 0.2.0 January 8th 2024 ####
 
 * [Added Uris for all error messages flagged by Akka.Analyzers](https://github.com/akkadotnet/akka.analyzers/issues/6)
