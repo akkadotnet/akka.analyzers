@@ -138,6 +138,8 @@ public class MustNotUseAutomaticallyHandledMessagesInsideMessageExtractorFixer()
         }
         else
         {
+            // in order to get the replaced "if" statement to have the same indention as the other clauses, we need to re-use
+            // the same leading trivia that we had previously
             var leadingTrivia = forbiddenIfStatement.GetLeadingTrivia();
             
             // If there's an else part, replace the if statement with the else part
