@@ -548,7 +548,7 @@ public sealed class ShardMessageExtractor : HashCodeMessageExtractor
                             	if (msg is string s) {
                             		return s;
                             	}
-                            	else{
+                            	else {
                             		return null;
                             	}
                             });

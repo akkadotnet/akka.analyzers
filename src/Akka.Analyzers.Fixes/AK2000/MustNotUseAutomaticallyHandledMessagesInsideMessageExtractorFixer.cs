@@ -119,13 +119,13 @@ public class MustNotUseAutomaticallyHandledMessagesInsideMessageExtractorFixer()
                     // Replace the current else-if with its own else
                     var newElseClause = elseClause.WithStatement(forbiddenIfStatement.Else.Statement);
                     var newParentIfStatement = parentIfStatement.WithElse(newElseClause);
-                    return root.ReplaceNode(parentIfStatement, newParentIfStatement);
+                    return root.ReplaceNode(parentIfStatement, newParentIfStatement).WithLeadingTrivia();
                 }
                 else
                 {
                     // Remove the else-if branch entirely
                     var newParentIfStatement = parentIfStatement.WithElse(null);
-                    return root.ReplaceNode(parentIfStatement, newParentIfStatement);
+                    return root.ReplaceNode(parentIfStatement, newParentIfStatement).WithLeadingTrivia();
                 }
             }
         }
@@ -139,7 +139,7 @@ public class MustNotUseAutomaticallyHandledMessagesInsideMessageExtractorFixer()
         else
         {
             // If there's an else part, replace the if statement with the else part
-            return root.ReplaceNode(forbiddenIfStatement, forbiddenIfStatement.Else.Statement);
+            return root.ReplaceNode(forbiddenIfStatement, forbiddenIfStatement.Else.Statement).WithLeadingTrivia();
         }
     }
 
