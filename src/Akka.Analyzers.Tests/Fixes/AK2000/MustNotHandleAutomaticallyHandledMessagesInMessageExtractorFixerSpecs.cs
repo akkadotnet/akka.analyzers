@@ -545,7 +545,7 @@ public sealed class ShardMessageExtractor : HashCodeMessageExtractor
                         IMessageExtractor Create(){
                            IMessageExtractor messageExtractor = HashCodeMessageExtractor.Create(100, msg =>
                            {
-                            	if (msg is string s) {
+                                if (msg is string s) {
                             		return s;
                             	}
                             	else {
