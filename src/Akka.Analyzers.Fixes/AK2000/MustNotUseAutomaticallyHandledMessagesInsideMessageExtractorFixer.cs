@@ -10,6 +10,7 @@ using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.VisualBasic.Syntax;
 using IfStatementSyntax = Microsoft.CodeAnalysis.CSharp.Syntax.IfStatementSyntax;
 
@@ -74,37 +75,72 @@ public class MustNotUseAutomaticallyHandledMessagesInsideMessageExtractorFixer()
         var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
         if(root == null)
             return document;
+
+        SyntaxNode? newRoot = null;
         
         // check if this is an if statement we're removing
         if (nodeToRemove is IfStatementSyntax ifStatement)
         {
-           // first edge case - are we the topmost if statement WITHOUT any children? If so we can just remove the entire thing
-           // check if we have any descendants that are if or else statements
-           var hasParentIfStatement = ifStatement.Parent is IfStatementSyntax;
-           
-            var otherElsesAndIfs = ifStatement.DescendantNodes().Where(c => c is IfStatementSyntax or ElseClauseSyntax).ToArray();
-            if (hasParentIfStatement)
+            newRoot = RemoveForbiddenIfStatement(root, ifStatement);
+        }
+        else if (nodeToRemove is ElseClauseSyntax elseClauseSyntax)
+        {
+            // check if this is an else-if we're removing
+            if (elseClauseSyntax.Statement is IfStatementSyntax elseIfStatement)
             {
-                // ok, so we are not the top node - that makes this easy. Here is what we need to do:
-                // 1. Start with the parent node
-                // 2. Remove the nodeToRemove
-                // 3. Add all of nodeToRemove's children as children of the parent node
-                
-                var parent = ifStatement.Parent;
-                if(parent == null)
-                    return document; // should never happen
-                
-                var newParent = parent.RemoveNode(nodeToRemove, SyntaxRemoveOptions.KeepNoTrivia);
-                if(newParent == null)
-                    return document; // should never happen
-                
-                var newParentWithChildren = newParent.InsertNodesAfter(newParent.ChildNodes().Last(), otherElsesAndIfs);
-                var updatedRoot = root.ReplaceNode(parent, newParentWithChildren);
-                return document.WithSyntaxRoot(updatedRoot);
+                newRoot = RemoveForbiddenIfStatement(root, elseIfStatement);
+            }
+            else
+            {
+                // remove the else clause entirely
+                newRoot = root.RemoveNode(nodeToRemove, SyntaxRemoveOptions.KeepNoTrivia);
             }
         }
+        else
+        {
+            newRoot = root.RemoveNode(nodeToRemove, SyntaxRemoveOptions.KeepNoTrivia);
+        }
         
-        var newRoot = root.RemoveNode(nodeToRemove, SyntaxRemoveOptions.KeepNoTrivia);
         return newRoot == null ? document : document.WithSyntaxRoot(newRoot);
     }
+    
+    private static SyntaxNode? RemoveForbiddenIfStatement(SyntaxNode root, IfStatementSyntax forbiddenIfStatement)
+    {
+        // Check if the if statement is part of an else-if chain
+        if (forbiddenIfStatement.Parent is ElseClauseSyntax elseClause &&
+            elseClause.Statement is IfStatementSyntax)
+        {
+            // Handle removing an else-if branch
+            if (elseClause.Parent is IfStatementSyntax parentIfStatement)
+            {
+                // Check if there's a subsequent else/else-if after the current else-if
+                if (forbiddenIfStatement.Else != null)
+                {
+                    // Replace the current else-if with its own else
+                    var newElseClause = elseClause.WithStatement(forbiddenIfStatement.Else.Statement);
+                    var newParentIfStatement = parentIfStatement.WithElse(newElseClause);
+                    return root.ReplaceNode(parentIfStatement, newParentIfStatement);
+                }
+                else
+                {
+                    // Remove the else-if branch entirely
+                    var newParentIfStatement = parentIfStatement.WithElse(null);
+                    return root.ReplaceNode(parentIfStatement, newParentIfStatement);
+                }
+            }
+        }
+    
+        // Handle removing a standalone if statement
+        if (forbiddenIfStatement.Else == null)
+        {
+            // If there's no else part, remove the entire if statement
+            return root.RemoveNode(forbiddenIfStatement, SyntaxRemoveOptions.KeepNoTrivia);
+        }
+        else
+        {
+            // If there's an else part, replace the if statement with the else part
+            return root.ReplaceNode(forbiddenIfStatement, forbiddenIfStatement.Else.Statement);
+        }
+    }
+
 }
