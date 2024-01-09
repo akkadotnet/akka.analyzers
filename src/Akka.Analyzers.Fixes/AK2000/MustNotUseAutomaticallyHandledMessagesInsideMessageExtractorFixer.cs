@@ -18,11 +18,11 @@ namespace Akka.Analyzers.Fixes;
 
 [ExportCodeFixProvider(LanguageNames.CSharp)]
 [Shared]
-public class MustNotUseAutomaticallyHandledMessagesInsideMessageExtractorFixer()
+public class MustNotUseAutomaticallyHandledMessagesInsideMessageExtractorFixer() 
     : BatchedCodeFixProvider(RuleDescriptors.Ak2001DoNotUseAutomaticallyHandledMessagesInShardMessageExtractor.Id)
 {
     public const string Key_FixAutomaticallyHandledShardedMessage = "AK2001_FixAutoShardMessage";
-
+    
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
         var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
@@ -53,7 +53,7 @@ public class MustNotUseAutomaticallyHandledMessagesInsideMessageExtractorFixer()
             }
         }
     }
-
+    
     private static SyntaxNode? FindParentNodeToRemove(SyntaxNode? node)
     {
         while (node != null)
@@ -61,26 +61,23 @@ public class MustNotUseAutomaticallyHandledMessagesInsideMessageExtractorFixer()
             if (node is IfStatementSyntax || node is SwitchSectionSyntax || node is SwitchExpressionArmSyntax)
             {
                 // special case - have to check for else if here
-                if (node.Parent is ElseClauseSyntax)
+                if(node.Parent is ElseClauseSyntax)
                     return node.Parent;
                 return node;
             }
-
             node = node.Parent;
         }
-
         return null;
     }
 
-    private static async Task<Document> RemoveOffendingNode(Document document, SyntaxNode nodeToRemove,
-        CancellationToken cancellationToken)
+    private static async Task<Document> RemoveOffendingNode(Document document, SyntaxNode nodeToRemove, CancellationToken cancellationToken)
     {
         var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
-        if (root == null)
+        if(root == null)
             return document;
 
         SyntaxNode? newRoot = null;
-
+        
         // check if this is an if statement we're removing
         if (nodeToRemove is IfStatementSyntax ifStatement)
         {
@@ -103,10 +100,10 @@ public class MustNotUseAutomaticallyHandledMessagesInsideMessageExtractorFixer()
         {
             newRoot = root.RemoveNode(nodeToRemove, SyntaxRemoveOptions.KeepNoTrivia);
         }
-
+        
         return newRoot == null ? document : document.WithSyntaxRoot(newRoot);
     }
-
+    
     private static SyntaxNode? RemoveForbiddenIfStatement(SyntaxNode root, IfStatementSyntax forbiddenIfStatement)
     {
         // Check if the if statement is part of an else-if chain
@@ -132,7 +129,7 @@ public class MustNotUseAutomaticallyHandledMessagesInsideMessageExtractorFixer()
                 }
             }
         }
-
+    
         // Handle removing a standalone if statement
         if (forbiddenIfStatement.Else == null)
         {
@@ -142,8 +139,8 @@ public class MustNotUseAutomaticallyHandledMessagesInsideMessageExtractorFixer()
         else
         {
             // If there's an else part, replace the if statement with the else part
-            return root.ReplaceNode(forbiddenIfStatement,
-                forbiddenIfStatement.Else.Statement.WithLeadingTrivia(forbiddenIfStatement.GetLeadingTrivia()));
+            return root.ReplaceNode(forbiddenIfStatement, forbiddenIfStatement.Else.Statement).WithLeadingTrivia();
         }
     }
+
 }
