@@ -513,7 +513,7 @@ public sealed class ShardMessageExtractor : HashCodeMessageExtractor
     }
 
     [Fact]
-    public Task FixHashCodeMessageExtractorDelegate()
+    public Task FixHashCodeMessageExtractorElseIfDelegate()
     {
         var before = """
                      using Akka.Cluster.Sharding;
@@ -527,6 +527,59 @@ public sealed class ShardMessageExtractor : HashCodeMessageExtractor
                              	}
                              	else if (msg is ShardingEnvelope shard) {
                              		return shard.EntityId;
+                             	}
+                             	else{
+                             		return null;
+                             	}
+                             });
+                         
+                             return messageExtractor;
+                         }
+                     }
+                     """;
+
+        var after = """
+                    using Akka.Cluster.Sharding;
+                    
+                    public class MsgExtractorCreator{
+                        IMessageExtractor Create(){
+                           IMessageExtractor messageExtractor = HashCodeMessageExtractor.Create(100, msg =>
+                           {
+                            	if (msg is string s) {
+                            		return s;
+                            	}
+                            	else{
+                            		return null;
+                            	}
+                            });
+                        
+                            return messageExtractor;
+                        }
+                    }
+                    """;
+        
+        var expectedDiagnostic = Verify.Diagnostic()
+            .WithSpan(10, 26, 10, 48);
+
+        return Verify.VerifyCodeFix(before, after, MustNotUseAutomaticallyHandledMessagesInsideMessageExtractorFixer.Key_FixAutomaticallyHandledShardedMessage,
+            expectedDiagnostic);
+    }
+    
+    [Fact]
+    public Task FixHashCodeMessageExtractorIfDelegate()
+    {
+        var before = """
+                     using Akka.Cluster.Sharding;
+                     
+                     public class MsgExtractorCreator{
+                         IMessageExtractor Create(){
+                            IMessageExtractor messageExtractor = HashCodeMessageExtractor.Create(100, msg =>
+                            {
+                                if (msg is ShardingEnvelope shard) {
+                     	            return shard.EntityId;
+                                }
+                             	else if (msg is string s) {
+                             		return s;
                              	}
                              	else{
                              		return null;

@@ -75,6 +75,35 @@ public class MustNotUseAutomaticallyHandledMessagesInsideMessageExtractorFixer()
         if(root == null)
             return document;
         
+        // check if this is an if statement we're removing
+        if (nodeToRemove is IfStatementSyntax ifStatement)
+        {
+           // first edge case - are we the topmost if statement WITHOUT any children? If so we can just remove the entire thing
+           // check if we have any descendants that are if or else statements
+           var hasParentIfStatement = ifStatement.Parent is IfStatementSyntax;
+           
+            var otherElsesAndIfs = ifStatement.DescendantNodes().Where(c => c is IfStatementSyntax or ElseClauseSyntax).ToArray();
+            if (hasParentIfStatement)
+            {
+                // ok, so we are not the top node - that makes this easy. Here is what we need to do:
+                // 1. Start with the parent node
+                // 2. Remove the nodeToRemove
+                // 3. Add all of nodeToRemove's children as children of the parent node
+                
+                var parent = ifStatement.Parent;
+                if(parent == null)
+                    return document; // should never happen
+                
+                var newParent = parent.RemoveNode(nodeToRemove, SyntaxRemoveOptions.KeepNoTrivia);
+                if(newParent == null)
+                    return document; // should never happen
+                
+                var newParentWithChildren = newParent.InsertNodesAfter(newParent.ChildNodes().Last(), otherElsesAndIfs);
+                var updatedRoot = root.ReplaceNode(parent, newParentWithChildren);
+                return document.WithSyntaxRoot(updatedRoot);
+            }
+        }
+        
         var newRoot = root.RemoveNode(nodeToRemove, SyntaxRemoveOptions.KeepNoTrivia);
         return newRoot == null ? document : document.WithSyntaxRoot(newRoot);
     }
