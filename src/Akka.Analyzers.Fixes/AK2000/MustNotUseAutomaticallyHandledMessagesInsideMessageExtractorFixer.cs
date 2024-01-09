@@ -138,8 +138,10 @@ public class MustNotUseAutomaticallyHandledMessagesInsideMessageExtractorFixer()
         }
         else
         {
+            var leadingTrivia = forbiddenIfStatement.GetLeadingTrivia();
+            
             // If there's an else part, replace the if statement with the else part
-            return root.ReplaceNode(forbiddenIfStatement, forbiddenIfStatement.Else.Statement).WithLeadingTrivia();
+            return root.ReplaceNode(forbiddenIfStatement, forbiddenIfStatement.Else.Statement.WithLeadingTrivia(leadingTrivia));
         }
     }
 

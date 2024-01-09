@@ -576,14 +576,14 @@ public sealed class ShardMessageExtractor : HashCodeMessageExtractor
                             IMessageExtractor messageExtractor = HashCodeMessageExtractor.Create(100, msg =>
                             {
                                 if (msg is ShardingEnvelope shard) {
-                     	            return shard.EntityId;
+                                   return shard.EntityId;
                                 }
-                             	else if (msg is string s) {
-                             		return s;
-                             	}
-                             	else{
-                             		return null;
-                             	}
+                                else if (msg is string s) {
+                                    return s;
+                                }
+                                else{
+                                    return null;
+                                }
                              });
                          
                              return messageExtractor;
@@ -598,12 +598,12 @@ public sealed class ShardMessageExtractor : HashCodeMessageExtractor
                         IMessageExtractor Create(){
                            IMessageExtractor messageExtractor = HashCodeMessageExtractor.Create(100, msg =>
                            {
-                            	if (msg is string s) {
-                            		return s;
-                            	}
-                            	else{
-                            		return null;
-                            	}
+                               if (msg is string s) {
+                                   return s;
+                               }
+                               else{
+                                   return null;
+                               }
                             });
                         
                             return messageExtractor;
