@@ -2,12 +2,11 @@
   <PropertyGroup>
     <Copyright>Copyright © 2013-2024 Akka.NET Project</Copyright>
     <NoWarn>$(NoWarn);CS1591;NU1701;CA1707;</NoWarn>
-    <VersionPrefix>0.2.0</VersionPrefix>
+    <VersionPrefix>0.2.1</VersionPrefix>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Authors>Akka.NET Team</Authors>
     <PackageProjectUrl>https://github.com/akkadotnet/akka.analyzers</PackageProjectUrl>
-    <PackageReleaseNotes>* [Added Uris for all error messages flagged by Akka.Analyzers](https://github.com/akkadotnet/akka.analyzers/issues/6)
-* [Implemented `AK2001`: detect when automatically handled messages are being handled inside `MessageExtractor` / `IMessageExtractor` (Cluster.Sharding)](https://github.com/akkadotnet/akka.analyzers/issues/42)</PackageReleaseNotes>
+    <PackageReleaseNotes>* [Resolved `AK2001`: `if` statements not cleanly managed by Code Fix](https://github.com/akkadotnet/akka.analyzers/pull/46)</PackageReleaseNotes>
     <PackageTags>akka.net, akka.analyzers, akakdotnet, roslyn, analyzers</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
