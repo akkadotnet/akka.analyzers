@@ -612,7 +612,7 @@ public sealed class ShardMessageExtractor : HashCodeMessageExtractor
                     """;
         
         var expectedDiagnostic = Verify.Diagnostic()
-            .WithSpan(10, 26, 10, 48);
+            .WithSpan(7, 23, 7, 45);
 
         return Verify.VerifyCodeFix(before, after, MustNotUseAutomaticallyHandledMessagesInsideMessageExtractorFixer.Key_FixAutomaticallyHandledShardedMessage,
             expectedDiagnostic);
