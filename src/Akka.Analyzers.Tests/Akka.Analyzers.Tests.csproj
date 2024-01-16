@@ -10,8 +10,6 @@
 
     <ItemGroup>
         <!-- Download packages referenced by ReferenceAssembliesHelper -->
-        <!-- TODO: are transitive references downloaded? If so we could trim this list to just Akka.Cluster.Sharding -->
-        <PackageDownload Include="Akka.Cluster.Sharding" Version="[1.5.14]"/>
         <PackageDownload Include="Akka.Cluster.Sharding" Version="[1.5.15]"/>
     </ItemGroup>
 
