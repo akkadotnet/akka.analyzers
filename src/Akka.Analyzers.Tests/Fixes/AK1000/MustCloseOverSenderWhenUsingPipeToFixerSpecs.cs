@@ -294,9 +294,9 @@ public sealed class MyActor : UntypedActor{
                                  await Task.Delay(10);
                                  return message.ToString().Length;
                              }
+                             var sender = this.Sender;
                      
                              // incorrect use of closures
-                             var sender = this.Sender;
                              LocalFunction().PipeTo(sender);
                          }
                      }
