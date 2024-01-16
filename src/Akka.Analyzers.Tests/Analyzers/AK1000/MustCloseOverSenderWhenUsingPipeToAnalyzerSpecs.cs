@@ -94,7 +94,18 @@ public class MustCloseOverSenderWhenUsingPipeToAnalyzerSpecs
                 LocalFunction().PipeTo(Sender);
             }
         }
-        """
+        """,
+        // Replying to Sender using Context.Sender
+        @"using Akka.Actor;
+        
+        public sealed class MyActor : ReceiveActor{
+
+            public MyActor(){
+                Receive<string>(str => {
+                    Context.Sender.Tell(str); // shouldn't flag this
+                });
+            }
+        }",
     };
 
     public static readonly
@@ -193,5 +204,34 @@ public class MustCloseOverSenderWhenUsingPipeToAnalyzerSpecs
             .WithSeverity(DiagnosticSeverity.Error);
 
         return Verify.VerifyAnalyzer(d.testCode, expected);
+    }
+
+    [Fact(DisplayName = "Should detect missing closure when using Context.Sender instead of this.Sender")]
+    public Task FailureCaseWithContextSender()
+    {
+        var code = """
+                   using Akka.Actor;
+                   using System.Threading.Tasks;
+
+                   public sealed class MyActor : UntypedActor{
+                   
+                       protected override void OnReceive(object message){
+                           async Task<int> LocalFunction(){
+                               await Task.Delay(10);
+                               return message.ToString().Length;
+                           }
+                   
+                           // incorrect use of closures
+                           LocalFunction().PipeTo(Context.Sender);
+                       }
+                   }
+                   """;
+        
+        var expected = Verify.Diagnostic()
+            .WithSpan(13, 25, 13, 31)
+            .WithArguments("Context.Sender")
+            .WithSeverity(DiagnosticSeverity.Error);
+        
+        return Verify.VerifyAnalyzer(code, expected);
     }
 }
