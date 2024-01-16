@@ -5,6 +5,7 @@
 // -----------------------------------------------------------------------
 
 using Akka.Analyzers.Fixes;
+using Microsoft.CodeAnalysis;
 using Verify = Akka.Analyzers.Tests.Utility.AkkaVerifier<Akka.Analyzers.MustCloseOverSenderWhenUsingPipeToAnalyzer>;
 
 namespace Akka.Analyzers.Tests.Fixes.AK1000;
@@ -259,5 +260,54 @@ public sealed class MyActor : UntypedActor{
 
         return Verify.VerifyCodeFix(before, after, MustCloseOverSenderWhenUsingPipeToFixer.Key_FixPipeToSender,
             expectedDiagnostic);
+    }
+    
+    [Fact(DisplayName = "Should fix missing closure when using Context.Sender instead of this.Sender")]
+    public Task FailureCaseWithContextSender()
+    {
+        var before = """
+                   using Akka.Actor;
+                   using System.Threading.Tasks;
+
+                   public sealed class MyActor : UntypedActor{
+                   
+                       protected override void OnReceive(object message){
+                           async Task<int> LocalFunction(){
+                               await Task.Delay(10);
+                               return message.ToString().Length;
+                           }
+                   
+                           // incorrect use of closures
+                           LocalFunction().PipeTo(Context.Sender);
+                       }
+                   }
+                   """;
+        
+        var after = """
+                     using Akka.Actor;
+                     using System.Threading.Tasks;
+
+                     public sealed class MyActor : UntypedActor{
+                     
+                         protected override void OnReceive(object message){
+                             async Task<int> LocalFunction(){
+                                 await Task.Delay(10);
+                                 return message.ToString().Length;
+                             }
+                     
+                             // incorrect use of closures
+                             var sender = this.Sender;
+                             LocalFunction().PipeTo(sender);
+                         }
+                     }
+                     """;
+        
+        var expected = Verify.Diagnostic()
+            .WithSpan(13, 25, 13, 31)
+            .WithArguments("Context.Sender")
+            .WithSeverity(DiagnosticSeverity.Error);
+        
+        return Verify.VerifyCodeFix(before, after, MustCloseOverSenderWhenUsingPipeToFixer.Key_FixPipeToSender,
+            expected);
     }
 }
