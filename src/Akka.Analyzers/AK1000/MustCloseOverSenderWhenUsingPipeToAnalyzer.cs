@@ -51,8 +51,11 @@ public class MustCloseOverSenderWhenUsingPipeToAnalyzer()
 
     private static bool IsThisSenderSymbol(ISymbol? symbol, AkkaContext akkaContext)
     {
-        // Check if the symbol is 'this.Sender'
-        return symbol is { Name: "Sender", ContainingType.BaseType: not null } &&
-               symbol.ContainingType.IsActorBaseSubclass(akkaContext);
+        // Check if the symbol is 'this.Sender' or 'Context.Sender'
+        return (symbol is { Name: "Sender", ContainingType.BaseType: not null } &&
+                symbol.ContainingType.IsActorBaseSubclass(akkaContext)) ||
+               (symbol is IPropertySymbol propertySymbol &&
+                propertySymbol.Name == "Sender" &&
+                SymbolEqualityComparer.Default.Equals(propertySymbol.ContainingType, akkaContext.AkkaCore.ActorContextType));
     }
 }

@@ -94,7 +94,18 @@ public class MustCloseOverSenderWhenUsingPipeToAnalyzerSpecs
                 LocalFunction().PipeTo(Sender);
             }
         }
-        """
+        """,
+        // Replying to Sender using Context.Sender
+        @"using Akka.Actor;
+        
+        public sealed class MyActor : ReceiveActor{
+
+            public MyActor(){
+                Receive<string>(str => {
+                    Context.Sender.Tell(str); // shouldn't flag this
+                });
+            }
+        }",
     };
 
     public static readonly
