@@ -15,6 +15,16 @@ namespace Akka.Analyzers;
 public class MustNotUseAutomaticallyHandledMessagesInsideMessageExtractorAnalyzer()
     : AkkaDiagnosticAnalyzer(RuleDescriptors.Ak2001DoNotUseAutomaticallyHandledMessagesInShardMessageExtractor)
 {
+    private static readonly Version RelevantVersion = new(1, 5, 15, 0);
+    
+    protected override bool ShouldAnalyze(AkkaContext akkaContext)
+    {
+        Guard.AssertIsNotNull(akkaContext);
+        
+        // Akka.Cluster.Sharding has to be installed and the version of it used has to be greater than or equal to v1.5.15
+        return akkaContext.HasAkkaClusterShardingInstalled && akkaContext.AkkaClusterSharding.Version >= RelevantVersion;
+    }
+
     public override void AnalyzeCompilation(CompilationStartAnalysisContext context, AkkaContext akkaContext)
     {
         Guard.AssertIsNotNull(context);
@@ -22,17 +32,11 @@ public class MustNotUseAutomaticallyHandledMessagesInsideMessageExtractorAnalyze
 
         context.RegisterSyntaxNodeAction(ctx =>
         {
-            if (akkaContext.HasAkkaClusterShardingInstalled == false)
-                return; // exit early if we don't have Akka.Cluster.Sharding installed
-
             AnalyzeMethodDeclaration(ctx, akkaContext);
         }, SyntaxKind.MethodDeclaration);
 
         context.RegisterSyntaxNodeAction(ctx =>
         {
-            if (akkaContext.HasAkkaClusterShardingInstalled == false)
-                return; // exit early if we don't have Akka.Cluster.Sharding installed
-
             var invocationExpr = (InvocationExpressionSyntax)ctx.Node;
             var semanticModel = ctx.SemanticModel;
             if (semanticModel.GetSymbolInfo(invocationExpr).Symbol is not IMethodSymbol methodSymbol)

@@ -33,7 +33,7 @@ internal static class ReferenceAssembliesHelper
 
         // TODO: does this bring all other transitive dependencies?
         CurrentAkka = defaultAssemblies.AddPackages(
-            [new PackageIdentity("Akka", "1.5.14"), new PackageIdentity("Akka.Cluster.Sharding", "1.5.14")]
+            [new PackageIdentity("Akka.Cluster.Sharding", "1.5.15")]
         );
     }
 }
