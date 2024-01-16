@@ -294,6 +294,11 @@ public sealed class ShardMessageExtractor : IMessageExtractor
 	{
 		return Random.Shared.Next(0,10).ToString();
 	}
+	
+	public string ShardId(string entityId, object message)
+	{
+		return Random.Shared.Next(0,10).ToString();
+	}
 }
 """, new[]
 {

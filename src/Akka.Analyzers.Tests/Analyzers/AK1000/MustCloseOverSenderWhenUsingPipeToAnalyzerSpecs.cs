@@ -184,7 +184,7 @@ public class MustCloseOverSenderWhenUsingPipeToAnalyzerSpecs
 
     [Theory]
     [MemberData(nameof(FailureCases))]
-    public async Task FailureCase(
+    public Task FailureCase(
         (string testCode, (int startLine, int startColumn, int endLine, int endColumn) spanData) d)
     {
         var expected = Verify.Diagnostic()
@@ -192,6 +192,6 @@ public class MustCloseOverSenderWhenUsingPipeToAnalyzerSpecs
             .WithArguments("Sender")
             .WithSeverity(DiagnosticSeverity.Error);
 
-        await Verify.VerifyAnalyzer(d.testCode, expected).ConfigureAwait(true);
+        return Verify.VerifyAnalyzer(d.testCode, expected);
     }
 }
