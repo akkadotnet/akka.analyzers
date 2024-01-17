@@ -60,16 +60,6 @@ public sealed class MustCloseOverSenderWhenUsingPipeToFixer()
                 SyntaxFactory.IdentifierName("Sender")))
             .WithAdditionalAnnotations(Formatter.Annotation); // need this line to get indentation right
 
-        // Find an appropriate insertion point for the local variable
-        var insertionPoint = invocationExpr.FirstAncestorOrSelf<StatementSyntax>();
-
-        if (insertionPoint == null)
-            // Unable to find a valid insertion point
-            return document;
-
-        // Insert the local variable declaration at the found insertion point
-        editor.InsertBefore(insertionPoint, senderVariable);
-
         // Identify the 'recipient' argument - assuming it's the first argument
         var arguments = invocationExpr.ArgumentList.Arguments;
 
@@ -93,8 +83,40 @@ public sealed class MustCloseOverSenderWhenUsingPipeToFixer()
         var newArgumentList = SyntaxFactory.ArgumentList(newArguments);
         var newInvocationExpr = invocationExpr.WithArgumentList(newArgumentList);
 
-        // Make sure to replace the old invocation with the new one
-        editor.ReplaceNode(invocationExpr, newInvocationExpr);
+        // Check to see if we're inside a lambda expression and it does not have a body block
+        var lambdaExpr = invocationExpr.FirstAncestorOrSelf<LambdaExpressionSyntax>();
+        if (lambdaExpr?.Body is ExpressionSyntax exprSyntax)
+        {
+            // Make sure to replace the old invocation with the new one
+            var newExprSyntax = exprSyntax.ReplaceNode(invocationExpr, newInvocationExpr);
+            
+            // Create a new block with the original lambda body as a statement
+            var originalBody = SyntaxFactory.ExpressionStatement(newExprSyntax);
+            
+            // Insert the local variable declaration at the start of the lambda block
+            var bodyBlock = SyntaxFactory.Block(
+                senderVariable.WithTrailingTrivia(SyntaxFactory.ElasticCarriageReturnLineFeed), 
+                originalBody.WithTrailingTrivia(SyntaxFactory.ElasticCarriageReturnLineFeed));
+            
+            // Replace the original with the new one
+            var newLambdaExpr = lambdaExpr.WithBody(null).WithBlock(bodyBlock);
+            editor.ReplaceNode(lambdaExpr, newLambdaExpr);
+        }
+        else
+        {
+            // Find an appropriate insertion point for the local variable
+            var insertionPoint = invocationExpr.FirstAncestorOrSelf<StatementSyntax>();
+
+            if (insertionPoint == null)
+                // Unable to find a valid insertion point
+                return document;
+
+            // Insert the local variable declaration at the found insertion point
+            editor.InsertBefore(insertionPoint, senderVariable);
+            
+            // Make sure to replace the old invocation with the new one
+            editor.ReplaceNode(invocationExpr, newInvocationExpr);
+        }
 
         var newDocument = editor.GetChangedDocument(); // error happens here
 

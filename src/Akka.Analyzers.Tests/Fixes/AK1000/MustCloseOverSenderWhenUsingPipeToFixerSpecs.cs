@@ -63,6 +63,59 @@ public sealed class MyActor : ReceiveActor{
     }
 
     [Fact]
+    public Task AddClosureInsideOneLinerReceiveMethod()
+    {
+        var before =
+"""
+using Akka.Actor;
+using System.Threading.Tasks;
+
+public sealed class MyActor : ReceiveActor
+{
+    public MyActor()
+    {
+        Receive<string>(str => MessageHandler(str).PipeTo(Sender));
+    }
+
+    private Task<int> MessageHandler(string str)
+    {
+        return Task.FromResult(str.Length);
+    }
+}
+""";
+
+        var after =
+"""
+using Akka.Actor;
+using System.Threading.Tasks;
+
+public sealed class MyActor : ReceiveActor
+{
+    public MyActor()
+    {
+        Receive<string>(str =>
+        {
+            var sender = this.Sender;
+            MessageHandler(str).PipeTo(sender);
+        });
+    }
+
+    private Task<int> MessageHandler(string str)
+    {
+        return Task.FromResult(str.Length);
+    }
+}
+""";
+
+        var expectedDiagnostic = Verify.Diagnostic()
+            .WithSpan(8, 52, 8, 58)
+            .WithArguments("Sender");
+
+        return Verify.VerifyCodeFix(before, after, MustCloseOverSenderWhenUsingPipeToFixer.Key_FixPipeToSender,
+            expectedDiagnostic);
+    }
+
+    [Fact]
     public Task AddClosureInsideUntypedActor()
     {
         var before =
