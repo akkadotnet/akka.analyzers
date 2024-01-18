@@ -87,4 +87,10 @@ public static class TypeSymbolFactory
         return Guard.AssertIsNotNull(compilation)
             .GetTypeByMetadataName("Akka.Cluster.Sharding.ShardRegion+StartEntity");
     }
+    
+    public static INamedTypeSymbol? ReceiveActor(Compilation compilation)
+    {
+        return Guard.AssertIsNotNull(compilation)
+            .GetTypeByMetadataName("Akka.Actor.ReceiveActor");
+    }
 }

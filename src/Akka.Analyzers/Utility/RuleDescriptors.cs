@@ -34,6 +34,14 @@ public static class RuleDescriptors
         "When using `PipeTo`, you must always close over `Sender` to ensure that the actor's `Sender` property " +
         "is captured at the time you're scheduling the `PipeTo`, as this value may change asynchronously.");
 
+    public static DiagnosticDescriptor Ak1002DoNotAwaitOnGracefulStop { get; } = Rule(
+        id: "AK1002",
+        title: "Should never await on Self.GracefulStop() inside ReceiveAsync()", 
+        category: AnalysisCategory.ActorDesign, 
+        defaultSeverity: DiagnosticSeverity.Error,
+        messageFormat: "Do not await on `Self.GracefulStop()` inside `ReceiveAsync()` because this will lead into " +
+                       "a deadlock inside the `ReceiveAsync()` and the actor will never receive the `PoisonPill` message sent by `GracefuLStop` while it's `await`-ing.");
+    
     #endregion
     
     #region AK2000 Rules
