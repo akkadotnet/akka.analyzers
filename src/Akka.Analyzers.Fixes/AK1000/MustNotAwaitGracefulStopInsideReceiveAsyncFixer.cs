@@ -51,33 +51,14 @@ public class MustNotAwaitGracefulStopInsideReceiveAsyncFixer()
     {
         var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
 
-        // Create an assignment expression
-        var assignment = SyntaxFactory.EqualsValueClause(awaitExpr.Expression);
+        // Create an assignment expression using a discard "_"
+        var assignment =  SyntaxFactory.AssignmentExpression(
+            SyntaxKind.SimpleAssignmentExpression,
+            SyntaxFactory.IdentifierName("_"),
+            awaitExpr.Expression);
         
-        // Create a variable declaration "_"
-        var variableDeclarator = SyntaxFactory.VariableDeclarator(SyntaxFactory.Identifier("_"))
-            .WithInitializer(assignment);
-        var variableDeclaration = SyntaxFactory.VariableDeclaration(SyntaxFactory.ParseTypeName("var"))
-            .AddVariables(variableDeclarator);
-        var localDeclaration = SyntaxFactory.LocalDeclarationStatement(variableDeclaration)
-            .WithAdditionalAnnotations(Formatter.Annotation); // need this line to get indentation right
-        
-        var lambdaExpr = awaitExpr.FirstAncestorOrSelf<LambdaExpressionSyntax>();
-        if (lambdaExpr?.Body is ExpressionSyntax)
-        {
-            // Insert the local variable declaration at the start of the lambda block
-            var bodyBlock = SyntaxFactory.Block(localDeclaration);
-            
-            // Replace the original with the new one
-            var newLambdaExpr = lambdaExpr.WithBody(null).WithBlock(bodyBlock);
-            editor.ReplaceNode(lambdaExpr, newLambdaExpr);
-        }
-        else
-        {
-            // Replace the await expression with the new local declaration
-            if(awaitExpr.Parent != null)
-                editor.ReplaceNode(awaitExpr.Parent, localDeclaration);
-        }
+        // Replace the await expression with the new local declaration
+        editor.ReplaceNode(awaitExpr, assignment);
         
         var newDocument = editor.GetChangedDocument();
 

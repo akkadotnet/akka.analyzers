@@ -42,7 +42,7 @@ public class MustNotAwaitGracefulStopInsideReceiveAsyncFixerSpecs
                 public MyActor()
                 {
                     ReceiveAsync<string>(async str => {
-                        var _ = Context.Self.GracefulStop(TimeSpan.FromSeconds(3));
+                        _ = Context.Self.GracefulStop(TimeSpan.FromSeconds(3));
                     });
                 }
             }
@@ -84,7 +84,7 @@ public class MustNotAwaitGracefulStopInsideReceiveAsyncFixerSpecs
             {
                 public MyActor()
                 {
-                    ReceiveAsync<string>(async str => { var _ = Context.Self.GracefulStop(TimeSpan.FromSeconds(3)); });
+                    ReceiveAsync<string>(async str => _ = Context.Self.GracefulStop(TimeSpan.FromSeconds(3)));
                 }
             }
             """;
