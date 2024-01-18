@@ -54,6 +54,6 @@ public class MustNotAwaitGracefulStopInsideReceiveAsyncAnalyzer()
             return false;
 
         // Check if the method name is 'ReceiveAsync' and it is defined inside the ReceiveActor class
-        return methodSymbol.Name == "ReceiveAsync" && SymbolEqualityComparer.Default.Equals(methodSymbol.ContainingType, akkaContext.AkkaCore.ReceiveActorType);
+        return methodSymbol.Name is "ReceiveAsync" or "ReceiveAnyAsync" && SymbolEqualityComparer.Default.Equals(methodSymbol.ContainingType, akkaContext.AkkaCore.ReceiveActorType);
     }
 }
