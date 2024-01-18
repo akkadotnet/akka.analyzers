@@ -25,6 +25,7 @@ public interface IAkkaCoreContext
     public INamedTypeSymbol? ActorContextType { get; }
     
     public INamedTypeSymbol? IndirectActorProducerType { get; }
+    public INamedTypeSymbol? ReceiveActorType { get; }
 }
 
 /// <summary>
@@ -46,6 +47,8 @@ public sealed class EmptyCoreContext : IAkkaCoreContext
     public INamedTypeSymbol? ActorContextType => null;
     
     public INamedTypeSymbol? IndirectActorProducerType => null;
+    
+    public INamedTypeSymbol? ReceiveActorType => null;
 }
 
 /// <summary>
@@ -62,6 +65,7 @@ public class AkkaCoreContext : IAkkaCoreContext
     private readonly Lazy<INamedTypeSymbol?> _lazyPropsType;
     private readonly Lazy<INamedTypeSymbol?> _lazyActorContextType;
     private readonly Lazy<INamedTypeSymbol?> _lazyIIndirectActorProducerType;
+    private readonly Lazy<INamedTypeSymbol?> _lazyReceiveActorType;
 
     private AkkaCoreContext(Compilation compilation, Version version)
     {
@@ -71,6 +75,7 @@ public class AkkaCoreContext : IAkkaCoreContext
         _lazyPropsType = new Lazy<INamedTypeSymbol?>(() => TypeSymbolFactory.Props(compilation));
         _lazyActorContextType = new Lazy<INamedTypeSymbol?>(() => TypeSymbolFactory.ActorContext(compilation));
         _lazyIIndirectActorProducerType = new Lazy<INamedTypeSymbol?>(() => TypeSymbolFactory.IndirectActorProducer(compilation));
+        _lazyReceiveActorType = new Lazy<INamedTypeSymbol?>(() => TypeSymbolFactory.ReceiveActor(compilation));
     }
 
     /// <inheritdoc />
@@ -84,6 +89,8 @@ public class AkkaCoreContext : IAkkaCoreContext
     
     public INamedTypeSymbol? IndirectActorProducerType => _lazyIIndirectActorProducerType.Value;
 
+    public INamedTypeSymbol? ReceiveActorType => _lazyReceiveActorType.Value;
+    
     public static AkkaCoreContext? Get(
         Compilation compilation,
         Version? versionOverride = null)

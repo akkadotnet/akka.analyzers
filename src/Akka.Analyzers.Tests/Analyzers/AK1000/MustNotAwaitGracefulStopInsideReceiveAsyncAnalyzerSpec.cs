@@ -4,12 +4,13 @@
 //  </copyright>
 // -----------------------------------------------------------------------
 
+using Akka.Analyzers.Fixes;
 using Microsoft.CodeAnalysis;
-using Verify = Akka.Analyzers.Tests.Utility.AkkaVerifier<Akka.Analyzers.MustNotAwaitGracefulStopInsideReceiveAnalyzer>;
+using Verify = Akka.Analyzers.Tests.Utility.AkkaVerifier<Akka.Analyzers.MustNotAwaitGracefulStopInsideReceiveAsyncAnalyzer>;
 
 namespace Akka.Analyzers.Tests.Analyzers.AK1000;
 
-public class MustNotAwaitGracefulStopInsideReceiveAnalyzerSpec
+public class MustNotAwaitGracefulStopInsideReceiveAsyncAnalyzerSpec
 {
         public static readonly TheoryData<string> SuccessCases = new()
     {
@@ -23,60 +24,14 @@ public sealed class MyActor : ReceiveActor
 {
     public MyActor()
     {
-        ReceiveAsync<string>(str => {
-            // This is fine, detached task
+        // This is fine, detached task
+        ReceiveAsync<string>(async str => {
             Context.Self.GracefulStop(TimeSpan.FromSeconds(3));
-            return Task.CompletedTask;
         });
     }
 }
 """,
 
-        // ReceiveActor calling GracefulStop() as detached task inside a method that is invoked from inside ReceiveAsync<T> block 
-"""
-using System;
-using Akka.Actor;
-using System.Threading.Tasks;
-
-public sealed class MyActor : ReceiveActor
-{
-    public MyActor()
-    {
-        ReceiveAsync<string>(str => {
-            return Execute(str);
-        });
-    }
-
-    private Task Execute(string str)
-    {
-        // This is fine, detached task
-        Context.Self.GracefulStop(TimeSpan.FromSeconds(3));
-        return Task.CompletedTask;
-    }
-}
-""",
-
-    // ReceiveActor calling GracefulStop() as detached task inside a method that is invoked as a method group from inside ReceiveAsync<T> block
-"""
-using System;
-using Akka.Actor;
-using System.Threading.Tasks;
-
-public sealed class MyActor : ReceiveActor
-{
-    public MyActor()
-    {
-        ReceiveAsync<string>(Execute);
-    }
-
-    private Task Execute(string str)
-    {
-        // This is fine, detached task
-        Context.Self.GracefulStop(TimeSpan.FromSeconds(3));
-        return Task.CompletedTask;
-    }
-}
-""",
         // ReceiveActor using ReceiveAsync<T> without GracefulStop() at all
 """
 using Akka.Actor;
@@ -86,9 +41,8 @@ public sealed class MyActor : ReceiveActor
 {
     public MyActor()
     {
-        ReceiveAsync<string>(str => {
-            Sender.Tell(str); // shouldn't flag this
-            return Task.CompletedTask;
+        ReceiveAsync<string>(async str => { // shouldn't flag this
+            Sender.Tell(str); 
         });
     }
 }
@@ -105,13 +59,17 @@ public class MyActor
     public MyActor(IActorRef self)
     {
         Self = self;
+        ReceiveAsync<string>(async str =>
+        {
+            await Self.GracefulStop(TimeSpan.FromSeconds(3));
+        });
     }
 
     public IActorRef Self { get; }
     
-    public async Task ReceiveAsync<T>(T message)
+    public Task ReceiveAsync<T>(Func<string, Task> func)
     {
-        await Self.GracefulStop(TimeSpan.FromSeconds(3));
+        return func("test");
     }
 }
 """,
@@ -132,36 +90,29 @@ public sealed class MyActor : ReceiveActor
 {
     public MyActor()
     {
-        ReceiveAsync<string>(async str => {
+        ReceiveAsync<string>(async str => 
+        {
             await Context.Self.GracefulStop(TimeSpan.FromSeconds(3));
         });
     }
 }
-""", (10, 13, 10, 69)),
-
-            // UntypedActor invoking await GracefulStop() inside a OnReceive block
+""", (11, 13, 11, 69)),
+            
+            // Receive actor invoking await GracefulStop() inside a ReceiveAsync<T> with no code block
             (
 """
 using System;
 using Akka.Actor;
 using System.Threading.Tasks;
 
-public sealed class MyActor : UntypedActor
+public sealed class MyActor : ReceiveActor
 {
-    protected override void OnReceive(object message)
+    public MyActor()
     {
-        var sender = Sender;
-        LocalFunction().PipeTo(sender);
-        return;
-
-        async Task<int> LocalFunction()
-        {
-            await Context.Self.GracefulStop(TimeSpan.FromSeconds(3));
-            return message.ToString().Length;
-        }
+        ReceiveAsync<string>(async str => await Context.Self.GracefulStop(TimeSpan.FromSeconds(3)));
     }
 }
-""", (15, 13, 15, 69)),
+""", (9, 43, 9, 99)),            
         };
 
     [Theory]
