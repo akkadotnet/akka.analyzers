@@ -4,6 +4,7 @@
 //  </copyright>
 // -----------------------------------------------------------------------
 
+using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -24,7 +25,7 @@ public class MustNotAwaitGracefulStopInsideReceiveAsyncAnalyzer()
         {
             var invocationExpr = (InvocationExpressionSyntax)ctx.Node;
 
-            if (invocationExpr.Expression is not MemberAccessExpressionSyntax memberAccess || memberAccess.Name.Identifier.Text != "GracefulStop") 
+            if(!IsGracefulStopInvocation(invocationExpr, ctx.SemanticModel, akkaContext))
                 return;
             
             // Check 1: GracefulStop() should not be awaited
@@ -32,7 +33,7 @@ public class MustNotAwaitGracefulStopInsideReceiveAsyncAnalyzer()
                 return;
 
             // Check 2: Ensure called within ReceiveAsync<T> lambda expression
-            if (!IsInsideReceiveAsyncLambda(invocationExpr, ctx.SemanticModel, akkaContext))
+            if (!invocationExpr.IsInsideReceiveAsyncLambda(ctx.SemanticModel, akkaContext))
                 return;
 
             var diagnostic = Diagnostic.Create(RuleDescriptors.Ak1002DoNotAwaitOnGracefulStop, awaitExpression.GetLocation());
@@ -40,20 +41,27 @@ public class MustNotAwaitGracefulStopInsideReceiveAsyncAnalyzer()
         }, SyntaxKind.InvocationExpression);
     }
     
-    private static bool IsInsideReceiveAsyncLambda(SyntaxNode node, SemanticModel semanticModel, AkkaContext akkaContext)
-    {
-        // Traverse up the syntax tree to find the first lambda expression ancestor
-        var lambdaExpression = node.FirstAncestorOrSelf<LambdaExpressionSyntax>();
 
-        // Check if this lambda expression is an argument to an invocation expression
-        if (lambdaExpression?.Parent is not ArgumentSyntax { Parent: ArgumentListSyntax { Parent: InvocationExpressionSyntax invocationExpression } }) 
-            return false;
-        
+    /// <summary>
+    /// Check if the invocation expression is a valid `GracefulStop` method invocation
+    /// </summary>
+    /// <param name="invocationExpression">The invocation expression being analyzed</param>
+    /// <param name="semanticModel">The semantic model</param>
+    /// <param name="akkaContext">The Akka context</param>
+    /// <returns>true if the invocation expression is a valid `GracefulStop` method</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool IsGracefulStopInvocation(
+        InvocationExpressionSyntax invocationExpression,
+        SemanticModel semanticModel,
+        AkkaContext akkaContext)
+    {
         // Get the method symbol from the invocation expression
         if (semanticModel.GetSymbolInfo(invocationExpression).Symbol is not IMethodSymbol methodSymbol)
             return false;
 
-        // Check if the method name is 'ReceiveAsync' and it is defined inside the ReceiveActor class
-        return methodSymbol.Name is "ReceiveAsync" or "ReceiveAnyAsync" && SymbolEqualityComparer.Default.Equals(methodSymbol.ContainingType, akkaContext.AkkaCore.ReceiveActorType);
+        // Check if the method name is 'GracefulStop', that it is an extension method,
+        // and it is defined inside the GracefulStopSupport static class
+        return methodSymbol is { Name: "GracefulStop", IsExtensionMethod: true }
+               && SymbolEqualityComparer.Default.Equals(methodSymbol.ContainingType, akkaContext.AkkaCore.GracefulStopSupportType);
     }
 }

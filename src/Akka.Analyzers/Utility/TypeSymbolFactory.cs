@@ -93,4 +93,8 @@ public static class TypeSymbolFactory
         return Guard.AssertIsNotNull(compilation)
             .GetTypeByMetadataName("Akka.Actor.ReceiveActor");
     }
+    
+    public static INamedTypeSymbol? GracefulStopSupport(Compilation compilation)
+        => Guard.AssertIsNotNull(compilation)
+            .GetTypeByMetadataName("Akka.Actor.GracefulStopSupport");
 }
