@@ -40,7 +40,7 @@ public static class RuleDescriptors
         category: AnalysisCategory.ActorDesign, 
         defaultSeverity: DiagnosticSeverity.Error,
         messageFormat: "Do not await on `Self.GracefulStop()` inside `ReceiveAsync()` because this will lead into " +
-                       "a deadlock inside the `ReceiveAsync()` and the actor will never receive the `PoisonPill` message sent by `GracefuLStop` while it's `await`-ing.");
+                       "a deadlock inside the `ReceiveAsync()` and the actor will never receive the `PoisonPill` message sent by `GracefulStop` while it's `await`-ing.");
     
     #endregion
     
