@@ -42,6 +42,14 @@ public static class RuleDescriptors
         messageFormat: "Do not await on `Self.GracefulStop()` inside `ReceiveAsync()` because this will lead into " +
                        "a deadlock inside the `ReceiveAsync()` and the actor will never receive the `PoisonPill` message sent by `GracefulStop` while it's `await`-ing.");
     
+    public static DiagnosticDescriptor Ak1003ShouldNotUseReceiveAsyncSynchronously { get; } = Rule(
+        id: "AK1003",
+        title: "ReceiveAsync<T>() or ReceiveAnyAsync<T>() message handler without async lambda body", 
+        category: AnalysisCategory.ActorDesign, 
+        defaultSeverity: DiagnosticSeverity.Warning,
+        messageFormat: "ReceiveAsync<T>() or ReceiveAnyAsync<T>() message handler with synchronous code body or " +
+                       "block is less performant compared to Receive<T>() or ReceiveAny<T>(). " +
+                       "Consider changing this message handler to Receive<T>() or ReceiveAny<T>() instead.");
     #endregion
     
     #region AK2000 Rules
