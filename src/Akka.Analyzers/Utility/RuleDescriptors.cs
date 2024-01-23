@@ -47,9 +47,9 @@ public static class RuleDescriptors
         title: "ReceiveAsync<T>() or ReceiveAnyAsync<T>() message handler without async lambda body", 
         category: AnalysisCategory.ActorDesign, 
         defaultSeverity: DiagnosticSeverity.Warning,
-        messageFormat: "ReceiveAsync<T>() or ReceiveAnyAsync<T>() message handler with synchronous code body or " +
-                       "block is less performant compared to Receive<T>() or ReceiveAny<T>(). " +
-                       "Consider changing this message handler to Receive<T>() or ReceiveAny<T>() instead.");
+        messageFormat: "ReceiveAsync<T>() or ReceiveAnyAsync() message handler with synchronous code body or " +
+                       "block is less performant compared to Receive<T>() or ReceiveAny(). " +
+                       "Consider changing this message handler to Receive<T>() or ReceiveAny() instead.");
     #endregion
     
     #region AK2000 Rules
