@@ -117,6 +117,34 @@ public class MyActor
     }
 }
 """,
+
+        // User defined `GracefulStop()` method, we're not responsible for this.
+"""
+using System;
+using Akka.Actor;
+using System.Threading.Tasks;
+
+public class MyActor: ReceiveActor
+{
+    public MyActor()
+    {
+        ReceiveAsync<string>(async str =>
+        {
+            await GracefulStop(TimeSpan.FromSeconds(3));
+        });
+
+        ReceiveAnyAsync(async _ =>
+        {
+            await GracefulStop(TimeSpan.FromSeconds(3));
+        });
+    }
+    
+    public Task GracefulStop(TimeSpan timeout)
+    {
+        return Task.CompletedTask;
+    }
+}
+""",
     };
 
     public static readonly
@@ -191,7 +219,7 @@ public sealed class MyActor : ReceiveActor
         ReceiveAnyAsync(async obj => await Context.Self.GracefulStop(TimeSpan.FromSeconds(3)));
     }
 }
-""", (9, 38, 9, 94)),            
+""", (9, 38, 9, 94)),
         };
 
     [Theory]

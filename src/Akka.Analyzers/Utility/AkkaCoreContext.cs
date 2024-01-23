@@ -26,6 +26,7 @@ public interface IAkkaCoreContext
     
     public INamedTypeSymbol? IndirectActorProducerType { get; }
     public INamedTypeSymbol? ReceiveActorType { get; }
+    public INamedTypeSymbol? GracefulStopSupportType { get; }
 }
 
 /// <summary>
@@ -49,6 +50,8 @@ public sealed class EmptyCoreContext : IAkkaCoreContext
     public INamedTypeSymbol? IndirectActorProducerType => null;
     
     public INamedTypeSymbol? ReceiveActorType => null;
+    
+    public INamedTypeSymbol? GracefulStopSupportType => null;
 }
 
 /// <summary>
@@ -66,6 +69,7 @@ public class AkkaCoreContext : IAkkaCoreContext
     private readonly Lazy<INamedTypeSymbol?> _lazyActorContextType;
     private readonly Lazy<INamedTypeSymbol?> _lazyIIndirectActorProducerType;
     private readonly Lazy<INamedTypeSymbol?> _lazyReceiveActorType;
+    private readonly Lazy<INamedTypeSymbol?> _lazyGracefulStopSupport;
 
     private AkkaCoreContext(Compilation compilation, Version version)
     {
@@ -76,6 +80,7 @@ public class AkkaCoreContext : IAkkaCoreContext
         _lazyActorContextType = new Lazy<INamedTypeSymbol?>(() => TypeSymbolFactory.ActorContext(compilation));
         _lazyIIndirectActorProducerType = new Lazy<INamedTypeSymbol?>(() => TypeSymbolFactory.IndirectActorProducer(compilation));
         _lazyReceiveActorType = new Lazy<INamedTypeSymbol?>(() => TypeSymbolFactory.ReceiveActor(compilation));
+        _lazyGracefulStopSupport = new Lazy<INamedTypeSymbol?>(() => TypeSymbolFactory.GracefulStopSupport(compilation));
     }
 
     /// <inheritdoc />
@@ -90,6 +95,8 @@ public class AkkaCoreContext : IAkkaCoreContext
     public INamedTypeSymbol? IndirectActorProducerType => _lazyIIndirectActorProducerType.Value;
 
     public INamedTypeSymbol? ReceiveActorType => _lazyReceiveActorType.Value;
+
+    public INamedTypeSymbol? GracefulStopSupportType => _lazyGracefulStopSupport.Value;
     
     public static AkkaCoreContext? Get(
         Compilation compilation,
