@@ -3,9 +3,9 @@
 * [AK2001: Harden rule, only run on Akka.NET v1.5.15 and later](https://github.com/akkadotnet/akka.analyzers/pull/51)
 * [AK1001: Make sure that analyzer also considers `Context.Sender`](https://github.com/akkadotnet/akka.analyzers/pull/54)
 * [AK1001: Make sure that analyzer also consider lambda expressions with no code blocks](https://github.com/akkadotnet/akka.analyzers/pull/56)
-* [AK1002: Add new rule to prevent `GracefulStop()` from being called in `ReceiveAsync<T>()`](https://github.com/akkadotnet/akka.analyzers/pull/58)
+* [AK1002: Add new rule to prevent `GracefulStop()` from being called in `ReceiveAsync()` and `ReceiveAnyAsync()`](https://github.com/akkadotnet/akka.analyzers/pull/58)
 * [AK1002: Improve rule to ignore user code with the same name](https://github.com/akkadotnet/akka.analyzers/pull/60)
-* [AK1003: Add rule to flag non-performant `ReceiveAsync<T>()` invocation](https://github.com/akkadotnet/akka.analyzers/pull/61)
+* [AK1003: Add rule to flag non-performant `ReceiveAsync()` and `ReceiveAnyAsync()` invocation](https://github.com/akkadotnet/akka.analyzers/pull/61)
 
 #### 0.2.1 January 9th 2024 ####
 
