@@ -236,17 +236,13 @@ public sealed class MyActor : ReceiveActor
     
     private async Task Handler(string s) { }
 }
-"""
-    };
+""",
 
-    public static readonly
-        TheoryData<(string testData, (int startLine, int startColumn, int endLine, int endColumn) spanData)>
-        FailureCases = new()
-        {
-            // ReceiveActor using ReceiveAsync without async keyword on the async lambda expression
-            (
-"""
-// 1
+        // ReceiveActor using ReceiveAsync without async keyword on the async lambda expression.
+        // Note that this is actually a non-performant code, we're opting not to detect this because to make sure
+        // that we're capturing an actual sync over async code, we'd need to write an actual static analyzer 
+        """
+// 11
 using Akka.Actor;
 using System.Threading.Tasks;
 
@@ -261,12 +257,10 @@ public sealed class MyActor : ReceiveActor
         });
     }
 }
-""", (9, 9, 13, 11)),
-            
-            // ReceiveActor using ReceiveAsync without async keyword on the async lambda expression, alternate version
-            (
-"""
-// 2
+""",
+        // ReceiveActor using ReceiveAsync without async keyword on the async lambda expression, alternate version
+        """
+// 12
 using Akka.Actor;
 using System.Threading.Tasks;
 
@@ -281,13 +275,18 @@ public sealed class MyActor : ReceiveActor
         });
     }
 }
-""", (9, 9, 13, 11)),
-            
+""",
+    };
+
+    public static readonly
+        TheoryData<(string testData, (int startLine, int startColumn, int endLine, int endColumn) spanData)>
+        FailureCases = new()
+        {
             // ReceiveActor using ReceiveAsync with async keyword on the async lambda expression
             // but without any awaited code
             (
 """
-// 3
+// 1
 using Akka.Actor;
 using System.Threading.Tasks;
 
@@ -307,7 +306,7 @@ public sealed class MyActor : ReceiveActor
             // but without any awaited code, alternate version
             (
 """
-// 4
+// 2
 using Akka.Actor;
 using System.Threading.Tasks;
 

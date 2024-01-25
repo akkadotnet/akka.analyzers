@@ -40,12 +40,10 @@ public class ShouldNotUseReceiveAsyncWithoutAsyncLambdaAnalyzer(): AkkaDiagnosti
 
             var lambdaExpr = (LambdaExpressionSyntax)lambdaArg.Expression;
             
-            // first case, lambda expression is not prefixed with the `async` keyword
+            // first case, lambda expression is not prefixed with the `async` keyword.
+            // We will assume that the user is doing a proper thing and not just returning a `Task.CompletedTask`
             if (!lambdaExpr.AsyncKeyword.IsKind(SyntaxKind.AsyncKeyword))
-            {
-                ReportDiagnostic();
                 return;
-            }
             
             // second case, lambda expression contains a block and one of its child is awaited, OK
             if(lambdaExpr.Body.DescendantNodes().OfType<AwaitExpressionSyntax>().Any())
