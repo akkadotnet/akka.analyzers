@@ -24,8 +24,9 @@ public class MustNotAwaitGracefulStopInsideReceiveAsyncAnalyzer()
         context.RegisterSyntaxNodeAction(ctx =>
         {
             var invocationExpr = (InvocationExpressionSyntax)ctx.Node;
-
-            if(!IsGracefulStopInvocation(invocationExpr, ctx.SemanticModel, akkaContext))
+            var semanticModel = ctx.SemanticModel;
+            
+            if(!IsGracefulStopInvocation(invocationExpr, semanticModel, akkaContext))
                 return;
             
             // Check 1: GracefulStop() should not be awaited
@@ -33,9 +34,13 @@ public class MustNotAwaitGracefulStopInsideReceiveAsyncAnalyzer()
                 return;
 
             // Check 2: Ensure called within ReceiveAsync<T> or ReceiveAnyAsync lambda expression
-            if (!invocationExpr.IsInsideReceiveAsyncLambda(ctx.SemanticModel, akkaContext))
+            if (!invocationExpr.IsInsideReceiveAsyncLambda(semanticModel, akkaContext))
                 return;
 
+            // Check 3: Ensure method is accessing ActorBase.Self or ActorContext.Self
+            if(!invocationExpr.IsAccessingActorSelf(semanticModel, akkaContext))
+               return;
+            
             var diagnostic = Diagnostic.Create(RuleDescriptors.Ak1002DoNotAwaitOnGracefulStop, awaitExpression.GetLocation());
             ctx.ReportDiagnostic(diagnostic);
         }, SyntaxKind.InvocationExpression);
@@ -75,7 +80,6 @@ public class MustNotAwaitGracefulStopInsideReceiveAsyncAnalyzer()
         if (!SymbolEqualityComparer.Default.Equals(methodSymbol.ContainingType, akkaContext.AkkaCore.GracefulStopSupportType))
             return false;
 
-        // Check that method is accessing ActorBase.Self or ActorBase.Context.Self
-        return invocationExpression.IsAccessingActorSelf(semanticModel, akkaContext);
+        return true;
     }
 }
