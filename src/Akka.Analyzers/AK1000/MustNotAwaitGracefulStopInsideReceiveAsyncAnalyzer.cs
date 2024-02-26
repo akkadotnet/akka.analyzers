@@ -32,7 +32,7 @@ public class MustNotAwaitGracefulStopInsideReceiveAsyncAnalyzer()
             if (invocationExpr.Parent is not AwaitExpressionSyntax awaitExpression)
                 return;
 
-            // Check 2: Ensure called within ReceiveAsync<T> lambda expression
+            // Check 2: Ensure called within ReceiveAsync<T> or ReceiveAnyAsync lambda expression
             if (!invocationExpr.IsInsideReceiveAsyncLambda(ctx.SemanticModel, akkaContext))
                 return;
 
@@ -55,13 +55,27 @@ public class MustNotAwaitGracefulStopInsideReceiveAsyncAnalyzer()
         SemanticModel semanticModel,
         AkkaContext akkaContext)
     {
-        // Get the method symbol from the invocation expression
+        // Expression need to be a member access
+        if (invocationExpression.Expression is not MemberAccessExpressionSyntax memberAccess)
+            return false;
+        
+        // Expression name should be "GracefulStop"
+        if (memberAccess.Name.Identifier.Text is not "GracefulStop")
+            return false;
+        
+        // Expression need to be a method invocation
         if (semanticModel.GetSymbolInfo(invocationExpression).Symbol is not IMethodSymbol methodSymbol)
             return false;
 
-        // Check if the method name is 'GracefulStop', that it is an extension method,
-        // and it is defined inside the GracefulStopSupport static class
-        return methodSymbol is { Name: "GracefulStop", IsExtensionMethod: true }
-               && SymbolEqualityComparer.Default.Equals(methodSymbol.ContainingType, akkaContext.AkkaCore.GracefulStopSupportType);
+        // Check if the method is an extension method
+        if(methodSymbol is not { IsExtensionMethod: true })
+            return false;
+
+        // Check that method is defined inside the GracefulStopSupport static class
+        if (!SymbolEqualityComparer.Default.Equals(methodSymbol.ContainingType, akkaContext.AkkaCore.GracefulStopSupportType))
+            return false;
+
+        // Check that method is accessing ActorBase.Self or ActorBase.Context.Self
+        return invocationExpression.IsAccessingActorSelf(semanticModel, akkaContext);
     }
 }
