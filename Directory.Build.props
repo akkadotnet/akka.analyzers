@@ -35,7 +35,7 @@
   <!-- ======================================== -->
   <!-- Production-specific properties and items -->
   <Choose>
-    <When Condition=" !$(MSBuildProjectName.Contains('.tests')) ">
+    <When Condition=" !$(MSBuildProjectName.Contains('.Tests')) ">
       <PropertyGroup>
         <AnalysisLevel>latest-All</AnalysisLevel>
         <EnableNETAnalyzers>true</EnableNETAnalyzers>
@@ -44,6 +44,16 @@
       </PropertyGroup>
     </When>
   </Choose>
+  
+  <Choose>
+    <When Condition="$(MSBuildProjectName.Contains('.Tests'))">
+      <ItemGroup>
+        <!-- Download packages referenced by ReferenceAssembliesHelper -->
+        <PackageDownload Include="Akka.Cluster.Sharding" Version="[1.5.15]"/>
+      </ItemGroup>
+    </When>
+  </Choose>
+  
   <PropertyGroup Condition="$(MSBuildProjectName.StartsWith('Akka.Analyzers.Roslyn'))">
     <AssemblyName>Akka.Analyzers</AssemblyName>
   </PropertyGroup>

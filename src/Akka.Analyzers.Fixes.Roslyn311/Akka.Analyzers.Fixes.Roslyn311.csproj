@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <RootNamespace>Akka.Analyzers.Fixes</RootNamespace>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Akka.Analyzers.Roslyn311\Akka.Analyzers.Roslyn311.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Include="..\Akka.Analyzers.Fixes\**\*.cs" Exclude="..\Akka.Analyzers.Fixes\obj\**\*.cs" />
+    </ItemGroup>
+    
+</Project>

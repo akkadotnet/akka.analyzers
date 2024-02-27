@@ -21,6 +21,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Akka.Analyzers.NuGet", "src
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Akka.Analyzers.Roslyn311", "src\Akka.Analyzers.Roslyn311\Akka.Analyzers.Roslyn311.csproj", "{AC236C92-762A-4F43-9A92-683D81AF6BA4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Akka.Analyzers.Fixes.Roslyn311", "src\Akka.Analyzers.Fixes.Roslyn311\Akka.Analyzers.Fixes.Roslyn311.csproj", "{1C7E113D-4700-4DAB-9EC1-D3BE21E6CBCD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Roslyn 3.11", "Roslyn 3.11", "{FF127ED4-CA50-445C-A533-0D36899966E6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Akka.Analyzers.Tests.Roslyn311", "src\Akka.Analyzers.Tests.Roslyn311\Akka.Analyzers.Tests.Roslyn311.csproj", "{43BB2D31-2A21-4946-A4A1-AC198B22956A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -50,5 +56,18 @@ Global
 		{AC236C92-762A-4F43-9A92-683D81AF6BA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AC236C92-762A-4F43-9A92-683D81AF6BA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AC236C92-762A-4F43-9A92-683D81AF6BA4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C7E113D-4700-4DAB-9EC1-D3BE21E6CBCD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C7E113D-4700-4DAB-9EC1-D3BE21E6CBCD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C7E113D-4700-4DAB-9EC1-D3BE21E6CBCD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C7E113D-4700-4DAB-9EC1-D3BE21E6CBCD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43BB2D31-2A21-4946-A4A1-AC198B22956A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43BB2D31-2A21-4946-A4A1-AC198B22956A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43BB2D31-2A21-4946-A4A1-AC198B22956A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43BB2D31-2A21-4946-A4A1-AC198B22956A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{1C7E113D-4700-4DAB-9EC1-D3BE21E6CBCD} = {FF127ED4-CA50-445C-A533-0D36899966E6}
+		{AC236C92-762A-4F43-9A92-683D81AF6BA4} = {FF127ED4-CA50-445C-A533-0D36899966E6}
+		{43BB2D31-2A21-4946-A4A1-AC198B22956A} = {FF127ED4-CA50-445C-A533-0D36899966E6}
 	EndGlobalSection
 EndGlobal
