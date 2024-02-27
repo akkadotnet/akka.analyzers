@@ -8,6 +8,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.CodeAnalysis"/>
+        <PackageReference Include="Microsoft.CodeAnalysis" VersionOverride="[$(RoslynVersion)]"/>
     </ItemGroup>
+
+    <ItemGroup>
+        <GlobalPackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="all" />
+    </ItemGroup>
+
 </Project>
