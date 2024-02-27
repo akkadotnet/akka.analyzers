@@ -29,7 +29,7 @@
         <file target="analyzers\dotnet\roslyn4.4\cs\" src="..\Akka.Analyzers.Fixes.Roslyn44\bin\$Configuration$\netstandard2.0\Akka.Analyzers.dll" />
         <file target="analyzers\dotnet\roslyn4.4\cs\" src="..\Akka.Analyzers.Fixes.Roslyn44\bin\$Configuration$\netstandard2.0\Akka.Analyzers.Fixes.dll" />
 
-         <file target="analyzers\dotnet\roslyn4.6\cs\" src="..\Akka.Analyzers.Fixes.Roslyn46\bin\$Configuration$\netstandard2.0\Akka.Analyzers.dll" />
+        <file target="analyzers\dotnet\roslyn4.6\cs\" src="..\Akka.Analyzers.Fixes.Roslyn46\bin\$Configuration$\netstandard2.0\Akka.Analyzers.dll" />
         <file target="analyzers\dotnet\roslyn4.6\cs\" src="..\Akka.Analyzers.Fixes.Roslyn46\bin\$Configuration$\netstandard2.0\Akka.Analyzers.Fixes.dll" />
     </files>
 </package>
