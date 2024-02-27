@@ -2,11 +2,16 @@
   <PropertyGroup>
     <Copyright>Copyright © 2013-2024 Akka.NET Project</Copyright>
     <NoWarn>$(NoWarn);CS1591;NU1701;CA1707;</NoWarn>
-    <VersionPrefix>0.2.1</VersionPrefix>
+    <VersionPrefix>0.2.2</VersionPrefix>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Authors>Akka.NET Team</Authors>
     <PackageProjectUrl>https://github.com/akkadotnet/akka.analyzers</PackageProjectUrl>
-    <PackageReleaseNotes>* [Resolved `AK2001`: `if` statements not cleanly managed by Code Fix](https://github.com/akkadotnet/akka.analyzers/pull/46)</PackageReleaseNotes>
+    <PackageReleaseNotes>* [AK2001: Harden rule, only run on Akka.NET v1.5.15 and later](https://github.com/akkadotnet/akka.analyzers/pull/51)
+* [AK1001: Make sure that analyzer also considers `Context.Sender`](https://github.com/akkadotnet/akka.analyzers/pull/54)
+* [AK1001: Make sure that analyzer also consider lambda expressions with no code blocks](https://github.com/akkadotnet/akka.analyzers/pull/56)
+* [AK1002: Add new rule to prevent `GracefulStop()` from being called in `ReceiveAsync()` and `ReceiveAnyAsync()`](https://github.com/akkadotnet/akka.analyzers/pull/58)
+* [AK1002: Improve rule to ignore user code with the same name](https://github.com/akkadotnet/akka.analyzers/pull/60)
+* [AK1003: Add rule to flag non-performant `ReceiveAsync()` and `ReceiveAnyAsync()` invocation](https://github.com/akkadotnet/akka.analyzers/pull/61)</PackageReleaseNotes>
     <PackageTags>akka.net, akka.analyzers, akakdotnet, roslyn, analyzers</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
@@ -21,6 +26,7 @@
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <RoslynVersion>4.8.0</RoslynVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)\logo.png" Pack="true" Visible="false" PackagePath="\" />
@@ -29,7 +35,7 @@
   <!-- ======================================== -->
   <!-- Production-specific properties and items -->
   <Choose>
-    <When Condition=" !$(MSBuildProjectName.Contains('.tests')) ">
+    <When Condition=" !$(MSBuildProjectName.Contains('.Tests')) ">
       <PropertyGroup>
         <AnalysisLevel>latest-All</AnalysisLevel>
         <EnableNETAnalyzers>true</EnableNETAnalyzers>
@@ -38,4 +44,35 @@
       </PropertyGroup>
     </When>
   </Choose>
+  
+  <Choose>
+    <When Condition="$(MSBuildProjectName.Contains('.Tests'))">
+      <ItemGroup>
+        <!-- Download packages referenced by ReferenceAssembliesHelper -->
+        <PackageDownload Include="Akka.Cluster.Sharding" Version="[1.5.15]"/>
+      </ItemGroup>
+    </When>
+  </Choose>
+  
+  <PropertyGroup Condition="$(MSBuildProjectName.StartsWith('Akka.Analyzers.Roslyn'))">
+    <AssemblyName>Akka.Analyzers</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(MSBuildProjectName.StartsWith('Akka.Analyzers.Fixes.Roslyn'))">
+    <AssemblyName>Akka.Analyzers.Fixes</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(MSBuildProjectName.Contains('Roslyn311'))">
+    <DefineConstants>$(DefineConstants);ROSLYN_3_11;ROSLYN_3_11_OR_GREATER</DefineConstants>
+    <RoslynVersion>3.11.0</RoslynVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(MSBuildProjectName.Contains('Roslyn44'))">
+    <DefineConstants>$(DefineConstants);ROSLYN_4_4;ROSLYN_3_11_OR_GREATER;ROSLYN_4_4_OR_GREATER</DefineConstants>
+    <RoslynVersion>4.4.0</RoslynVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(MSBuildProjectName.Contains('Roslyn46'))">
+    <DefineConstants>$(DefineConstants);ROSLYN_4_6;ROSLYN_3_11_OR_GREATER;ROSLYN_4_4_OR_GREATER;ROSLYN_4_6_OR_GREATER</DefineConstants>
+    <RoslynVersion>4.6.0</RoslynVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(RoslynVersion)' == '4.8.0' ">
+    <DefineConstants>$(DefineConstants);ROSLYN_4_8;ROSLYN_3_11_OR_GREATER;ROSLYN_4_4_OR_GREATER;ROSLYN_4_6_OR_GREATER;ROSLYN_4_8_OR_GREATER</DefineConstants>
+  </PropertyGroup>
 </Project>

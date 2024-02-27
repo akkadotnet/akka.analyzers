@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFrameworks>net8.0;net472</TargetFrameworks>
@@ -23,8 +23,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Akka.Analyzers.Fixes\Akka.Analyzers.Fixes.csproj" />
-        <ProjectReference Include="..\Akka.Analyzers\Akka.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true"/>
+      <ProjectReference Include="..\Akka.Analyzers.Fixes.Roslyn44\Akka.Analyzers.Fixes.Roslyn44.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true" />
+      <ProjectReference Include="..\Akka.Analyzers.Roslyn44\Akka.Analyzers.Roslyn44.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Include="..\Akka.Analyzers.Tests\**\*.cs" Exclude="..\Akka.Analyzers.Tests\obj\**\*.cs" />
     </ItemGroup>
 
 </Project>
