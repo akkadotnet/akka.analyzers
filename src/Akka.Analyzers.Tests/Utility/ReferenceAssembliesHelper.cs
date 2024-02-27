@@ -4,6 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.Testing;
 
 namespace Akka.Analyzers.Tests.Utility;
@@ -33,7 +34,7 @@ internal static class ReferenceAssembliesHelper
 
         // TODO: does this bring all other transitive dependencies?
         CurrentAkka = defaultAssemblies.AddPackages(
-            [new PackageIdentity("Akka.Cluster.Sharding", "1.5.15")]
+            ImmutableArray<PackageIdentity>.Empty.Add(new PackageIdentity("Akka.Cluster.Sharding", "1.5.15"))
         );
     }
 }
