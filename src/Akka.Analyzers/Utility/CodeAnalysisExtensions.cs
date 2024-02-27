@@ -86,4 +86,88 @@ internal static class CodeAnalysisExtensions
         return methodSymbol.Name is "ReceiveAsync" or "ReceiveAnyAsync" 
                && SymbolEqualityComparer.Default.Equals(methodSymbol.ContainingType, akkaContext.AkkaCore.ReceiveActorType);
     }
+    
+    public static bool IsAccessingActorSelf(
+        this InvocationExpressionSyntax invocationExpression,
+        SemanticModel semanticModel,
+        AkkaContext akkaContext)
+    {
+        // Expression need to be a member access
+        if (invocationExpression.Expression is not MemberAccessExpressionSyntax memberAccess)
+            return false;
+        
+        return IsAccessingActorBaseSelf(memberAccess, semanticModel, akkaContext) ||
+               IsAccessingActorContextSelf(memberAccess, semanticModel, akkaContext);
+    }
+    
+    private static bool IsAccessingActorBaseSelf(
+        MemberAccessExpressionSyntax memberAccess,
+        SemanticModel semanticModel,
+        AkkaContext akkaContext)
+    {
+        // Method accesses an identifier called "Self"
+        if (memberAccess.Expression is not IdentifierNameSyntax { Identifier.Text: "Self" } identifier) 
+            return false;
+        
+        // Make sure that `Self` identifier is a property
+        if (semanticModel.GetSymbolInfo(identifier).Symbol is not IPropertySymbol propertySymbol)
+            return false;
+        
+        // `Self` is a property declared inside `ActorBase` (ActorBase.Self)
+        if (SymbolEqualityComparer.Default.Equals(propertySymbol.ContainingType, akkaContext.AkkaCore.ActorBaseType))
+            return true;
+        
+        return false;
+    }
+
+    private static bool IsAccessingActorContextSelf(
+        MemberAccessExpressionSyntax memberAccess,
+        SemanticModel semanticModel,
+        AkkaContext akkaContext)
+    {
+        // The object being accessed by the invocation needs to be a member access itself
+        if (memberAccess.Expression is not MemberAccessExpressionSyntax selfMemberAccess)
+            return false;
+        
+        // Member access needs to be called "Self"
+        if (selfMemberAccess.Name.Identifier.Text is not "Self")
+            return false;
+        
+        // Self member access is accessing something that needs to derive from IActorContext
+        var symbol = semanticModel.GetSymbolInfo(selfMemberAccess.Expression).Symbol;
+        return symbol switch
+        {
+            IPropertySymbol p => p.Type.IsDerivedOrImplements(akkaContext.AkkaCore.ActorContextType!),
+            IFieldSymbol f => f.Type.IsDerivedOrImplements(akkaContext.AkkaCore.ActorContextType!),
+            ILocalSymbol l => l.Type.IsDerivedOrImplements(akkaContext.AkkaCore.ActorContextType!),
+            IParameterSymbol p => p.Type.IsDerivedOrImplements(akkaContext.AkkaCore.ActorContextType!),
+            IMethodSymbol m => m.ReturnType.IsDerivedOrImplements(akkaContext.AkkaCore.ActorContextType!),
+            _ => false
+        };
+    }
+    
+    public static bool IsDerivedOrImplements(this ITypeSymbol typeSymbol, ITypeSymbol baseSymbol)
+    {
+        if (SymbolEqualityComparer.Default.Equals(typeSymbol, baseSymbol))
+            return true;
+        
+        // Check interfaces directly implemented by the type
+        foreach (var interfaceType in typeSymbol.AllInterfaces)
+        {
+            if (IsDerivedOrImplements(interfaceType, baseSymbol))
+                return true;
+        }
+
+        // Recursively check base types
+        var baseType = typeSymbol.BaseType;
+        while (baseType != null)
+        {
+            if(IsDerivedOrImplements(baseType, baseSymbol))
+                return true;
+            baseType = baseType.BaseType;
+        }
+
+        return false;
+    }
+    
 }

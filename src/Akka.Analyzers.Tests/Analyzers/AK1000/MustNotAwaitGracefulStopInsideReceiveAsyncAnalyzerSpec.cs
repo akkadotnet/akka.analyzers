@@ -145,13 +145,40 @@ public class MyActor: ReceiveActor
     }
 }
 """,
+
+        // GracefulStop being called on actor other than Self
+"""
+using System;
+using Akka.Actor;
+
+public class MyActor: ReceiveActor
+{
+    public MyActor()
+    {
+        ReceiveAsync<IActorRef>(async p =>
+        {
+            var actorSelection = Context.System.ActorSelection(p.Path);
+            var actorRef = await actorSelection.ResolveOne(TimeSpan.FromSeconds(3));
+            await actorRef.GracefulStop(TimeSpan.FromSeconds(3)); // should not flag this
+        });
+
+        ReceiveAnyAsync(async _ =>
+        {
+            var actorSelection = Context.System.ActorSelection(ActorPath.Parse(""));
+            var actorRef = await actorSelection.ResolveOne(TimeSpan.FromSeconds(3));
+            await actorRef.GracefulStop(TimeSpan.FromSeconds(3)); // should not flag this
+        });
+    }
+}
+""",
+        
     };
 
     public static readonly
         TheoryData<(string testData, (int startLine, int startColumn, int endLine, int endColumn) spanData)>
         FailureCases = new()
         {
-            // Receive actor invoking await GracefulStop() inside a ReceiveAsync<T> block
+            // Receive actor invoking await Context.Self.GracefulStop() inside a ReceiveAsync<T> block
             (
 """
 using System;
@@ -170,7 +197,142 @@ public sealed class MyActor : ReceiveActor
 }
 """, (11, 13, 11, 69)),
             
-            // Receive actor invoking await GracefulStop() inside a ReceiveAnyAsync block
+            // Receive actor invoking await GracefulStop() on ActorContext stored in a variable
+            (
+"""
+using System;
+using Akka.Actor;
+using System.Threading.Tasks;
+
+public sealed class MyActor : ReceiveActor
+{
+    public MyActor()
+    {
+        ReceiveAsync<string>(async str =>
+        {
+            var ctx = Context;
+            await ctx.Self.GracefulStop(TimeSpan.FromSeconds(3));
+        });
+    }
+}
+""", (12, 13, 12, 65)),
+            
+            // Receive actor invoking await GracefulStop() on ActorContext stored inside a field
+            (
+"""
+using System;
+using Akka.Actor;
+using System.Threading.Tasks;
+
+public sealed class MyActor : ReceiveActor
+{
+    private readonly IActorContext _context;
+    
+    public MyActor()
+    {
+        _context = Context;
+        
+        ReceiveAsync<string>(async str =>
+        {
+            await _context.Self.GracefulStop(TimeSpan.FromSeconds(3));
+        });
+    }
+}
+""", (15, 13, 15, 70)),
+            
+            // Receive actor invoking await GracefulStop() on ActorContext stored inside a property
+            (
+"""
+using System;
+using Akka.Actor;
+using System.Threading.Tasks;
+
+public sealed class MyActor : ReceiveActor
+{
+    private IActorContext MyContext { get; }
+    
+    public MyActor()
+    {
+        MyContext = Context;
+        
+        ReceiveAsync<string>(async str =>
+        {
+            await MyContext.Self.GracefulStop(TimeSpan.FromSeconds(3));
+        });
+    }
+}
+""", (15, 13, 15, 71)),
+            
+            // Receive actor invoking await GracefulStop() on ActorContext returned by a function
+            (
+"""
+using System;
+using Akka.Actor;
+using System.Threading.Tasks;
+
+public sealed class MyActor : ReceiveActor
+{
+    private IActorContext MyContext() => Context;
+    
+    public MyActor()
+    {
+        ReceiveAsync<string>(async str =>
+        {
+            await MyContext().Self.GracefulStop(TimeSpan.FromSeconds(3));
+        });
+    }
+}
+""", (13, 13, 13, 73)),
+            
+            // Receive actor invoking await Context.Self.GracefulStop() inside a lambda function inside ReceiveAsync<T>()
+            (
+"""
+using System;
+using Akka.Actor;
+using System.Threading.Tasks;
+
+public sealed class MyActor : ReceiveActor
+{
+    public MyActor()
+    {
+        ReceiveAsync<string>(async str =>
+        {
+            async Task InnerLambda()
+            {
+                await Context.Self.GracefulStop(TimeSpan.FromSeconds(3));
+            }
+            
+            await InnerLambda();
+        });
+    }
+}
+""", (13, 17, 13, 73)),
+            
+            // Receive actor invoking await GracefulStop() on ActorContext passed as function parameter of a lambda function inside ReceiveAsync<T>()
+            (
+"""
+using System;
+using Akka.Actor;
+using System.Threading.Tasks;
+
+public sealed class MyActor : ReceiveActor
+{
+    public MyActor()
+    {
+        ReceiveAsync<string>(async str =>
+        {
+            async Task InnerLambda(IActorContext ctx)
+            {
+                await ctx.Self.GracefulStop(TimeSpan.FromSeconds(3));
+            }
+            
+            await InnerLambda(Context);
+        });
+    }
+}
+""", (13, 17, 13, 69)),
+            
+            // Receive actor invoking await Context.Self.GracefulStop() inside a ReceiveAnyAsync block
             (
 """
 using System;
@@ -189,7 +351,7 @@ public sealed class MyActor : ReceiveActor
 }
 """, (11, 13, 11, 69)),
             
-            // Receive actor invoking await GracefulStop() inside a ReceiveAsync<T> with no code block
+            // Receive actor invoking await Context.Self.GracefulStop() inside a ReceiveAsync<T> with no code block
             (
 """
 using System;
@@ -205,7 +367,7 @@ public sealed class MyActor : ReceiveActor
 }
 """, (9, 43, 9, 99)),
             
-            // Receive actor invoking await GracefulStop() inside a ReceiveAnyAsync with no code block
+            // Receive actor invoking await Context.Self.GracefulStop() inside a ReceiveAnyAsync with no code block
             (
 """
 using System;
@@ -220,6 +382,76 @@ public sealed class MyActor : ReceiveActor
     }
 }
 """, (9, 38, 9, 94)),
+            
+            // Receive actor invoking await Self.GracefulStop() inside a ReceiveAsync<T> block
+            (
+"""
+using System;
+using Akka.Actor;
+using System.Threading.Tasks;
+
+public sealed class MyActor : ReceiveActor
+{
+    public MyActor()
+    {
+        ReceiveAsync<string>(async str =>
+        {
+            await Self.GracefulStop(TimeSpan.FromSeconds(3));
+        });
+    }
+}
+""", (11, 13, 11, 61)),
+            
+            // Receive actor invoking await Self.GracefulStop() inside a ReceiveAnyAsync block
+            (
+"""
+using System;
+using Akka.Actor;
+using System.Threading.Tasks;
+
+public sealed class MyActor : ReceiveActor
+{
+    public MyActor()
+    {
+        ReceiveAnyAsync(async obj =>
+        {
+            await Self.GracefulStop(TimeSpan.FromSeconds(3));
+        });
+    }
+}
+""", (11, 13, 11, 61)),
+            
+        // Receive actor invoking await Self.GracefulStop() inside a ReceiveAsync<T> with no code block
+        (
+"""
+using System;
+using Akka.Actor;
+using System.Threading.Tasks;
+
+public sealed class MyActor : ReceiveActor
+{
+    public MyActor()
+    {
+        ReceiveAsync<string>(async str => await Self.GracefulStop(TimeSpan.FromSeconds(3)));
+    }
+}
+""", (9, 43, 9, 91)),
+            
+            // Receive actor invoking await Self.GracefulStop() inside a ReceiveAnyAsync with no code block
+            (
+"""
+using System;
+using Akka.Actor;
+using System.Threading.Tasks;
+
+public sealed class MyActor : ReceiveActor
+{
+    public MyActor()
+    {
+        ReceiveAnyAsync(async obj => await Self.GracefulStop(TimeSpan.FromSeconds(3)));
+    }
+}
+""", (9, 38, 9, 86)),
         };
 
     [Theory]
