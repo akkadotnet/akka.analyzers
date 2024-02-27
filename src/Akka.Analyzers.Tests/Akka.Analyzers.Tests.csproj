@@ -2,8 +2,6 @@
 
     <PropertyGroup>
         <TargetFrameworks>net8.0;net472</TargetFrameworks>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
     </PropertyGroup>

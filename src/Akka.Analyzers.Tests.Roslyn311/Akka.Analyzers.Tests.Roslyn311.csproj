@@ -1,9 +1,34 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
+        <TargetFrameworks>net8.0;net472</TargetFrameworks>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
     </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.NET.Test.Sdk"/>
+        <PackageReference Include="xunit"/>
+        <PackageReference Include="xunit.runner.visualstudio">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="coverlet.collector">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="FluentAssertions"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Akka.Analyzers.Fixes.Roslyn311\Akka.Analyzers.Fixes.Roslyn311.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true" />
+      <ProjectReference Include="..\Akka.Analyzers.Roslyn311\Akka.Analyzers.Roslyn311.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Include="..\Akka.Analyzers.Tests\**\*.cs" Exclude="..\Akka.Analyzers.Tests\obj\**\*.cs" />
+    </ItemGroup>
 
 </Project>

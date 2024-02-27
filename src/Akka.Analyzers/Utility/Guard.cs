@@ -9,7 +9,7 @@ namespace Akka.Analyzers;
 /// <summary>
 ///     INTERNAL API
 /// </summary>
-internal static class Guard
+public static class Guard
 {
     /// <summary>
     ///     Asserts that a reference type argument is not null.
