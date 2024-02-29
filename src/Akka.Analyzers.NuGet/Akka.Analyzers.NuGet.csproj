@@ -13,7 +13,13 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Akka.Analyzers.Fixes.Roslyn311\Akka.Analyzers.Fixes.Roslyn311.csproj" />
+      <ProjectReference Include="..\Akka.Analyzers.Fixes.Roslyn44\Akka.Analyzers.Fixes.Roslyn44.csproj" />
+      <ProjectReference Include="..\Akka.Analyzers.Fixes.Roslyn46\Akka.Analyzers.Fixes.Roslyn46.csproj" />
       <ProjectReference Include="..\Akka.Analyzers.Fixes\Akka.Analyzers.Fixes.csproj"/>
+      <ProjectReference Include="..\Akka.Analyzers.Roslyn311\Akka.Analyzers.Roslyn311.csproj" />
+      <ProjectReference Include="..\Akka.Analyzers.Roslyn44\Akka.Analyzers.Roslyn44.csproj" />
+      <ProjectReference Include="..\Akka.Analyzers.Roslyn46\Akka.Analyzers.Roslyn46.csproj" />
       <ProjectReference Include="..\Akka.Analyzers\Akka.Analyzers.csproj"/>
     </ItemGroup>
 </Project>

@@ -2,16 +2,13 @@
   <PropertyGroup>
     <Copyright>Copyright © 2013-2024 Akka.NET Project</Copyright>
     <NoWarn>$(NoWarn);CS1591;NU1701;CA1707;</NoWarn>
-    <VersionPrefix>0.2.2</VersionPrefix>
+    <VersionPrefix>0.2.3</VersionPrefix>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Authors>Akka.NET Team</Authors>
     <PackageProjectUrl>https://github.com/akkadotnet/akka.analyzers</PackageProjectUrl>
-    <PackageReleaseNotes>* [AK2001: Harden rule, only run on Akka.NET v1.5.15 and later](https://github.com/akkadotnet/akka.analyzers/pull/51)
-* [AK1001: Make sure that analyzer also considers `Context.Sender`](https://github.com/akkadotnet/akka.analyzers/pull/54)
-* [AK1001: Make sure that analyzer also consider lambda expressions with no code blocks](https://github.com/akkadotnet/akka.analyzers/pull/56)
-* [AK1002: Add new rule to prevent `GracefulStop()` from being called in `ReceiveAsync()` and `ReceiveAnyAsync()`](https://github.com/akkadotnet/akka.analyzers/pull/58)
-* [AK1002: Improve rule to ignore user code with the same name](https://github.com/akkadotnet/akka.analyzers/pull/60)
-* [AK1003: Add rule to flag non-performant `ReceiveAsync()` and `ReceiveAnyAsync()` invocation](https://github.com/akkadotnet/akka.analyzers/pull/61)</PackageReleaseNotes>
+    <PackageReleaseNotes>* [AK1002: Fix false positive detection](https://github.com/akkadotnet/akka.analyzers/pull/72)
+* [Add multi target support for Roslyn 3.11, 4.4, 4.6, and 4.8](https://github.com/akkadotnet/akka.analyzers/pull/73)
+* [AK1001: Rule removed due to #65](https://github.com/akkadotnet/akka.analyzers/pull/74)</PackageReleaseNotes>
     <PackageTags>akka.net, akka.analyzers, akakdotnet, roslyn, analyzers</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
@@ -44,16 +41,14 @@
       </PropertyGroup>
     </When>
   </Choose>
-  
   <Choose>
     <When Condition="$(MSBuildProjectName.Contains('.Tests'))">
       <ItemGroup>
         <!-- Download packages referenced by ReferenceAssembliesHelper -->
-        <PackageDownload Include="Akka.Cluster.Sharding" Version="[1.5.15]"/>
+        <PackageDownload Include="Akka.Cluster.Sharding" Version="[1.5.15]" />
       </ItemGroup>
     </When>
   </Choose>
-  
   <PropertyGroup Condition="$(MSBuildProjectName.StartsWith('Akka.Analyzers.Roslyn'))">
     <AssemblyName>Akka.Analyzers</AssemblyName>
   </PropertyGroup>
