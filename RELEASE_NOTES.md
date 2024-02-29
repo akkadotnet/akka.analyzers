@@ -1,3 +1,9 @@
+#### 0.2.3 February 29th 2024 ####
+
+* [AK1002: Fix false positive detection](https://github.com/akkadotnet/akka.analyzers/pull/72)
+* [Add multi target support for Roslyn 3.11, 4.4, 4.6, and 4.8](https://github.com/akkadotnet/akka.analyzers/pull/73)
+* [AK1001: Rule removed due to #65](https://github.com/akkadotnet/akka.analyzers/pull/74)
+
 #### 0.2.2 January 25th 2024 ####
 
 * [AK2001: Harden rule, only run on Akka.NET v1.5.15 and later](https://github.com/akkadotnet/akka.analyzers/pull/51)
