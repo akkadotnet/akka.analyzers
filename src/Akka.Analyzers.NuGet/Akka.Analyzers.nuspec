@@ -20,8 +20,8 @@
         <file target="\" src="..\..\README.md" />
         <file target="\" src="..\..\logo.png" />
 
-        <file target="analyzers\dotnet\cs\" src="..\Akka.Analyzers\bin\$Configuration$\netstandard2.0\Akka.Analyzers.dll" />
-        <file target="analyzers\dotnet\cs\" src="..\Akka.Analyzers.Fixes\bin\$Configuration$\netstandard2.0\Akka.Analyzers.Fixes.dll" />
+        <file target="analyzers\dotnet\roslyn4.8\cs\" src="..\Akka.Analyzers\bin\$Configuration$\netstandard2.0\Akka.Analyzers.dll" />
+        <file target="analyzers\dotnet\roslyn4.8\cs\" src="..\Akka.Analyzers.Fixes\bin\$Configuration$\netstandard2.0\Akka.Analyzers.Fixes.dll" />
 
         <file target="analyzers\dotnet\roslyn3.11\cs\" src="..\Akka.Analyzers.Fixes.Roslyn311\bin\$Configuration$\netstandard2.0\Akka.Analyzers.dll" />
         <file target="analyzers\dotnet\roslyn3.11\cs\" src="..\Akka.Analyzers.Fixes.Roslyn311\bin\$Configuration$\netstandard2.0\Akka.Analyzers.Fixes.dll" />
