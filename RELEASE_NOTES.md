@@ -1,3 +1,7 @@
+#### 0.2.3.1 March 1st 2024 ####
+
+* [Fix multi targeting default version bug](https://github.com/akkadotnet/akka.analyzers/pull/77)
+
 #### 0.2.3 February 29th 2024 ####
 
 * [AK1002: Fix false positive detection](https://github.com/akkadotnet/akka.analyzers/pull/72)
