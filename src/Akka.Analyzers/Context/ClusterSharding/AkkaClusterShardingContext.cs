@@ -6,23 +6,7 @@
 
 using Microsoft.CodeAnalysis;
 
-namespace Akka.Analyzers;
-
-/// <summary>
-/// Data about the Akka.Cluster.Sharding assembly in the solution being analyzed.
-/// </summary>
-public interface IAkkaClusterShardingContext
-{
-    Version Version { get; }
-    
-    INamedTypeSymbol? ClusterShardingType { get; }
-    
-    INamedTypeSymbol? IMessageExtractorType { get; }
-    
-    INamedTypeSymbol? ShardEnvelopeType { get; }
-    
-    INamedTypeSymbol? StartEntityType { get; }
-}
+namespace Akka.Analyzers.Context.ClusterSharding;
 
 /// <summary>
 /// INTERNAL API
@@ -37,7 +21,7 @@ public sealed class EmptyAkkaClusterShardingContext : IAkkaClusterShardingContex
 
     public Version Version { get; } = new();
     public INamedTypeSymbol? ClusterShardingType => null;
-    public INamedTypeSymbol? IMessageExtractorType => null;
+    public INamedTypeSymbol? MessageExtractorInterface => null;
     public INamedTypeSymbol? ShardEnvelopeType => null;
     public INamedTypeSymbol? StartEntityType => null;
 }
@@ -54,20 +38,20 @@ public sealed class AkkaClusterShardingContext : IAkkaClusterShardingContext
     
     public Version Version { get; }
     public INamedTypeSymbol? ClusterShardingType => _lazyClusterShardingType.Value;
-    public INamedTypeSymbol? IMessageExtractorType => _lazyMessageExtractorType.Value;
+    public INamedTypeSymbol? MessageExtractorInterface => _lazyMessageExtractorType.Value;
     public INamedTypeSymbol? ShardEnvelopeType => _lazyShardEnvelopeType.Value;
     public INamedTypeSymbol? StartEntityType => _lazyStartEntityType.Value;
 
     private AkkaClusterShardingContext(Compilation compilation, Version version)
     {
         Version = version;
-        _lazyClusterShardingType = new Lazy<INamedTypeSymbol?>(() => TypeSymbolFactory.AkkaClusterSharding(compilation));
-        _lazyMessageExtractorType = new Lazy<INamedTypeSymbol?>(() => TypeSymbolFactory.AkkaMessageExtractor(compilation));
-        _lazyShardEnvelopeType = new Lazy<INamedTypeSymbol?>(() => TypeSymbolFactory.AkkaShardEnvelope(compilation));
-        _lazyStartEntityType = new Lazy<INamedTypeSymbol?>(() => TypeSymbolFactory.AkkaStartEntity(compilation));
+        _lazyClusterShardingType = new Lazy<INamedTypeSymbol?>(() => ClusterShardingSymbolFactory.AkkaClusterSharding(compilation));
+        _lazyMessageExtractorType = new Lazy<INamedTypeSymbol?>(() => ClusterShardingSymbolFactory.AkkaMessageExtractorInterface(compilation));
+        _lazyShardEnvelopeType = new Lazy<INamedTypeSymbol?>(() => ClusterShardingSymbolFactory.AkkaShardEnvelope(compilation));
+        _lazyStartEntityType = new Lazy<INamedTypeSymbol?>(() => ClusterShardingSymbolFactory.AkkaStartEntity(compilation));
     }
     
-    public static IAkkaClusterShardingContext? Get(Compilation compilation, Version? versionOverride = null)
+    public static IAkkaClusterShardingContext Get(Compilation compilation, Version? versionOverride = null)
     {
         // assert that compilation is not null
         Guard.AssertIsNotNull(compilation);
@@ -79,6 +63,6 @@ public sealed class AkkaClusterShardingContext : IAkkaClusterShardingContext
                 .FirstOrDefault(a => a.Name.Equals("Akka.Cluster.Sharding", StringComparison.OrdinalIgnoreCase))
                 ?.Version;
 
-        return version is null ? null : new AkkaClusterShardingContext(compilation, version);
+        return version is null ? EmptyAkkaClusterShardingContext.Instance : new AkkaClusterShardingContext(compilation, version);
     }
 }

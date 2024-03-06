@@ -26,7 +26,7 @@ public class ShouldNotUseReceiveAsyncWithoutAsyncLambdaAnalyzer(): AkkaDiagnosti
             var semanticModel = ctx.SemanticModel;
             
             // check that the invocation is a valid ReceiveAsync or ReceiveAnyAsync method
-            if(!invocationExpr.IsReceiveAsyncInvocation(semanticModel, akkaContext))
+            if(!invocationExpr.IsReceiveAsyncInvocation(semanticModel, akkaContext.AkkaCore))
                 return;
             
             // Get the method argument that matches a lambda expression of Func<T, Task>

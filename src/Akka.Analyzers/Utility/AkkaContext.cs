@@ -4,6 +4,9 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using Akka.Analyzers.Context.Cluster;
+using Akka.Analyzers.Context.ClusterSharding;
+using Akka.Analyzers.Context.Core;
 using Microsoft.CodeAnalysis;
 
 namespace Akka.Analyzers;
@@ -14,10 +17,6 @@ namespace Akka.Analyzers;
 /// </summary>
 public sealed class AkkaContext
 {
-    private IAkkaCoreContext? _akkaCore;
-    private IAkkaClusterContext? _akkaCluster;
-    private IAkkaClusterShardingContext? _akkaClusterSharding;
-
     /// <summary>
     ///     Initializes a new instance of the <see cref="AkkaContext" /> class.
     /// </summary>
@@ -27,22 +26,15 @@ public sealed class AkkaContext
     /// </param>
     public AkkaContext(Compilation compilation)
     {
-        _akkaCore = AkkaCoreContext.Get(compilation);
-        _akkaCluster = AkkaClusterContext.Get(compilation);
-        _akkaClusterSharding = AkkaClusterShardingContext.Get(compilation);
-    }
-
-    private AkkaContext()
-    {
+        AkkaCore = AkkaCoreContext.Get(compilation);
+        AkkaCluster = AkkaClusterContext.Get(compilation);
+        AkkaClusterSharding = AkkaClusterShardingContext.Get(compilation);
     }
 
     /// <summary>
     ///     Data about the core Akka.NET library.
     /// </summary>
-    public IAkkaCoreContext AkkaCore
-    {
-        get { return _akkaCore ??= EmptyCoreContext.Instance; }
-    }
+    public IAkkaCoreContext AkkaCore { get; }
 
     /// <summary>
     ///     Does the current compilation context even have Akka.NET installed?
@@ -52,10 +44,7 @@ public sealed class AkkaContext
     /// <summary>
     /// Symbol data and availability for Akka.Cluster.
     /// </summary>
-    public IAkkaClusterContext AkkaCluster
-    {
-        get { return _akkaCluster ??= EmptyClusterContext.Instance; }
-    }
+    public IAkkaClusterContext AkkaCluster { get; }
     
     /// <summary>
     /// Does the current compilation context have Akka.Cluster installed?
@@ -65,10 +54,7 @@ public sealed class AkkaContext
     /// <summary>
     /// Symbol data and availability for Akka.Cluster.Sharding.
     /// </summary>
-    public IAkkaClusterShardingContext AkkaClusterSharding
-    {
-        get { return _akkaClusterSharding ??= EmptyAkkaClusterShardingContext.Instance; }
-    }
+    public IAkkaClusterShardingContext AkkaClusterSharding { get; }
     
     /// <summary>
     /// Does the current compilation context have Akka.Cluster.Sharding installed?

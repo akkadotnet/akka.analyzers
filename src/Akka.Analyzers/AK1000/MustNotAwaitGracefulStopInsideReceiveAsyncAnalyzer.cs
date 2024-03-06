@@ -5,6 +5,7 @@
 // -----------------------------------------------------------------------
 
 using System.Runtime.CompilerServices;
+using Akka.Analyzers.Context.Core;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -25,8 +26,9 @@ public class MustNotAwaitGracefulStopInsideReceiveAsyncAnalyzer()
         {
             var invocationExpr = (InvocationExpressionSyntax)ctx.Node;
             var semanticModel = ctx.SemanticModel;
+            var akkaCore = akkaContext.AkkaCore;
             
-            if(!IsGracefulStopInvocation(invocationExpr, semanticModel, akkaContext))
+            if(!IsGracefulStopInvocation(invocationExpr, semanticModel, akkaCore))
                 return;
             
             // Check 1: GracefulStop() should not be awaited
@@ -34,11 +36,11 @@ public class MustNotAwaitGracefulStopInsideReceiveAsyncAnalyzer()
                 return;
 
             // Check 2: Ensure called within ReceiveAsync<T> or ReceiveAnyAsync lambda expression
-            if (!invocationExpr.IsInsideReceiveAsyncLambda(semanticModel, akkaContext))
+            if (!invocationExpr.IsInsideReceiveAsyncLambda(semanticModel, akkaCore))
                 return;
 
             // Check 3: Ensure method is accessing ActorBase.Self or ActorContext.Self
-            if(!invocationExpr.IsAccessingActorSelf(semanticModel, akkaContext))
+            if(!invocationExpr.IsAccessingActorSelf(semanticModel, akkaCore))
                return;
             
             var diagnostic = Diagnostic.Create(RuleDescriptors.Ak1002DoNotAwaitOnGracefulStop, awaitExpression.GetLocation());
@@ -58,7 +60,7 @@ public class MustNotAwaitGracefulStopInsideReceiveAsyncAnalyzer()
     private static bool IsGracefulStopInvocation(
         InvocationExpressionSyntax invocationExpression,
         SemanticModel semanticModel,
-        AkkaContext akkaContext)
+        IAkkaCoreContext akkaContext)
     {
         // Expression need to be a member access
         if (invocationExpression.Expression is not MemberAccessExpressionSyntax memberAccess)
@@ -77,7 +79,7 @@ public class MustNotAwaitGracefulStopInsideReceiveAsyncAnalyzer()
             return false;
 
         // Check that method is defined inside the GracefulStopSupport static class
-        if (!SymbolEqualityComparer.Default.Equals(methodSymbol.ContainingType, akkaContext.AkkaCore.GracefulStopSupportType))
+        if (!SymbolEqualityComparer.Default.Equals(methodSymbol.ContainingType, akkaContext.Actor.GracefulStopSupportType))
             return false;
 
         return true;

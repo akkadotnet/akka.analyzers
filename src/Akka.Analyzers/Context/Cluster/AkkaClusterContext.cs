@@ -7,14 +7,7 @@
 
 using Microsoft.CodeAnalysis;
 
-namespace Akka.Analyzers;
-
-public interface IAkkaClusterContext
-{
-    Version Version { get; }
-    
-    INamedTypeSymbol? ClusterType { get; }
-}
+namespace Akka.Analyzers.Context.Cluster;
 
 public sealed class EmptyClusterContext : IAkkaClusterContext
 {
@@ -42,10 +35,10 @@ public sealed class AkkaClusterContext : IAkkaClusterContext
     private AkkaClusterContext(Compilation compilation, Version version)
     {
         Version = version;
-        _lazyClusterType = new Lazy<INamedTypeSymbol?>(() => TypeSymbolFactory.AkkaCluster(compilation));
+        _lazyClusterType = new Lazy<INamedTypeSymbol?>(() => ClusterSymbolFactory.AkkaCluster(compilation));
     }
     
-    public static IAkkaClusterContext? Get(Compilation compilation, Version? versionOverride = null)
+    public static IAkkaClusterContext Get(Compilation compilation, Version? versionOverride = null)
     {
         // assert that compilation is not null
         Guard.AssertIsNotNull(compilation);
@@ -57,7 +50,7 @@ public sealed class AkkaClusterContext : IAkkaClusterContext
                 .FirstOrDefault(a => a.Name.Equals("Akka.Cluster", StringComparison.OrdinalIgnoreCase))
                 ?.Version;
 
-        return version is null ? null : new AkkaClusterContext(compilation, version);
+        return version is null ? EmptyClusterContext.Instance : new AkkaClusterContext(compilation, version);
     }
 
     public Version Version { get; }

@@ -83,7 +83,7 @@ public class MustNotUseAutomaticallyHandledMessagesInsideMessageExtractorAnalyze
         var semanticModel = ctx.SemanticModel;
         var methodSymbol = semanticModel.GetDeclaredSymbol(methodDeclaration);
 
-        INamedTypeSymbol? messageExtractorSymbol = akkaContext.AkkaClusterSharding.IMessageExtractorType;
+        INamedTypeSymbol? messageExtractorSymbol = akkaContext.AkkaClusterSharding.MessageExtractorInterface;
 
         if (methodSymbol == null || messageExtractorSymbol == null)
             return;
