@@ -9,7 +9,7 @@ using Akka.Analyzers.Context.ClusterSharding;
 using Akka.Analyzers.Context.Core;
 using Microsoft.CodeAnalysis;
 
-namespace Akka.Analyzers;
+namespace Akka.Analyzers.Context;
 
 /// <summary>
 ///     Provides information about the Akka.NET context (i.e. which libraries, which versions) in which the analyzer is

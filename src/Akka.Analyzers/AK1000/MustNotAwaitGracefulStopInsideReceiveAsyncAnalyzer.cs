@@ -5,6 +5,7 @@
 // -----------------------------------------------------------------------
 
 using System.Runtime.CompilerServices;
+using Akka.Analyzers.Context;
 using Akka.Analyzers.Context.Core;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;

@@ -5,6 +5,7 @@
 // -----------------------------------------------------------------------
 
 using System.Collections.Immutable;
+using Akka.Analyzers.Context;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 
