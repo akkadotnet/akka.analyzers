@@ -141,11 +141,11 @@ internal static class CodeAnalysisExtensions
         var symbol = semanticModel.GetSymbolInfo(selfMemberAccess.Expression).Symbol;
         return symbol switch
         {
-            IPropertySymbol p => p.Type.IsDerivedOrImplements(akkaContext.Actor.ActorContextInterface!),
-            IFieldSymbol f => f.Type.IsDerivedOrImplements(akkaContext.Actor.ActorContextInterface!),
-            ILocalSymbol l => l.Type.IsDerivedOrImplements(akkaContext.Actor.ActorContextInterface!),
-            IParameterSymbol p => p.Type.IsDerivedOrImplements(akkaContext.Actor.ActorContextInterface!),
-            IMethodSymbol m => m.ReturnType.IsDerivedOrImplements(akkaContext.Actor.ActorContextInterface!),
+            IPropertySymbol p => p.Type.IsDerivedOrImplements(akkaContext.Actor.IActorContextType!),
+            IFieldSymbol f => f.Type.IsDerivedOrImplements(akkaContext.Actor.IActorContextType!),
+            ILocalSymbol l => l.Type.IsDerivedOrImplements(akkaContext.Actor.IActorContextType!),
+            IParameterSymbol p => p.Type.IsDerivedOrImplements(akkaContext.Actor.IActorContextType!),
+            IMethodSymbol m => m.ReturnType.IsDerivedOrImplements(akkaContext.Actor.IActorContextType!),
             _ => false
         };
     }

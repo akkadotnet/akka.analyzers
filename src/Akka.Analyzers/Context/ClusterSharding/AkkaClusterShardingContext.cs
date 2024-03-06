@@ -21,7 +21,7 @@ public sealed class EmptyAkkaClusterShardingContext : IAkkaClusterShardingContex
 
     public Version Version { get; } = new();
     public INamedTypeSymbol? ClusterShardingType => null;
-    public INamedTypeSymbol? MessageExtractorInterface => null;
+    public INamedTypeSymbol? IMessageExtractorType => null;
     public INamedTypeSymbol? ShardEnvelopeType => null;
     public INamedTypeSymbol? StartEntityType => null;
 }
@@ -38,7 +38,7 @@ public sealed class AkkaClusterShardingContext : IAkkaClusterShardingContext
     
     public Version Version { get; }
     public INamedTypeSymbol? ClusterShardingType => _lazyClusterShardingType.Value;
-    public INamedTypeSymbol? MessageExtractorInterface => _lazyMessageExtractorType.Value;
+    public INamedTypeSymbol? IMessageExtractorType => _lazyMessageExtractorType.Value;
     public INamedTypeSymbol? ShardEnvelopeType => _lazyShardEnvelopeType.Value;
     public INamedTypeSymbol? StartEntityType => _lazyStartEntityType.Value;
 

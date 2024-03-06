@@ -8,13 +8,14 @@ using Microsoft.CodeAnalysis;
 
 namespace Akka.Analyzers.Context.Core.Actor;
 
+// ReSharper disable InconsistentNaming
 public interface IAkkaCoreActorContext
 {
     public INamedTypeSymbol? ActorBaseType { get; }
-    public INamedTypeSymbol? ActorRefInterface { get; }
+    public INamedTypeSymbol? IActorRefType { get; }
     public INamedTypeSymbol? PropsType { get; }
-    public INamedTypeSymbol? ActorContextInterface { get; }
-    public INamedTypeSymbol? IndirectActorProducerInterface { get; }
+    public INamedTypeSymbol? IActorContextType { get; }
+    public INamedTypeSymbol? IIndirectActorProducerType { get; }
     public INamedTypeSymbol? ReceiveActorType { get; }
     public INamedTypeSymbol? GracefulStopSupportType { get; }
 }

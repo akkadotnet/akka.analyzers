@@ -61,7 +61,7 @@ public class MustNotUseNewKeywordOnActorsAnalyzer() : AkkaDiagnosticAnalyzer(Rul
             return false;
 
         // Check if the containing type implements IIndirectActorProducer
-        return containingType.AllInterfaces.Any(i => SymbolEqualityComparer.Default.Equals(i, akkaContext.Actor.IndirectActorProducerInterface));
+        return containingType.AllInterfaces.Any(i => SymbolEqualityComparer.Default.Equals(i, akkaContext.Actor.IIndirectActorProducerType));
     }
 
 

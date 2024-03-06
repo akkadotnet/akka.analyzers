@@ -13,10 +13,10 @@ public sealed class EmptyAkkaCoreActorContext : IAkkaCoreActorContext
     private EmptyAkkaCoreActorContext() { }
     public static EmptyAkkaCoreActorContext Instance { get; } = new();
     public INamedTypeSymbol? ActorBaseType => null;
-    public INamedTypeSymbol? ActorRefInterface => null;
+    public INamedTypeSymbol? IActorRefType => null;
     public INamedTypeSymbol? PropsType => null;
-    public INamedTypeSymbol? ActorContextInterface => null;
-    public INamedTypeSymbol? IndirectActorProducerInterface => null;
+    public INamedTypeSymbol? IActorContextType => null;
+    public INamedTypeSymbol? IIndirectActorProducerType => null;
     public INamedTypeSymbol? ReceiveActorType => null;
     public INamedTypeSymbol? GracefulStopSupportType => null;
 }
@@ -43,10 +43,10 @@ public sealed class AkkaCoreActorContext : IAkkaCoreActorContext
     }
 
     public INamedTypeSymbol? ActorBaseType => _lazyActorBaseType.Value;
-    public INamedTypeSymbol? ActorRefInterface => _lazyActorRefType.Value;
+    public INamedTypeSymbol? IActorRefType => _lazyActorRefType.Value;
     public INamedTypeSymbol? PropsType => _lazyPropsType.Value;
-    public INamedTypeSymbol? ActorContextInterface => _lazyActorContextType.Value;
-    public INamedTypeSymbol? IndirectActorProducerInterface => _lazyIIndirectActorProducerType.Value;
+    public INamedTypeSymbol? IActorContextType => _lazyActorContextType.Value;
+    public INamedTypeSymbol? IIndirectActorProducerType => _lazyIIndirectActorProducerType.Value;
     public INamedTypeSymbol? ReceiveActorType => _lazyReceiveActorType.Value;
     public INamedTypeSymbol? GracefulStopSupportType => _lazyGracefulStopSupport.Value;
 

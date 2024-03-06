@@ -11,13 +11,14 @@ namespace Akka.Analyzers.Context.ClusterSharding;
 /// <summary>
 /// Data about the Akka.Cluster.Sharding assembly in the solution being analyzed.
 /// </summary>
+// ReSharper disable InconsistentNaming
 public interface IAkkaClusterShardingContext
 {
     Version Version { get; }
     
     INamedTypeSymbol? ClusterShardingType { get; }
     
-    INamedTypeSymbol? MessageExtractorInterface { get; }
+    INamedTypeSymbol? IMessageExtractorType { get; }
     
     INamedTypeSymbol? ShardEnvelopeType { get; }
     
