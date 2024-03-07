@@ -86,9 +86,14 @@ internal static class CodeAnalysisExtensions
         if (semanticModel.GetSymbolInfo(invocationExpression).Symbol is not IMethodSymbol methodSymbol)
             return false;
 
+        // Go up the chain to make sure that we have the base generic method symbol declaration it originated from 
+        var from = methodSymbol.ConstructedFrom;
+        while (!ReferenceEquals(from, from.ConstructedFrom))
+            from = from.ConstructedFrom;
+        
         // Check if the method name is `ReceiveAsync` or `ReceiveAnyAsync` and it is defined inside the ReceiveActor class
         var refSymbols = akkaContext.Actor.ReceiveActor.ReceiveAsync.AddRange(akkaContext.Actor.ReceiveActor.ReceiveAnyAsync);
-        if (refSymbols.Any(s => ReferenceEquals(methodSymbol.ConstructedFrom, s)))
+        if (refSymbols.Any(s => ReferenceEquals(from, s)))
             return true;
         
         return false;
