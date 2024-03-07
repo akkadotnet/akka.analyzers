@@ -12,5 +12,8 @@
 
     <ItemGroup>
         <Compile Include="..\Akka.Analyzers\**\*.cs" Exclude="..\Akka.Analyzers\obj\**\*.cs" />
+        <Compile Update="..\Akka.Analyzers\Context\Core\Actor\ActorContextContext.cs">
+          <Link>Context\Core\Actor\ActorContextContext.cs</Link>
+        </Compile>
     </ItemGroup>
 </Project>

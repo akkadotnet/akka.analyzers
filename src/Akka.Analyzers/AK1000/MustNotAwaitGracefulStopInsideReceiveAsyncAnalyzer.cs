@@ -29,7 +29,15 @@ public class MustNotAwaitGracefulStopInsideReceiveAsyncAnalyzer()
             var semanticModel = ctx.SemanticModel;
             var akkaCore = akkaContext.AkkaCore;
             
-            if(!IsGracefulStopInvocation(invocationExpr, semanticModel, akkaCore))
+            if(semanticModel.GetSymbolInfo(invocationExpr.Expression).Symbol is not IMethodSymbol methodSymbol)
+                return;
+            
+            // Unfold reduced extension method to its original method
+            methodSymbol = methodSymbol.ReducedFrom ?? methodSymbol;
+            
+            // Method must be one of the GracefulStop() extension methods
+            var refSymbols = akkaCore.Actor.GracefulStopSupportSupport.GracefulStop;
+            if(!refSymbols.Any(s => ReferenceEquals(methodSymbol, s)))
                 return;
             
             // Check 1: GracefulStop() should not be awaited
@@ -47,42 +55,5 @@ public class MustNotAwaitGracefulStopInsideReceiveAsyncAnalyzer()
             var diagnostic = Diagnostic.Create(RuleDescriptors.Ak1002DoNotAwaitOnGracefulStop, awaitExpression.GetLocation());
             ctx.ReportDiagnostic(diagnostic);
         }, SyntaxKind.InvocationExpression);
-    }
-    
-
-    /// <summary>
-    /// Check if the invocation expression is a valid `GracefulStop` method invocation
-    /// </summary>
-    /// <param name="invocationExpression">The invocation expression being analyzed</param>
-    /// <param name="semanticModel">The semantic model</param>
-    /// <param name="akkaContext">The Akka context</param>
-    /// <returns>true if the invocation expression is a valid `GracefulStop` method</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool IsGracefulStopInvocation(
-        InvocationExpressionSyntax invocationExpression,
-        SemanticModel semanticModel,
-        IAkkaCoreContext akkaContext)
-    {
-        // Expression need to be a member access
-        if (invocationExpression.Expression is not MemberAccessExpressionSyntax memberAccess)
-            return false;
-        
-        // Expression name should be "GracefulStop"
-        if (memberAccess.Name.Identifier.Text is not "GracefulStop")
-            return false;
-        
-        // Expression need to be a method invocation
-        if (semanticModel.GetSymbolInfo(invocationExpression).Symbol is not IMethodSymbol methodSymbol)
-            return false;
-
-        // Check if the method is an extension method
-        if(methodSymbol is not { IsExtensionMethod: true })
-            return false;
-
-        // Check that method is defined inside the GracefulStopSupport static class
-        if (!SymbolEqualityComparer.Default.Equals(methodSymbol.ContainingType, akkaContext.Actor.GracefulStopSupportType))
-            return false;
-
-        return true;
     }
 }

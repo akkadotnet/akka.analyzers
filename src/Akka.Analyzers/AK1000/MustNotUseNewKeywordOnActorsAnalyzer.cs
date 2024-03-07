@@ -54,15 +54,23 @@ public class MustNotUseNewKeywordOnActorsAnalyzer() : AkkaDiagnosticAnalyzer(Rul
         if (enclosingMethod == null)
             return false;
 
-        if (semanticModel.GetDeclaredSymbol(enclosingMethod) is not { Name: "Produce" } methodSymbol)
+        var methodSymbol = semanticModel.GetDeclaredSymbol(enclosingMethod);
+        if(methodSymbol is null)
             return false;
 
-        var containingType = methodSymbol.ContainingType;
-        if (containingType == null)
-            return false;
-
-        // Check if the containing type implements IIndirectActorProducer
-        return containingType.AllInterfaces.Any(i => SymbolEqualityComparer.Default.Equals(i, akkaContext.Actor.IIndirectActorProducerType));
+        var refSymbols = akkaContext.Actor.IIndirectActorProducer.Produce;
+        // Check for explicit interface implementation
+        if (methodSymbol.ExplicitInterfaceImplementations.Any(s => refSymbols.Any(r => ReferenceEquals(s, r))))
+            return true;
+        
+        // Check for implicit interface implementation
+        foreach (var interfaceMember in methodSymbol.ContainingType.AllInterfaces.SelectMany(i => i.GetMembers().OfType<IMethodSymbol>()))
+        {
+            if (refSymbols.Any(s => ReferenceEquals(interfaceMember, s)))
+                return true;
+        }
+        
+        return false;
     }
 
 
@@ -88,13 +96,11 @@ public class MustNotUseNewKeywordOnActorsAnalyzer() : AkkaDiagnosticAnalyzer(Rul
             if (currentNode is InvocationExpressionSyntax invocation)
             {
                 // Get the symbol for the method being invoked
-
-                // Check if the method symbol is for Akka.Actor.Props.Create
-                if (semanticModel.GetSymbolInfo(invocation).Symbol is IMethodSymbol invokedMethodSymbol &&
-                    SymbolEqualityComparer.Default.Equals(invokedMethodSymbol.ContainingType, akkaContext.Actor.PropsType) &&
-                    invokedMethodSymbol.Name == "Create")
+                if (semanticModel.GetSymbolInfo(invocation).Symbol is IMethodSymbol invokedMethodSymbol)
                 {
-                    return true;
+                    var refSymbols = akkaContext.Actor.Props.Create;
+                    if(refSymbols.Any(s => SymbolEqualityComparer.Default.Equals(invokedMethodSymbol, s)))
+                        return true;
                 }
             }
 
