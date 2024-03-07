@@ -22,6 +22,10 @@
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing"/>
     </ItemGroup>
 
+    <ItemGroup Condition="'$(TargetFramework)' == 'net472'" >
+        <PackageReference Include="NuGet.Frameworks" />
+    </ItemGroup>
+    
     <ItemGroup>
         <ProjectReference Include="..\Akka.Analyzers.Fixes\Akka.Analyzers.Fixes.csproj" />
         <ProjectReference Include="..\Akka.Analyzers\Akka.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true"/>

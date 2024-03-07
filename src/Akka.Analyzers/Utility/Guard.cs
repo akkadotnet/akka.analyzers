@@ -18,7 +18,7 @@ public static class Guard
     /// <typeparam name="T">Type of class.</typeparam>
     /// <returns>The original value if the assertion passes.</returns>
     /// <exception cref="ArgumentNullException"></exception>
-    public static T AssertIsNotNull<T>(T arg) where T : class
+    public static T AssertIsNotNull<T>(T? arg) where T : class
     {
         if (arg is null)
             throw new ArgumentNullException(nameof(arg));

@@ -5,6 +5,7 @@
 // -----------------------------------------------------------------------
 
 using System.Runtime.CompilerServices;
+using Akka.Analyzers.Context.Core;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -26,18 +27,18 @@ internal static class CodeAnalysisExtensions
     //         return false;
     // }
 
-    public static bool IsActorBaseSubclass(this INamedTypeSymbol typeSymbol, AkkaContext akkaContext)
+    public static bool IsActorBaseSubclass(this INamedTypeSymbol typeSymbol, IAkkaCoreContext akkaContext)
     {
         Guard.AssertIsNotNull(typeSymbol);
         Guard.AssertIsNotNull(akkaContext);
 
-        if (akkaContext.AkkaCore.ActorBaseType is null)
+        if (akkaContext.Actor.ActorBaseType is null)
             return false;
 
         var currentBaseType = typeSymbol;
         while (currentBaseType != null)
         {
-            if (SymbolEqualityComparer.Default.Equals(currentBaseType, akkaContext.AkkaCore.ActorBaseType)) return true;
+            if (SymbolEqualityComparer.Default.Equals(currentBaseType, akkaContext.Actor.ActorBaseType)) return true;
             currentBaseType = currentBaseType.BaseType;
         }
 
@@ -56,7 +57,7 @@ internal static class CodeAnalysisExtensions
     public static bool IsInsideReceiveAsyncLambda(
         this SyntaxNode node,
         SemanticModel semanticModel,
-        AkkaContext akkaContext)
+        IAkkaCoreContext akkaContext)
     {
         // Traverse up the syntax tree to find the first lambda expression ancestor
         var lambdaExpression = node.FirstAncestorOrSelf<LambdaExpressionSyntax>();
@@ -76,7 +77,10 @@ internal static class CodeAnalysisExtensions
     /// <param name="akkaContext">The Akka context</param>
     /// <returns>true if the invocation expression is a valid `ReceiveAsync` or `ReceiveAnyAsync` method</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool IsReceiveAsyncInvocation(this InvocationExpressionSyntax invocationExpression, SemanticModel semanticModel, AkkaContext akkaContext)
+    public static bool IsReceiveAsyncInvocation(
+        this InvocationExpressionSyntax invocationExpression,
+        SemanticModel semanticModel,
+        IAkkaCoreContext akkaContext)
     {
         // Get the method symbol from the invocation expression
         if (semanticModel.GetSymbolInfo(invocationExpression).Symbol is not IMethodSymbol methodSymbol)
@@ -84,13 +88,13 @@ internal static class CodeAnalysisExtensions
 
         // Check if the method name is `ReceiveAsync` or `ReceiveAnyAsync` and it is defined inside the ReceiveActor class
         return methodSymbol.Name is "ReceiveAsync" or "ReceiveAnyAsync" 
-               && SymbolEqualityComparer.Default.Equals(methodSymbol.ContainingType, akkaContext.AkkaCore.ReceiveActorType);
+               && SymbolEqualityComparer.Default.Equals(methodSymbol.ContainingType, akkaContext.Actor.ReceiveActorType);
     }
     
     public static bool IsAccessingActorSelf(
         this InvocationExpressionSyntax invocationExpression,
         SemanticModel semanticModel,
-        AkkaContext akkaContext)
+        IAkkaCoreContext akkaContext)
     {
         // Expression need to be a member access
         if (invocationExpression.Expression is not MemberAccessExpressionSyntax memberAccess)
@@ -103,7 +107,7 @@ internal static class CodeAnalysisExtensions
     private static bool IsAccessingActorBaseSelf(
         MemberAccessExpressionSyntax memberAccess,
         SemanticModel semanticModel,
-        AkkaContext akkaContext)
+        IAkkaCoreContext akkaContext)
     {
         // Method accesses an identifier called "Self"
         if (memberAccess.Expression is not IdentifierNameSyntax { Identifier.Text: "Self" } identifier) 
@@ -114,7 +118,7 @@ internal static class CodeAnalysisExtensions
             return false;
         
         // `Self` is a property declared inside `ActorBase` (ActorBase.Self)
-        if (SymbolEqualityComparer.Default.Equals(propertySymbol.ContainingType, akkaContext.AkkaCore.ActorBaseType))
+        if (SymbolEqualityComparer.Default.Equals(propertySymbol.ContainingType, akkaContext.Actor.ActorBaseType))
             return true;
         
         return false;
@@ -123,7 +127,7 @@ internal static class CodeAnalysisExtensions
     private static bool IsAccessingActorContextSelf(
         MemberAccessExpressionSyntax memberAccess,
         SemanticModel semanticModel,
-        AkkaContext akkaContext)
+        IAkkaCoreContext akkaContext)
     {
         // The object being accessed by the invocation needs to be a member access itself
         if (memberAccess.Expression is not MemberAccessExpressionSyntax selfMemberAccess)
@@ -137,11 +141,11 @@ internal static class CodeAnalysisExtensions
         var symbol = semanticModel.GetSymbolInfo(selfMemberAccess.Expression).Symbol;
         return symbol switch
         {
-            IPropertySymbol p => p.Type.IsDerivedOrImplements(akkaContext.AkkaCore.ActorContextType!),
-            IFieldSymbol f => f.Type.IsDerivedOrImplements(akkaContext.AkkaCore.ActorContextType!),
-            ILocalSymbol l => l.Type.IsDerivedOrImplements(akkaContext.AkkaCore.ActorContextType!),
-            IParameterSymbol p => p.Type.IsDerivedOrImplements(akkaContext.AkkaCore.ActorContextType!),
-            IMethodSymbol m => m.ReturnType.IsDerivedOrImplements(akkaContext.AkkaCore.ActorContextType!),
+            IPropertySymbol p => p.Type.IsDerivedOrImplements(akkaContext.Actor.IActorContextType!),
+            IFieldSymbol f => f.Type.IsDerivedOrImplements(akkaContext.Actor.IActorContextType!),
+            ILocalSymbol l => l.Type.IsDerivedOrImplements(akkaContext.Actor.IActorContextType!),
+            IParameterSymbol p => p.Type.IsDerivedOrImplements(akkaContext.Actor.IActorContextType!),
+            IMethodSymbol m => m.ReturnType.IsDerivedOrImplements(akkaContext.Actor.IActorContextType!),
             _ => false
         };
     }
