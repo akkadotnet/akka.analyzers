@@ -39,4 +39,8 @@ public static class ActorSymbolFactory
     public static INamedTypeSymbol? GracefulStopSupport(Compilation compilation)
         => Guard.AssertIsNotNull(compilation)
             .GetTypeByMetadataName($"{AkkaActorNamespace}.GracefulStopSupport");
+    
+    public static INamedTypeSymbol? TellSchedulerInterface(Compilation compilation)
+        => Guard.AssertIsNotNull(compilation)
+            .GetTypeByMetadataName("Akka.Actor.ITellScheduler");
 }
