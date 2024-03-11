@@ -8,6 +8,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.CodeAnalysis" VersionOverride="[$(RoslynVersion)]"/>
+        <PackageReference Include="System.Data.HashFunction.MurmurHash" />
     </ItemGroup>
 
     <ItemGroup>
