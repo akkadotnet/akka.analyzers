@@ -86,9 +86,17 @@ internal static class CodeAnalysisExtensions
         if (semanticModel.GetSymbolInfo(invocationExpression).Symbol is not IMethodSymbol methodSymbol)
             return false;
 
+        // Go up the chain to make sure that we have the base generic method symbol declaration it originated from 
+        var from = methodSymbol.ConstructedFrom;
+        while (!ReferenceEquals(from, from.ConstructedFrom))
+            from = from.ConstructedFrom;
+        
         // Check if the method name is `ReceiveAsync` or `ReceiveAnyAsync` and it is defined inside the ReceiveActor class
-        return methodSymbol.Name is "ReceiveAsync" or "ReceiveAnyAsync" 
-               && SymbolEqualityComparer.Default.Equals(methodSymbol.ContainingType, akkaContext.Actor.ReceiveActorType);
+        var refSymbols = akkaContext.Actor.ReceiveActor.ReceiveAsync.AddRange(akkaContext.Actor.ReceiveActor.ReceiveAnyAsync);
+        if (refSymbols.Any(s => ReferenceEquals(from, s)))
+            return true;
+        
+        return false;
     }
     
     public static bool IsAccessingActorSelf(
@@ -109,18 +117,18 @@ internal static class CodeAnalysisExtensions
         SemanticModel semanticModel,
         IAkkaCoreContext akkaContext)
     {
-        // Method accesses an identifier called "Self"
-        if (memberAccess.Expression is not IdentifierNameSyntax { Identifier.Text: "Self" } identifier) 
+        // Method accesses an identifier
+        if (memberAccess.Expression is not IdentifierNameSyntax identifier) 
             return false;
         
-        // Make sure that `Self` identifier is a property
+        // Make sure that identifier is a property
         if (semanticModel.GetSymbolInfo(identifier).Symbol is not IPropertySymbol propertySymbol)
             return false;
-        
-        // `Self` is a property declared inside `ActorBase` (ActorBase.Self)
-        if (SymbolEqualityComparer.Default.Equals(propertySymbol.ContainingType, akkaContext.Actor.ActorBaseType))
+
+        // Property is equal to `ActorBase.Self`
+        var refSymbol = akkaContext.Actor.ActorBase.Self;
+        if (SymbolEqualityComparer.Default.Equals(refSymbol, propertySymbol))
             return true;
-        
         return false;
     }
 
@@ -134,7 +142,8 @@ internal static class CodeAnalysisExtensions
             return false;
         
         // Member access needs to be called "Self"
-        if (selfMemberAccess.Name.Identifier.Text is not "Self")
+        var refSymbol = akkaContext.Actor.IActorContext.Self!;
+        if (selfMemberAccess.Name.Identifier.Text != refSymbol.Name)
             return false;
         
         // Self member access is accessing something that needs to derive from IActorContext
