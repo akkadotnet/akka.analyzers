@@ -11,7 +11,6 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
-using Xunit.Abstractions;
 
 namespace Akka.Analyzers.Fixes;
 
@@ -19,10 +18,6 @@ namespace Akka.Analyzers.Fixes;
 [Shared]
 public class ShouldUseIWithTimersInsteadOfScheduleTellFixer(): BatchedCodeFixProvider(RuleDescriptors.Ak1004ShouldUseIWithTimersInsteadOfScheduleTell.Id)
 {
-#pragma warning disable CA2211
-    public static ITestOutputHelper? Output;
-#pragma warning restore CA2211
-    
     public const string Key_ScheduleTell = "AK1004_ScheduleTell";
     private const string TimerKeyPrefix = "TimerKey_";
 
@@ -146,11 +141,6 @@ public class ShouldUseIWithTimersInsteadOfScheduleTellFixer(): BatchedCodeFixPro
         editor.ReplaceNode(classDeclaration, newClassDeclaration);
         
         var newDocument = editor.GetChangedDocument();
-        if (Output is not null)
-        {
-            var content = (await newDocument.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false))!.ToString();
-            Output.WriteLine($"========== {diagnostic.Properties["hash"]}\n{content}\n==========");
-        }
         return newDocument;
     }
 

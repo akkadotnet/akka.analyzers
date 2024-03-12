@@ -13,9 +13,4 @@
     <ItemGroup>
         <Compile Include="..\Akka.Analyzers.Fixes\**\*.cs" Exclude="..\Akka.Analyzers.Fixes\obj\**\*.cs" />
     </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="xunit.abstractions" />
-    </ItemGroup>
-
 </Project>

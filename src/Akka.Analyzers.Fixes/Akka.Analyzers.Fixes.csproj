@@ -8,9 +8,4 @@
     <ItemGroup>
       <ProjectReference Include="..\Akka.Analyzers\Akka.Analyzers.csproj" />
     </ItemGroup>
-
-    <ItemGroup>
-      <PackageReference Include="xunit.abstractions" />
-    </ItemGroup>
-
 </Project>

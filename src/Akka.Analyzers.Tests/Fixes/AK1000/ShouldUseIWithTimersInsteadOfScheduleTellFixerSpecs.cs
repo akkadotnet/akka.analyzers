@@ -5,6 +5,8 @@
 // -----------------------------------------------------------------------
 
 using Akka.Analyzers.Fixes;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Testing;
 using Xunit.Abstractions;
 using Verify = Akka.Analyzers.Tests.Utility.AkkaVerifier<Akka.Analyzers.ShouldUseIWithTimersInsteadOfScheduleTellAnalyzer>;
 
@@ -12,11 +14,6 @@ namespace Akka.Analyzers.Tests.Fixes.AK1000;
 
 public class ShouldUseIWithTimersInsteadOfScheduleTellFixerSpecs
 {
-    public ShouldUseIWithTimersInsteadOfScheduleTellFixerSpecs(ITestOutputHelper output)
-    {
-        ShouldUseIWithTimersInsteadOfScheduleTellFixer.Output = output;
-    }
-    
     [Fact]
     public Task ReplaceScheduleTellOnceWithStartSingleTimer()
     {
@@ -215,27 +212,7 @@ public class ShouldUseIWithTimersInsteadOfScheduleTellFixerSpecs
             }
             """;
 
-        var after = new[]
-        {
-            """
-            using System;
-            using Akka.Actor;
-
-            public sealed class MyActor : ReceiveActor, IWithTimers
-            {
-                private const string TimerKey_68ecbee5 = "68ecbee5 - PLEASE REFACTOR THIS";
-                public MyActor()
-                {
-                    Timers.StartPeriodicTimer(TimerKey_68ecbee5, "test-message1", TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(2));
-                    Context.System.Scheduler.ScheduleTellOnce(TimeSpan.FromSeconds(3), Self, "test-message2", Context.Self);
-                    Context.System.Scheduler.ScheduleTellOnce(TimeSpan.FromSeconds(4), Self, "test-message3", Context.Self);
-                }
-                public ITimerScheduler Timers { get; set; }
-            }
-            """,
-        };
-        
-        const string afterAll =
+        const string after = 
             """
             using System;
             using Akka.Actor;
@@ -255,18 +232,18 @@ public class ShouldUseIWithTimersInsteadOfScheduleTellFixerSpecs
             }
             """;
 
-        var expectedDiagnostics = new[] {
-            Verify.Diagnostic()
-                .WithSpan(9, 9, 9, 112)
-                .WithArguments("ScheduleTell invocation"),
+        var expectedDiagnostic =
             Verify.Diagnostic()
                 .WithSpan(8, 9, 8, 143)
-                .WithArguments("ScheduleTell invocation"),
-            Verify.Diagnostic()
-                .WithSpan(10, 9, 10, 112)
-                .WithArguments("ScheduleTell invocation"),
-        };
-
-        return Verify.VerifyCodeFix(before, afterAll, ShouldUseIWithTimersInsteadOfScheduleTellFixer.Key_ScheduleTell, expectedDiagnostics);
+                .WithArguments("ScheduleTell invocation");
+        
+        return Verify.VerifyCodeFix(
+            before: before,
+            after: after,
+            fixerActionKey: ShouldUseIWithTimersInsteadOfScheduleTellFixer.Key_ScheduleTell,
+            incrementalIterations: 3,
+            codeFixBehaviors: CodeFixTestBehaviors.SkipFixAllCheck,
+            diagnostics: [ expectedDiagnostic ], 
+            fixedDiagnostics: [ ]);
     }
 }

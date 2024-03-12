@@ -58,7 +58,7 @@ public class MyOtherActor
 """,
 
         // Non-Actor class that uses ScheduleTellOnce() and/or ScheduleTellRepeatedly(),
-        // we're only responsible for checking usage inside actor class.
+        // we're only responsible for checking usage inside ActorBase class and its descendants.
 """
 using System;
 using Akka.Actor;
@@ -624,6 +624,246 @@ public sealed class MyActor : ReceiveActor
     }
 }
 """, (14, 17, 14, 125)),
+            
+            // Receive actor invoking ScheduleTellOnce(), analyzer must handle null sender argument, variant 1
+            (
+"""
+// 25
+using System;
+using Akka.Actor;
+using System.Threading.Tasks;
+
+public sealed class MyActor : ReceiveActor
+{
+    public MyActor()
+    {
+        Receive<string>(str =>
+        {
+            Context.System.Scheduler.ScheduleTellOnce(TimeSpan.FromSeconds(3), Self, "test", null);
+        });
+    }
+}
+""", (12, 13, 12, 99)),
+            
+            // Receive actor invoking ScheduleTellOnce(), analyzer must handle null sender argument, variant 2
+            (
+"""
+// 26
+using System;
+using Akka.Actor;
+using System.Threading.Tasks;
+
+public sealed class MyActor : ReceiveActor
+{
+    public MyActor()
+    {
+        Receive<string>(str =>
+        {
+            Context.System.Scheduler.ScheduleTellOnce(TimeSpan.FromSeconds(3), Self, "test", null, null);
+        });
+    }
+}
+""", (12, 13, 12, 105)),
+            
+            // Receive actor invoking ScheduleTellOnce(), analyzer must handle ActorRefs.Nobody sender argument, variant 1
+            (
+"""
+// 27
+using System;
+using Akka.Actor;
+using System.Threading.Tasks;
+
+public sealed class MyActor : ReceiveActor
+{
+    public MyActor()
+    {
+        Receive<string>(str =>
+        {
+            Context.System.Scheduler.ScheduleTellOnce(TimeSpan.FromSeconds(3), Self, "test", ActorRefs.Nobody);
+        });
+    }
+}
+""", (12, 13, 12, 111)),
+            
+            // Receive actor invoking ScheduleTellOnce(), analyzer must handle ActorRefs.Nobody sender argument, variant 2
+            (
+"""
+// 28
+using System;
+using Akka.Actor;
+using System.Threading.Tasks;
+
+public sealed class MyActor : ReceiveActor
+{
+    public MyActor()
+    {
+        Receive<string>(str =>
+        {
+            Context.System.Scheduler.ScheduleTellOnce(TimeSpan.FromSeconds(3), Self, "test", ActorRefs.Nobody, null);
+        });
+    }
+}
+""", (12, 13, 12, 117)),
+            
+            // Receive actor invoking ScheduleTellOnce(), analyzer must handle ActorRefs.NoSender sender argument, variant 1
+            (
+"""
+// 29
+using System;
+using Akka.Actor;
+using System.Threading.Tasks;
+
+public sealed class MyActor : ReceiveActor
+{
+    public MyActor()
+    {
+        Receive<string>(str =>
+        {
+            Context.System.Scheduler.ScheduleTellOnce(TimeSpan.FromSeconds(3), Self, "test", ActorRefs.NoSender);
+        });
+    }
+}
+""", (12, 13, 12, 113)),
+            
+            // Receive actor invoking ScheduleTellOnce(), analyzer must handle ActorRefs.NoSender sender argument, variant 2
+            (
+"""
+// 30
+using System;
+using Akka.Actor;
+using System.Threading.Tasks;
+
+public sealed class MyActor : ReceiveActor
+{
+    public MyActor()
+    {
+        Receive<string>(str =>
+        {
+            Context.System.Scheduler.ScheduleTellOnce(TimeSpan.FromSeconds(3), Self, "test", ActorRefs.NoSender, null);
+        });
+    }
+}
+""", (12, 13, 12, 119)),
+
+            // Receive actor invoking ScheduleTellRepeatedly(), analyzer must handle null sender argument, variant 1
+            (
+"""
+// 31
+using System;
+using Akka.Actor;
+using System.Threading.Tasks;
+
+public sealed class MyActor : ReceiveActor
+{
+    public MyActor()
+    {
+        Receive<string>(str =>
+        {
+            Context.System.Scheduler.ScheduleTellRepeatedly(TimeSpan.FromSeconds(3), TimeSpan.FromSeconds(3), Self, "test", null);
+        });
+    }
+}
+""", (12, 13, 12, 130)),
+            
+            // Receive actor invoking ScheduleTellRepeatedly(), analyzer must handle null sender argument, variant 2
+            (
+"""
+// 32
+using System;
+using Akka.Actor;
+using System.Threading.Tasks;
+
+public sealed class MyActor : ReceiveActor
+{
+    public MyActor()
+    {
+        Receive<string>(str =>
+        {
+            Context.System.Scheduler.ScheduleTellRepeatedly(TimeSpan.FromSeconds(3), TimeSpan.FromSeconds(3), Self, "test", null, null);
+        });
+    }
+}
+""", (12, 13, 12, 136)),
+
+            // Receive actor invoking ScheduleTellRepeatedly(), analyzer must handle ActorRefs.Nobody sender argument, variant 1
+            (
+"""
+// 33
+using System;
+using Akka.Actor;
+using System.Threading.Tasks;
+
+public sealed class MyActor : ReceiveActor
+{
+    public MyActor()
+    {
+        Receive<string>(str =>
+        {
+            Context.System.Scheduler.ScheduleTellRepeatedly(TimeSpan.FromSeconds(3), TimeSpan.FromSeconds(3), Self, "test", ActorRefs.Nobody);
+        });
+    }
+}
+""", (12, 13, 12, 142)),
+            
+            // Receive actor invoking ScheduleTellRepeatedly(), analyzer must handle ActorRefs.Nobody sender argument, variant 2
+            (
+"""
+// 34
+using System;
+using Akka.Actor;
+using System.Threading.Tasks;
+
+public sealed class MyActor : ReceiveActor
+{
+    public MyActor()
+    {
+        Receive<string>(str =>
+        {
+            Context.System.Scheduler.ScheduleTellRepeatedly(TimeSpan.FromSeconds(3), TimeSpan.FromSeconds(3), Self, "test", ActorRefs.Nobody, null);
+        });
+    }
+}
+""", (12, 13, 12, 148)),
+
+            // Receive actor invoking ScheduleTellRepeatedly(), analyzer must handle ActorRefs.NoSender sender argument, variant 1
+            (
+"""
+// 35
+using System;
+using Akka.Actor;
+using System.Threading.Tasks;
+
+public sealed class MyActor : ReceiveActor
+{
+    public MyActor()
+    {
+        Receive<string>(str =>
+        {
+            Context.System.Scheduler.ScheduleTellRepeatedly(TimeSpan.FromSeconds(3), TimeSpan.FromSeconds(3), Self, "test", ActorRefs.NoSender);
+        });
+    }
+}
+""", (12, 13, 12, 144)),
+            
+            // Receive actor invoking ScheduleTellRepeatedly(), analyzer must handle ActorRefs.NoSender sender argument, variant 2
+            (
+"""
+// 36
+using System;
+using Akka.Actor;
+using System.Threading.Tasks;
+
+public sealed class MyActor : ReceiveActor
+{
+    public MyActor()
+    {
+        Receive<string>(str =>
+        {
+            Context.System.Scheduler.ScheduleTellRepeatedly(TimeSpan.FromSeconds(3), TimeSpan.FromSeconds(3), Self, "test", ActorRefs.NoSender, null);
+        });
+    }
+}
+""", (12, 13, 12, 150)),
             
         };
 

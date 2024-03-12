@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.Data.HashFunction.MurmurHash;
 using System.Text;
 using Akka.Analyzers.Context;
+using Akka.Analyzers.Context.Core.Actor;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -32,43 +33,8 @@ public class ShouldUseIWithTimersInsteadOfScheduleTellAnalyzer(): AkkaDiagnostic
         
         context.RegisterSyntaxNodeAction(ctx =>
         {
-            var invocationExpr = (InvocationExpressionSyntax)ctx.Node;
-            
-            // invocation must be a member access expression
-            if (invocationExpr.Expression is not MemberAccessExpressionSyntax memberAccessExpr)
-                return;
-            
+            var classDeclaration = (ClassDeclarationSyntax)ctx.Node;
             var semanticModel = ctx.SemanticModel;
-            // Get the member symbol from the invocation expression
-            if(semanticModel.GetSymbolInfo(memberAccessExpr).Symbol is not IMethodSymbol methodSymbol)
-                return;
-            
-            // Check if the method name is `ScheduleTellOnce` or `ScheduleTellRepeatedly`
-            ArgumentSyntax? receiver = null;
-            ArgumentSyntax? sender = null;
-            var refSymbols = akkaContext.AkkaCore.Actor.ITellScheduler.ScheduleTellOnce;
-            if (refSymbols.Any(s => ReferenceEquals(methodSymbol, s)))
-            {
-                receiver = invocationExpr.ArgumentList.Arguments[1];
-                sender = invocationExpr.ArgumentList.Arguments[3];
-            }
-            else
-            {
-                refSymbols = akkaContext.AkkaCore.Actor.ITellScheduler.ScheduleTellRepeatedly;
-                if (refSymbols.Any(s => ReferenceEquals(methodSymbol, s)))
-                {
-                    receiver = invocationExpr.ArgumentList.Arguments[2];
-                    sender = invocationExpr.ArgumentList.Arguments[4];
-                }
-            }
-
-            // Check that both receiver and sender is Self
-            if (!IsReferenceToSelf(receiver) || !IsReferenceToSelf(sender))
-                return;
-            
-            var classDeclaration = invocationExpr.Ancestors().OfType<ClassDeclarationSyntax>().FirstOrDefault();
-            if (classDeclaration is null)
-                return;
             
             var classBase = semanticModel.GetDeclaredSymbol(classDeclaration)?.BaseType;
             var coreContext = akkaContext.AkkaCore;
@@ -76,42 +42,126 @@ public class ShouldUseIWithTimersInsteadOfScheduleTellAnalyzer(): AkkaDiagnostic
             if (classBase is null || !classBase.IsDerivedOrImplements(coreContext.Actor.ActorBaseType!))
                 return;
 
-            var invocationText = invocationExpr.WithoutTrivia().GetText().ToString();
-            var hash = Hasher.ComputeHash(Encoding.UTF8.GetBytes(invocationText));
-            
-            ReportDiagnostic();
-            return;
-            
-            void ReportDiagnostic()
+            var invocations = classDeclaration.DescendantNodes().OfType<InvocationExpressionSyntax>();
+            foreach (var invocationExpr in invocations)
             {
+                // invocation must be a member access expression
+                if (invocationExpr.Expression is not MemberAccessExpressionSyntax memberAccessExpr)
+                    continue;
+            
+                // Get the member symbol from the invocation expression
+                if(semanticModel.GetSymbolInfo(memberAccessExpr).Symbol is not IMethodSymbol methodSymbol)
+                    continue;
+            
+                // Check if the method name is `ScheduleTellOnce` or `ScheduleTellRepeatedly`
+                ArgumentSyntax? receiver = null;
+                ArgumentSyntax? sender = null;
+                var refSymbols = akkaContext.AkkaCore.Actor.ITellScheduler.ScheduleTellOnce;
+                if (refSymbols.Any(s => ReferenceEquals(methodSymbol, s)))
+                {
+                    receiver = invocationExpr.ArgumentList.Arguments[1];
+                    sender = invocationExpr.ArgumentList.Arguments[3];
+                }
+                else
+                {
+                    refSymbols = akkaContext.AkkaCore.Actor.ITellScheduler.ScheduleTellRepeatedly;
+                    if (refSymbols.Any(s => ReferenceEquals(methodSymbol, s)))
+                    {
+                        receiver = invocationExpr.ArgumentList.Arguments[2];
+                        sender = invocationExpr.ArgumentList.Arguments[4];
+                    }
+                }
+
+                // Check that both receiver and sender is Self or if sender is Nobody or NoSender
+                if (!IsReferenceToSelf(receiver, semanticModel, coreContext.Actor) || 
+                    !IsReferenceToSelfOrNobody(sender, semanticModel, coreContext.Actor))
+                    continue;
+            
+                var invocationText = invocationExpr.WithoutTrivia().GetText().ToString();
+                var hash = Hasher.ComputeHash(Encoding.UTF8.GetBytes(invocationText));
+                
+                // Report once per class
                 var diagnostic = Diagnostic.Create(
                     descriptor: RuleDescriptors.Ak1004ShouldUseIWithTimersInsteadOfScheduleTell, 
-                    location: invocationExpr.GetLocation(), 
+                    location: invocationExpr.GetLocation(),
                     properties: new Dictionary<string, string?>
                     {
                         [HashKey] = hash.AsHexString()
                     }.ToImmutableDictionary(),
                     "ScheduleTell invocation");
                 ctx.ReportDiagnostic(diagnostic);
+                return;
             }
-        }, SyntaxKind.InvocationExpression);
+        }, SyntaxKind.ClassDeclaration);
     }
 
-    private static bool IsReferenceToSelf(ArgumentSyntax? argument)
+    private static bool IsReferenceToSelfOrNobody(ArgumentSyntax? argument, SemanticModel semanticModel, IAkkaCoreActorContext context)
+    {
+        if (argument is null)
+            return false;
+
+        var expression = argument.Expression;
+
+        // null is considered as NoSender
+        if (expression is LiteralExpressionSyntax literal && literal.Kind() == SyntaxKind.NullLiteralExpression)
+            return true;
+
+        // argument must be an identifier
+        var identifier = expression.DescendantNodesAndSelf(node => node is IdentifierNameSyntax).FirstOrDefault();
+        if (identifier is null)
+            return false;
+
+        // Check for field symbols
+        if (semanticModel.GetSymbolInfo(identifier).Symbol is IFieldSymbol fieldSymbol)
+        {
+            // Argument is `ActorRefs.Nobody`
+            if (ReferenceEquals(fieldSymbol, context.ActorRefs.Nobody))
+                return true;
+
+            // Argument is `ActorRefs.NoSender`
+            if (ReferenceEquals(fieldSymbol, context.ActorRefs.NoSender))
+                return true;
+        }
+        
+        // identifier must be a property
+        if (semanticModel.GetSymbolInfo(identifier).Symbol is not IPropertySymbol propertySymbol)
+            return false;
+
+        // Argument is `ActorBase.Self`
+        if (ReferenceEquals(propertySymbol, context.ActorBase.Self))
+            return true;
+
+        // Argument is `IActorRef.Self`
+        if (ReferenceEquals(propertySymbol, context.IActorContext.Self))
+            return true;
+
+        return false;
+    }
+    
+    private static bool IsReferenceToSelf(ArgumentSyntax? argument, SemanticModel semanticModel, IAkkaCoreActorContext context)
     {
         if (argument is null)
             return false;
         
-        switch (argument.Expression)
-        {
-            case IdentifierNameSyntax { Identifier.Text: "Self" }:
-            case MemberAccessExpressionSyntax
-            {
-                Expression: IdentifierNameSyntax { Identifier.Text: "Context" }, Name.Identifier.Text: "Self"
-            }:
-                return true;
-            default:
-                return false;
-        }
+        var expression = argument.Expression;
+        
+        // argument must be an identifier
+        var identifier = expression.DescendantNodesAndSelf(node => node is IdentifierNameSyntax).FirstOrDefault();
+        if (identifier is null)
+            return false;
+        
+        // identifier must be a property
+        if (semanticModel.GetSymbolInfo(identifier).Symbol is not IPropertySymbol propertySymbol)
+            return false;
+
+        // Argument is `ActorBase.Self`
+        if (ReferenceEquals(propertySymbol, context.ActorBase.Self))
+            return true;
+
+        // Argument is `IActorRef.Self`
+        if (ReferenceEquals(propertySymbol, context.IActorContext.Self))
+            return true;
+
+        return false;
     }
 }
