@@ -159,7 +159,7 @@ internal static class CodeAnalysisExtensions
         };
     }
     
-    private static bool IsDerivedOrImplements(this ITypeSymbol typeSymbol, ITypeSymbol baseSymbol)
+    public static bool IsDerivedOrImplements(this ITypeSymbol typeSymbol, ITypeSymbol baseSymbol)
     {
         if (SymbolEqualityComparer.Default.Equals(typeSymbol, baseSymbol))
             return true;

@@ -50,6 +50,17 @@ public static class RuleDescriptors
         messageFormat: "ReceiveAsync<T>() or ReceiveAnyAsync() message handler with synchronous code body or " +
                        "block is less performant compared to Receive<T>() or ReceiveAny(). " +
                        "Consider changing this message handler to Receive<T>() or ReceiveAny() instead.");
+    
+    public static DiagnosticDescriptor Ak1004ShouldUseIWithTimersInsteadOfScheduleTell { get; } = Rule(
+        id: "AK1004",
+        title: "ScheduleTellOnce() and ScheduleTellRepeatedly() can cause memory leak if not properly canceled", 
+        category: AnalysisCategory.ActorDesign, 
+        defaultSeverity: DiagnosticSeverity.Warning,
+        messageFormat: "Usage of ScheduleTellOnce() and ScheduleTellRepeatedly() inside an Akka actor, " +
+                       "especially the variant that does not accept an ICancelable parameter, " +
+                       "can cause memory leak and unnecessary CPU usage if they are not canceled properly inside PostStop(). " +
+                       "Consider implementing the IWithTimers interface and use the Timers.StartSingleTimer() or " +
+                       "Timers.StartPeriodicTimer() instead.");
     #endregion
     
     #region AK2000 Rules
