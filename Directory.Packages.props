@@ -7,8 +7,6 @@
     <PackageVersion Include="Akka.Hosting" Version="1.5.6.1" />
     <PackageVersion Include="Microsoft.CodeAnalysis" Version="4.8.0" />
     <PackageVersion Include="NuGet.Frameworks" Version="6.9.1" />
-    <PackageVersion Include="System.Data.HashFunction.MurmurHash" Version="2.0.0" />
-    <PackageVersion Include="xunit.abstractions" Version="2.0.3" />
   </ItemGroup>
   <!-- Testing Utilities -->
   <ItemGroup>

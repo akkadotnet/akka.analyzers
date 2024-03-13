@@ -13,4 +13,5 @@
     <ItemGroup>
         <Compile Include="..\Akka.Analyzers.Fixes\**\*.cs" Exclude="..\Akka.Analyzers.Fixes\obj\**\*.cs" />
     </ItemGroup>
+
 </Project>
