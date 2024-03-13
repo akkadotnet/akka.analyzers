@@ -4,9 +4,6 @@
 //  </copyright>
 // -----------------------------------------------------------------------
 
-using System.Collections.Immutable;
-using System.Data.HashFunction.MurmurHash;
-using System.Text;
 using Akka.Analyzers.Context;
 using Akka.Analyzers.Context.Core.Actor;
 using Microsoft.CodeAnalysis;
@@ -19,13 +16,6 @@ namespace Akka.Analyzers;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public class ShouldUseIWithTimersInsteadOfScheduleTellAnalyzer(): AkkaDiagnosticAnalyzer(RuleDescriptors.Ak1004ShouldUseIWithTimersInsteadOfScheduleTell)
 {
-    public const string HashKey = "hash";
-    
-    private static readonly IMurmurHash2 Hasher = MurmurHash2Factory.Instance.Create(new MurmurHash2Config
-    {
-        HashSizeInBits = 32
-    });
-    
     public override void AnalyzeCompilation(CompilationStartAnalysisContext context, AkkaContext akkaContext)
     {
         Guard.AssertIsNotNull(context);
@@ -33,66 +23,58 @@ public class ShouldUseIWithTimersInsteadOfScheduleTellAnalyzer(): AkkaDiagnostic
         
         context.RegisterSyntaxNodeAction(ctx =>
         {
-            var classDeclaration = (ClassDeclarationSyntax)ctx.Node;
+            var invocationExpr = (InvocationExpressionSyntax)ctx.Node;
             var semanticModel = ctx.SemanticModel;
             
+            var classDeclaration = invocationExpr.FirstAncestorOrSelf<ClassDeclarationSyntax>();
+            if (classDeclaration is null)
+                return;
             var classBase = semanticModel.GetDeclaredSymbol(classDeclaration)?.BaseType;
             var coreContext = akkaContext.AkkaCore;
+            
             // Check that the class declaration inherits from ActorBase
             if (classBase is null || !classBase.IsDerivedOrImplements(coreContext.Actor.ActorBaseType!))
                 return;
 
-            var invocations = classDeclaration.DescendantNodes().OfType<InvocationExpressionSyntax>();
-            foreach (var invocationExpr in invocations)
+            // invocation must be a member access expression
+            if (invocationExpr.Expression is not MemberAccessExpressionSyntax memberAccessExpr)
+                return;
+        
+            // Get the member symbol from the invocation expression
+            if(semanticModel.GetSymbolInfo(memberAccessExpr).Symbol is not IMethodSymbol methodSymbol)
+                return;
+        
+            // Check if the method name is `ScheduleTellOnce` or `ScheduleTellRepeatedly`
+            ArgumentSyntax? receiver = null;
+            ArgumentSyntax? sender = null;
+            var refSymbols = akkaContext.AkkaCore.Actor.ITellScheduler.ScheduleTellOnce;
+            if (refSymbols.Any(s => ReferenceEquals(methodSymbol, s)))
             {
-                // invocation must be a member access expression
-                if (invocationExpr.Expression is not MemberAccessExpressionSyntax memberAccessExpr)
-                    continue;
-            
-                // Get the member symbol from the invocation expression
-                if(semanticModel.GetSymbolInfo(memberAccessExpr).Symbol is not IMethodSymbol methodSymbol)
-                    continue;
-            
-                // Check if the method name is `ScheduleTellOnce` or `ScheduleTellRepeatedly`
-                ArgumentSyntax? receiver = null;
-                ArgumentSyntax? sender = null;
-                var refSymbols = akkaContext.AkkaCore.Actor.ITellScheduler.ScheduleTellOnce;
+                receiver = invocationExpr.ArgumentList.Arguments[1];
+                sender = invocationExpr.ArgumentList.Arguments[3];
+            }
+            else
+            {
+                refSymbols = akkaContext.AkkaCore.Actor.ITellScheduler.ScheduleTellRepeatedly;
                 if (refSymbols.Any(s => ReferenceEquals(methodSymbol, s)))
                 {
-                    receiver = invocationExpr.ArgumentList.Arguments[1];
-                    sender = invocationExpr.ArgumentList.Arguments[3];
+                    receiver = invocationExpr.ArgumentList.Arguments[2];
+                    sender = invocationExpr.ArgumentList.Arguments[4];
                 }
-                else
-                {
-                    refSymbols = akkaContext.AkkaCore.Actor.ITellScheduler.ScheduleTellRepeatedly;
-                    if (refSymbols.Any(s => ReferenceEquals(methodSymbol, s)))
-                    {
-                        receiver = invocationExpr.ArgumentList.Arguments[2];
-                        sender = invocationExpr.ArgumentList.Arguments[4];
-                    }
-                }
-
-                // Check that both receiver and sender is Self or if sender is Nobody or NoSender
-                if (!IsReferenceToSelf(receiver, semanticModel, coreContext.Actor) || 
-                    !IsReferenceToSelfOrNobody(sender, semanticModel, coreContext.Actor))
-                    continue;
-            
-                var invocationText = invocationExpr.WithoutTrivia().GetText().ToString();
-                var hash = Hasher.ComputeHash(Encoding.UTF8.GetBytes(invocationText));
-                
-                // Report once per class
-                var diagnostic = Diagnostic.Create(
-                    descriptor: RuleDescriptors.Ak1004ShouldUseIWithTimersInsteadOfScheduleTell, 
-                    location: invocationExpr.GetLocation(),
-                    properties: new Dictionary<string, string?>
-                    {
-                        [HashKey] = hash.AsHexString()
-                    }.ToImmutableDictionary(),
-                    "ScheduleTell invocation");
-                ctx.ReportDiagnostic(diagnostic);
-                return;
             }
-        }, SyntaxKind.ClassDeclaration);
+
+            // Check that both receiver and sender is Self or if sender is Nobody or NoSender
+            if (!IsReferenceToSelf(receiver, semanticModel, coreContext.Actor) || 
+                !IsReferenceToSelfOrNobody(sender, semanticModel, coreContext.Actor))
+                return;
+        
+            var diagnostic = Diagnostic.Create(
+                descriptor: RuleDescriptors.Ak1004ShouldUseIWithTimersInsteadOfScheduleTell, 
+                location: invocationExpr.GetLocation(),
+                "ScheduleTell invocation");
+            ctx.ReportDiagnostic(diagnostic);
+
+        }, SyntaxKind.InvocationExpression);
     }
 
     private static bool IsReferenceToSelfOrNobody(ArgumentSyntax? argument, SemanticModel semanticModel, IAkkaCoreActorContext context)
