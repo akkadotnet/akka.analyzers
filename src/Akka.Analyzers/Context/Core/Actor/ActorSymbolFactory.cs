@@ -47,4 +47,8 @@ public static class ActorSymbolFactory
     public static INamedTypeSymbol? ActorRefs(Compilation compilation)
         => Guard.AssertIsNotNull(compilation)
             .GetTypeByMetadataName("Akka.Actor.ActorRefs");
+    
+    public static INamedTypeSymbol? TimerSchedulerInterface(Compilation compilation)
+        => Guard.AssertIsNotNull(compilation)
+            .GetTypeByMetadataName($"{AkkaActorNamespace}.ITimerScheduler");
 }

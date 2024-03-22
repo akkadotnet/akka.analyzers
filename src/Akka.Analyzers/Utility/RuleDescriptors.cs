@@ -61,6 +61,14 @@ public static class RuleDescriptors
                        "can cause memory leak and unnecessary CPU usage if they are not canceled properly inside PostStop(). " +
                        "Consider implementing the IWithTimers interface and use the Timers.StartSingleTimer() or " +
                        "Timers.StartPeriodicTimer() instead.");
+
+    public static DiagnosticDescriptor Ak1007MustNotUseIWithTimersInPreRestart { get; } = Rule(
+        id: "AK1007",
+        title: "Timers.StartSingleTimer() and Timers.StartPeriodicTimer() must not be used inside AroundPreRestart() or PreRestart()", 
+        category: AnalysisCategory.ActorDesign, 
+        defaultSeverity: DiagnosticSeverity.Error,
+        messageFormat: "Creating timer registration using `{0}()` in `{1}()` will not be honored because they will be " +
+                       "cleared immediately. Move timer creation to `PostRestart()` instead.");
     #endregion
     
     #region AK2000 Rules

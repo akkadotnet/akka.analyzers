@@ -4,6 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using Akka.Analyzers.Context.Core;
 using Microsoft.CodeAnalysis;
@@ -183,4 +184,25 @@ internal static class CodeAnalysisExtensions
         return false;
     }
     
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool OverridesAny(this IMethodSymbol methodSymbol, IReadOnlyCollection<IMethodSymbol> refMethods)
+    {
+        if (!methodSymbol.IsOverride)
+            return false;
+        
+        while (methodSymbol.OverriddenMethod != null)
+            methodSymbol = methodSymbol.OverriddenMethod;
+
+        return methodSymbol.MatchesAny(refMethods);
+    }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool MatchesAny(this IMethodSymbol methodSymbol, IReadOnlyCollection<IMethodSymbol> refMethods)
+    {
+        while (!ReferenceEquals(methodSymbol, methodSymbol.ConstructedFrom))
+            methodSymbol = methodSymbol.ConstructedFrom;
+
+        return refMethods.Any(m => ReferenceEquals(m, methodSymbol));
+    }
+
 }
