@@ -22,6 +22,7 @@ public sealed class EmptyAkkaCoreActorContext : IAkkaCoreActorContext
     public INamedTypeSymbol? GracefulStopSupportType => null;
     public INamedTypeSymbol? ITellSchedulerType => null;
     public INamedTypeSymbol? ActorRefsType => null;
+    public INamedTypeSymbol? ITimerSchedulerType => null;
 
     public IGracefulStopSupportContext GracefulStopSupportSupport => EmptyGracefulStopSupportContext.Instance;
     public IIndirectActorProducerContext IIndirectActorProducer => EmptyIndirectActorProducerContext.Instance;
@@ -31,6 +32,7 @@ public sealed class EmptyAkkaCoreActorContext : IAkkaCoreActorContext
     public IPropsContext Props => EmptyPropsContext.Instance;
     public ITellSchedulerInterfaceContext ITellScheduler => EmptyTellSchedulerInterfaceContext.Instance;
     public IActorRefsContext ActorRefs => EmptyActorRefsContext.Empty;
+    public ITimerSchedulerContext ITimerScheduler => EmptyTimerSchedulerContext.Instance;
 }
 
 public sealed class AkkaCoreActorContext : IAkkaCoreActorContext
@@ -44,6 +46,8 @@ public sealed class AkkaCoreActorContext : IAkkaCoreActorContext
     private readonly Lazy<INamedTypeSymbol?> _lazyGracefulStopSupportType;
     private readonly Lazy<INamedTypeSymbol?> _lazyTellSchedulerInterface;
     private readonly Lazy<INamedTypeSymbol?> _lazyActorRefsType;
+    private readonly Lazy<INamedTypeSymbol?> _lazyITimerSchedulerType;
+    
     private readonly Lazy<IGracefulStopSupportContext> _lazyGracefulStopSupport;
     private readonly Lazy<IIndirectActorProducerContext> _lazyIIndirectActorProducer;
     private readonly Lazy<IReceiveActorContext> _lazyReceiveActor;
@@ -62,6 +66,8 @@ public sealed class AkkaCoreActorContext : IAkkaCoreActorContext
         _lazyGracefulStopSupportType = new Lazy<INamedTypeSymbol?>(() => ActorSymbolFactory.GracefulStopSupport(compilation));
         _lazyTellSchedulerInterface = new Lazy<INamedTypeSymbol?>(() => ActorSymbolFactory.TellSchedulerInterface(compilation));
         _lazyActorRefsType = new Lazy<INamedTypeSymbol?>(() => ActorSymbolFactory.ActorRefs(compilation));
+        _lazyITimerSchedulerType = new Lazy<INamedTypeSymbol?>(() => ActorSymbolFactory.TimerSchedulerInterface(compilation));
+        
         _lazyGracefulStopSupport = new Lazy<IGracefulStopSupportContext>(() => GracefulStopSupportContext.Get(this));
         _lazyIIndirectActorProducer = new Lazy<IIndirectActorProducerContext>(() => IndirectActorProducerContext.Get(this));
         _lazyReceiveActor = new Lazy<IReceiveActorContext>(() => ReceiveActorContext.Get(this));
@@ -70,6 +76,7 @@ public sealed class AkkaCoreActorContext : IAkkaCoreActorContext
         _lazyProps = new Lazy<IPropsContext>(() => PropsContext.Get(this));
         ITellScheduler = TellSchedulerInterfaceContext.Get(compilation);
         ActorRefs = ActorRefsContext.Get(this);
+        ITimerScheduler = TimerSchedulerContext.Get(this);
     }
 
     public INamedTypeSymbol? ActorBaseType => _lazyActorBaseType.Value;
@@ -81,6 +88,8 @@ public sealed class AkkaCoreActorContext : IAkkaCoreActorContext
     public INamedTypeSymbol? ITellSchedulerType => _lazyTellSchedulerInterface.Value;
     public INamedTypeSymbol? ActorRefsType => _lazyActorRefsType.Value;
     public INamedTypeSymbol? GracefulStopSupportType => _lazyGracefulStopSupportType.Value;
+    public INamedTypeSymbol? ITimerSchedulerType => _lazyITimerSchedulerType.Value;
+    
     public IGracefulStopSupportContext GracefulStopSupportSupport => _lazyGracefulStopSupport.Value;
     public IIndirectActorProducerContext IIndirectActorProducer => _lazyIIndirectActorProducer.Value;
     public IReceiveActorContext ReceiveActor => _lazyReceiveActor.Value;
@@ -89,6 +98,7 @@ public sealed class AkkaCoreActorContext : IAkkaCoreActorContext
     public IPropsContext Props => _lazyProps.Value;
     public ITellSchedulerInterfaceContext ITellScheduler { get; }
     public IActorRefsContext ActorRefs { get; }
+    public ITimerSchedulerContext ITimerScheduler { get; }
 
     public static IAkkaCoreActorContext Get(Compilation compilation)
         => new AkkaCoreActorContext(compilation);
