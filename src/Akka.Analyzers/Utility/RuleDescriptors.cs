@@ -87,6 +87,15 @@ public static class RuleDescriptors
         defaultSeverity: DiagnosticSeverity.Error,
         messageFormat: "Creating timer registration using `{0}()` in `{1}()` will not be honored because they will be " +
                        "cleared immediately. Move timer creation to `PostRestart()` instead.");
+    
+    public static DiagnosticDescriptor Ak1008MustNotInvokeStashMoreThanOnce { get; } = Rule(
+        id: "AK1008",
+        title: "Stash.Stash() must not be called more than once", 
+        category: AnalysisCategory.ActorDesign, 
+        defaultSeverity: DiagnosticSeverity.Error,
+        messageFormat: "Stash.Stash() must not be called more than once because it will cause runtime errors to be thrown, " +
+                       "due to the Stash actively preventing multiple calls to Stash() creating duplicate messages.");
+    
     #endregion
     
     #region AK2000 Rules
