@@ -10,6 +10,7 @@ using Akka.Analyzers.Context.Core;
 using Akka.Analyzers.Context.Core.Actor;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.FlowAnalysis;
 
 namespace Akka.Analyzers;
 
@@ -215,5 +216,4 @@ internal static class CodeAnalysisExtensions
 
         return refMethods.Any(m => ReferenceEquals(m, methodSymbol));
     }
-
 }
