@@ -87,6 +87,15 @@ public static class RuleDescriptors
         defaultSeverity: DiagnosticSeverity.Error,
         messageFormat: "Creating timer registration using `{0}()` in `{1}()` will not be honored because they will be " +
                        "cleared immediately. Move timer creation to `PostRestart()` instead.");
+    
+    public static DiagnosticDescriptor Ak1008ShouldNotUseSystemToCreateChildActor { get; } = Rule(
+        id: "AK1008",
+        title: "Creating actors using `ActorSystem.ActorOf()` inside an actor.", 
+        category: AnalysisCategory.ActorDesign, 
+        defaultSeverity: DiagnosticSeverity.Warning,
+        messageFormat: "Creating actors using `ActorSystem.ActorOf` inside an actor is discouraged because the " +
+                       "resulting actor would not be the child of this actor but the system itself. Please use " +
+                       "`ActorContext.ActorOf` if your intention is to create a child actor of this actor.");
     #endregion
     
     #region AK2000 Rules

@@ -16,6 +16,14 @@ public static class ActorSymbolFactory
         => Guard.AssertIsNotNull(compilation)
             .GetTypeByMetadataName($"{AkkaActorNamespace}.ActorBase");
 
+    public static INamedTypeSymbol? ActorSystem(Compilation compilation)
+        => Guard.AssertIsNotNull(compilation)
+            .GetTypeByMetadataName($"{AkkaActorNamespace}.ActorSystem");
+
+    public static INamedTypeSymbol? ActorRefFactoryExtensions(Compilation compilation)
+        => Guard.AssertIsNotNull(compilation)
+            .GetTypeByMetadataName($"{AkkaActorNamespace}.ActorRefFactoryExtensions");
+
     public static INamedTypeSymbol? ActorReference(Compilation compilation)
         => Guard.AssertIsNotNull(compilation)
             .GetTypeByMetadataName($"{AkkaActorNamespace}.IActorRef");

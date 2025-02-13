@@ -13,6 +13,8 @@ namespace Akka.Analyzers.Context.Core.Actor;
 public interface IAkkaCoreActorContext
 {
     public INamedTypeSymbol? ActorBaseType { get; }
+    public INamedTypeSymbol? ActorSystemType { get; }
+    public INamedTypeSymbol? ActorRefFactoryExtensionsType { get; }
     public INamedTypeSymbol? IActorRefType { get; }
     public INamedTypeSymbol? PropsType { get; }
     public INamedTypeSymbol? IActorContextType { get; }
@@ -23,7 +25,9 @@ public interface IAkkaCoreActorContext
     public INamedTypeSymbol? ActorRefsType { get; }
     public INamedTypeSymbol? ITimerSchedulerType { get; } 
     
+    public IActorSystemContext ActorSystem { get; }
     public IGracefulStopSupportContext GracefulStopSupportSupport { get; }
+    public IActorRefFactoryExtensionsContext ActorRefFactoryExtensions { get; }
     public IIndirectActorProducerContext IIndirectActorProducer { get; }
     public IReceiveActorContext ReceiveActor { get; }
     public IActorBaseContext ActorBase { get; }
