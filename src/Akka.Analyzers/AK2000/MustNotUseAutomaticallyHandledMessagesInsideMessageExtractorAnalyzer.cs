@@ -159,6 +159,24 @@ public class MustNotUseAutomaticallyHandledMessagesInsideMessageExtractorAnalyze
 
                 break;
             }
+            
+            case BinaryExpressionSyntax binaryExpressionSyntax when binaryExpressionSyntax.IsKind(SyntaxKind.AsExpression) && binaryExpressionSyntax.Right is TypeSyntax typeSyntax:
+                var typeSymbol = semanticModel.GetTypeInfo(typeSyntax).Type;
+                if (forbiddenTypes.Any(t => SymbolEqualityComparer.Default.Equals(t, typeSymbol)))
+                {
+                    var location = binaryExpressionSyntax.GetLocation();
+
+                    // duplicate
+                    if (reportedLocations.Contains(location))
+                        break;
+                    var diagnostic = Diagnostic.Create(
+                        RuleDescriptors
+                            .Ak2001DoNotUseAutomaticallyHandledMessagesInShardMessageExtractor,
+                        location);
+                    ctx.ReportDiagnostic(diagnostic);
+                    reportedLocations.Add(location);
+                }
+                break;
         }
     }
 }
