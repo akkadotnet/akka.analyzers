@@ -1,3 +1,8 @@
+#### 0.3.1 February 17th 2025 ####
+
+* [AK2001: add `as` cast detection](https://github.com/akkadotnet/akka.analyzers/pull/114)
+* [AK1008: New rule, should not use `ActorSystem.ActorOf()` when creating a child actor](https://github.com/akkadotnet/akka.analyzers/pull/113)
+
 #### 0.3.0 December 18th 2024 ####
 
 * [Fix Akka.Analyzers not being able to be installed on old style .NET Framework .csproj projects](https://github.com/akkadotnet/akka.analyzers/pull/107)
