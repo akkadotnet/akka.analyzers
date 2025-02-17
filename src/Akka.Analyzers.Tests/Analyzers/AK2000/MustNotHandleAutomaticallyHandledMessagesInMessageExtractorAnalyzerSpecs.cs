@@ -333,7 +333,47 @@ public class MsgExtractorCreator{
 """, new[]
 {
     (10, 26, 10, 48)
-})
+}),
+        
+                    (
+        // Simple message extractor edge case - using expression body instead of block
+"""
+// 01
+using Akka.Cluster.Sharding;
+public sealed class ShardMessageExtractor : HashCodeMessageExtractor
+{
+    /// <summary>
+    /// We only ever run with a maximum of two nodes, so ~10 shards per node
+    /// </summary>
+    public ShardMessageExtractor(int shardCount = 20) : base(shardCount)
+    {
+    }
+
+    public override string EntityId(object message)
+        => (message as ShardingEnvelope)?.EntityId ?? null;
+}
+""", new[]{(13, 13, 13, 40)}),
+
+                    (
+        // Simple message extractor edge case - using `as`
+"""
+// 02
+using Akka.Cluster.Sharding;
+public sealed class ShardMessageExtractor : HashCodeMessageExtractor
+{
+    /// <summary>
+    /// We only ever run with a maximum of two nodes, so ~10 shards per node
+    /// </summary>
+    public ShardMessageExtractor(int shardCount = 20) : base(shardCount)
+    {
+    }
+
+    public override string EntityId(object message)
+    {
+        return (message as ShardingEnvelope)?.EntityId ?? null;
+    }
+}
+""", new[]{(14, 17, 14, 44)}),
         };
     
     [Theory]
