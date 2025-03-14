@@ -34,7 +34,9 @@ internal static class ReferenceAssembliesHelper
 
         // TODO: does this bring all other transitive dependencies?
         CurrentAkka = defaultAssemblies.AddPackages(
-            ImmutableArray<PackageIdentity>.Empty.Add(new PackageIdentity("Akka.Cluster.Sharding", "1.5.15"))
+            ImmutableArray<PackageIdentity>.Empty
+                .Add(new PackageIdentity("Akka.Cluster.Sharding", "1.5.15"))
+                .Add(new PackageIdentity("Akka.Streams", "1.5.15"))
         );
     }
 }
