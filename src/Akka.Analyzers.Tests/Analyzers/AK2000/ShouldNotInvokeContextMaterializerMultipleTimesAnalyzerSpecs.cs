@@ -118,7 +118,45 @@ public class MyActor: ReceiveActor
             .RunWith(Sink.Ignore<int>(), mat);
     }
 }
+""",
+    // Cached Context.Materializer should not trigger any warnings
 """
+using System.Linq;
+using Akka.Actor;
+using Akka.Streams;
+using Akka.Streams.Dsl;
+
+public class MyActor: ReceiveActor
+{
+    private readonly ActorMaterializer _materializer = Context.Materializer();
+    public MyActor()
+    {
+        var source1 = Source.From(Enumerable.Range(0, 100))
+            .RunWith(Sink.Ignore<int>(), _materializer);
+        var source2 = Source.From(Enumerable.Range(0, 100))
+            .RunWith(Sink.Ignore<int>(), _materializer);
+    }
+}
+""",
+    // Cached Context.Materializer should not trigger any warnings
+"""
+using System.Linq;
+using Akka.Actor;
+using Akka.Streams;
+using Akka.Streams.Dsl;
+
+public class MyActor: ReceiveActor
+{
+    private ActorMaterializer Materializer { get; } = Context.Materializer();
+    public MyActor()
+    {
+        var source1 = Source.From(Enumerable.Range(0, 100))
+            .RunWith(Sink.Ignore<int>(), Materializer);
+        var source2 = Source.From(Enumerable.Range(0, 100))
+            .RunWith(Sink.Ignore<int>(), Materializer);
+    }
+}
+""",
 	};
 	
     [Theory]
@@ -155,10 +193,33 @@ public class MyActor: ReceiveActor
 }
 """, new[]{(14, 42, 14, 64), (16, 42, 16, 64)}),
             (
+    // Context.Materializer invoked multiple times
+"""
+// 02
+using System.Linq;
+using Akka.Actor;
+using Akka.Streams;
+using Akka.Streams.Dsl;
+
+public class MyActor: ReceiveActor
+{
+    private ActorMaterializer Materializer { get; } = Context.Materializer();
+    public MyActor()
+    {
+        var source1 = Source.From(Enumerable.Range(0, 100))
+            .RunWith(Sink.Ignore<int>(), Materializer);
+        var source2 = Source.From(Enumerable.Range(0, 100))
+            .RunWith(Sink.Ignore<int>(), Context.Materializer());
+        var source3 = Source.From(Enumerable.Range(0, 100))
+            .RunWith(Sink.Ignore<int>(), Context.Materializer());
+    }
+}
+""", new[]{(15, 42, 15, 64), (17, 42, 17, 64)}),
+            (
     // Context.Materializer invoked multiple times, mixed with ActorSystem.Materializer()
     // Should not emit warning on Context.System.Materializer()
 """
-// 02
+// 03
 using System.Linq;
 using Akka.Actor;
 using Akka.Streams;
@@ -180,7 +241,7 @@ public class MyActor: ReceiveActor
             (
     // ActorMaterializerExtensions.Materializer() invoked multiple times
 """
-// 03
+// 04
 using System.Linq;
 using Akka.Actor;
 using Akka.Streams;
