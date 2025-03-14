@@ -109,6 +109,13 @@ public static class RuleDescriptors
         "When using any implementation of `Akka.Cluster.Sharding.IMessageExtractor`, including `HashCodeMessageExtractor`, you should not use messages " +
         "that are automatically handled by Akka.NET such as `Shard.StartEntity` and `ShardingEnvelope`.");
 
+    public static DiagnosticDescriptor Ak2002ShouldNotCallContextMaterializerMultipleTimes { get; } = Rule(
+        id: "AK2002",
+        title: "Should not invoke Context.Materializer() multiple times.", 
+        category: AnalysisCategory.ApiUsage, 
+        defaultSeverity: DiagnosticSeverity.Warning,
+        messageFormat: "Context.Materializer() should not be invoked multiple times, use a cached value instead.");
+
     #endregion
 
 }
