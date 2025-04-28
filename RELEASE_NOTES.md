@@ -1,3 +1,8 @@
+#### 0.3.2 April 28th 2025 ####
+
+* [AK1008: Add code fix](https://github.com/akkadotnet/akka.analyzers/pull/117)
+* [AK2002: Add multi `Context.Materializer()` invocation detection](https://github.com/akkadotnet/akka.analyzers/pull/118)
+
 #### 0.3.1 February 17th 2025 ####
 
 * [AK2001: add `as` cast detection](https://github.com/akkadotnet/akka.analyzers/pull/114)
