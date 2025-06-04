@@ -13,8 +13,8 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace Akka.Analyzers;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public class MustNotUseVoidAsyncDelegateInReceiveAnalyzer()
-    : AkkaDiagnosticAnalyzer(RuleDescriptors.Ak2003MustNotUseVoidAsyncDelegateInReceive)
+public class MustNotUseVoidAsyncDelegateInDslActorReceiveAnalyzer()
+    : AkkaDiagnosticAnalyzer(RuleDescriptors.Ak2004MustNotUseVoidAsyncDelegateInDslActorReceive)
 {
     public override void AnalyzeCompilation(CompilationStartAnalysisContext context, AkkaContext akkaContext)
     {
@@ -31,19 +31,12 @@ public class MustNotUseVoidAsyncDelegateInReceiveAnalyzer()
                 method = method.OriginalDefinition;
             
             var compilation = context.Compilation;
-            INamedTypeSymbol? actionSymbol;
-            if(akkaContext.AkkaCore.Actor.ReceiveActor.Receive.Any(m => SymbolEqualityComparer.Default.Equals(method, m)))
-            {
-                actionSymbol = compilation.GetTypeByMetadataName("System.Action`1");
-            } 
-            else if (akkaContext.AkkaCore.Actor.Dsl.IActorDsl.Receive.Any(m => ReferenceEquals(method, m)))
-            {
-                actionSymbol = compilation.GetTypeByMetadataName("System.Action`2");
-            }
-            else
-            {
+
+
+            if (!akkaContext.AkkaCore.Actor.Dsl.IActorDsl.Receive.Any(m => ReferenceEquals(method, m)))
                 return;
-            }
+
+            var actionSymbol = compilation.GetTypeByMetadataName("System.Action`2");
             
             var index = 0;
             foreach (var p in method.Parameters)
@@ -62,19 +55,19 @@ public class MustNotUseVoidAsyncDelegateInReceiveAnalyzer()
             // async lambda?
             if (argExpr is LambdaExpressionSyntax lam && lam.AsyncKeyword.IsKind(SyntaxKind.AsyncKeyword))
             {
-                ctx.ReportDiagnostic(Diagnostic.Create(RuleDescriptors.Ak2003MustNotUseVoidAsyncDelegateInReceive, lam.AsyncKeyword.GetLocation()));
+                ctx.ReportDiagnostic(Diagnostic.Create(RuleDescriptors.Ak2004MustNotUseVoidAsyncDelegateInDslActorReceive, lam.GetLocation()));
                 return;
             }
             // async anonymous method?
             if (argExpr is AnonymousMethodExpressionSyntax anon && anon.AsyncKeyword.IsKind(SyntaxKind.AsyncKeyword))
             {
-                ctx.ReportDiagnostic(Diagnostic.Create(RuleDescriptors.Ak2003MustNotUseVoidAsyncDelegateInReceive, anon.AsyncKeyword.GetLocation()));
+                ctx.ReportDiagnostic(Diagnostic.Create(RuleDescriptors.Ak2004MustNotUseVoidAsyncDelegateInDslActorReceive, anon.GetLocation()));
                 return;
             }
             // method‐group: look up symbol
             if (ctx.SemanticModel.GetSymbolInfo(argExpr).Symbol is IMethodSymbol { IsAsync: true, ReturnsVoid: true })
             {
-                ctx.ReportDiagnostic(Diagnostic.Create(RuleDescriptors.Ak2003MustNotUseVoidAsyncDelegateInReceive, argExpr.GetLocation()));
+                ctx.ReportDiagnostic(Diagnostic.Create(RuleDescriptors.Ak2004MustNotUseVoidAsyncDelegateInDslActorReceive, argExpr.GetLocation()));
             }
         }, SyntaxKind.InvocationExpression);
     }
