@@ -116,6 +116,13 @@ public static class RuleDescriptors
         defaultSeverity: DiagnosticSeverity.Warning,
         messageFormat: "Context.Materializer() should not be invoked multiple times, use a cached value instead.");
 
+    public static DiagnosticDescriptor Ak2003MustNotUseVoidAsyncDelegateInReceive { get; } = Rule(
+        id: "AK2003",
+        title: "`Receive` message handler must not be a void async delegate", 
+        category: AnalysisCategory.ApiUsage, 
+        defaultSeverity: DiagnosticSeverity.Error,
+        messageFormat: "`Receive` message handler delegate must not return a `Task` or be a void async delegate. Use `ReceiveAsync` instead.");
+    
     #endregion
 
 }
