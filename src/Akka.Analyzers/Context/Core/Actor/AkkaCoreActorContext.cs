@@ -4,6 +4,7 @@
 //  </copyright>
 // -----------------------------------------------------------------------
 
+using Akka.Analyzers.Context.Core.Actor.Dsl;
 using Akka.Analyzers.Core.Actor;
 using Microsoft.CodeAnalysis;
 
@@ -37,6 +38,7 @@ public sealed class EmptyAkkaCoreActorContext : IAkkaCoreActorContext
     public ITellSchedulerInterfaceContext ITellScheduler => EmptyTellSchedulerInterfaceContext.Instance;
     public IActorRefsContext ActorRefs => EmptyActorRefsContext.Empty;
     public ITimerSchedulerContext ITimerScheduler => EmptyTimerSchedulerContext.Instance;
+    public IDslContext Dsl => EmptyDslContext.Instance;
 }
 
 public sealed class AkkaCoreActorContext : IAkkaCoreActorContext
@@ -89,6 +91,7 @@ public sealed class AkkaCoreActorContext : IAkkaCoreActorContext
         ITellScheduler = TellSchedulerInterfaceContext.Get(compilation);
         ActorRefs = ActorRefsContext.Get(this);
         ITimerScheduler = TimerSchedulerContext.Get(this);
+        Dsl = DslContext.Get(compilation);
     }
 
     public INamedTypeSymbol? ActorBaseType => _lazyActorBaseType.Value;
@@ -115,6 +118,7 @@ public sealed class AkkaCoreActorContext : IAkkaCoreActorContext
     public ITellSchedulerInterfaceContext ITellScheduler { get; }
     public IActorRefsContext ActorRefs { get; }
     public ITimerSchedulerContext ITimerScheduler { get; }
+    public IDslContext Dsl { get; }
 
     public static IAkkaCoreActorContext Get(Compilation compilation)
         => new AkkaCoreActorContext(compilation);

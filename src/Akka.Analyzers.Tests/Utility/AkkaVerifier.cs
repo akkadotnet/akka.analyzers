@@ -67,6 +67,27 @@ public sealed class AkkaVerifier<TAnalyzer> where TAnalyzer : DiagnosticAnalyzer
         string before,
         string after,
         string fixerActionKey,
+        DiagnosticResult[] diagnostics,
+        DiagnosticResult[] fixedDiagnostics)
+    {
+        Guard.AssertIsNotNull(before);
+        Guard.AssertIsNotNull(after);
+
+        var test = new AkkaTest
+        {
+            TestCode = before,
+            FixedCode = after,
+            CodeActionEquivalenceKey = fixerActionKey, 
+        };
+        test.TestState.ExpectedDiagnostics.AddRange(diagnostics);
+        test.FixedState.ExpectedDiagnostics.AddRange(fixedDiagnostics);
+        return test.RunAsync();
+    }
+    
+    public static Task VerifyCodeFix(
+        string before,
+        string after,
+        string fixerActionKey,
         int incrementalIterations,
         CodeFixTestBehaviors codeFixBehaviors,
         DiagnosticResult[] diagnostics,

@@ -4,6 +4,7 @@
 //  </copyright>
 // -----------------------------------------------------------------------
 
+using Akka.Analyzers.Context.Core.Actor.Dsl;
 using Akka.Analyzers.Core.Actor;
 using Microsoft.CodeAnalysis;
 
@@ -36,4 +37,5 @@ public interface IAkkaCoreActorContext
     public ITellSchedulerInterfaceContext ITellScheduler { get; }
     public IActorRefsContext ActorRefs { get; }
     public ITimerSchedulerContext ITimerScheduler { get; }
+    public IDslContext Dsl { get; }
 }
