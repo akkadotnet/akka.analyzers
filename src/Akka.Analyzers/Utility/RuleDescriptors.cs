@@ -129,6 +129,13 @@ public static class RuleDescriptors
         category: AnalysisCategory.ApiUsage, 
         defaultSeverity: DiagnosticSeverity.Error,
         messageFormat: "DslActor `Receive` message handler delegate must not return a `Task` or be a void async delegate. Use `ReceiveAsync` instead.");
+
+    public static DiagnosticDescriptor Ak2005MustNotUseVoidAsyncDelegateInReceivePersistentActorCommand { get; } = Rule(
+        id: "AK2005",
+        title: "ReceivePersistentActor `Command` message handler must not be a void async delegate", 
+        category: AnalysisCategory.ApiUsage, 
+        defaultSeverity: DiagnosticSeverity.Error,
+        messageFormat: "ReceivePersistentActor `Command` message handler delegate must not return a `Task` or be a void async delegate. Use `CommandAsync` instead.");
     
     #endregion
 
