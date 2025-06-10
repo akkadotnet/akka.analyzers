@@ -1,3 +1,8 @@
+#### 0.3.3 June 10th 2025 ####
+
+* [AK2003, AK2004: Must not use void async delegate in `Receive` message handler](https://github.com/akkadotnet/akka.analyzers/pull/122)
+* [AK2005: Must not use void async delegate in `Command` message handler](https://github.com/akkadotnet/akka.analyzers/pull/123)
+
 #### 0.3.2 April 28th 2025 ####
 
 * [AK1008: Add code fix](https://github.com/akkadotnet/akka.analyzers/pull/117)
