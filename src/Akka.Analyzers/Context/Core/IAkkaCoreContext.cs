@@ -5,6 +5,7 @@
 // -----------------------------------------------------------------------
 
 using Akka.Analyzers.Context.Core.Actor;
+using Akka.Analyzers.Context.Core.Dispatch;
 
 namespace Akka.Analyzers.Context.Core;
 
@@ -19,4 +20,5 @@ public interface IAkkaCoreContext
     public Version Version { get; }
 
     public IAkkaCoreActorContext Actor { get; }
+    public IAkkaCoreDispatchContext Dispatch { get; }
 }
