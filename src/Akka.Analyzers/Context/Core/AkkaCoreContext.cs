@@ -5,6 +5,7 @@
 // -----------------------------------------------------------------------
 
 using Akka.Analyzers.Context.Core.Actor;
+using Akka.Analyzers.Context.Core.Dispatch;
 using Microsoft.CodeAnalysis;
 
 namespace Akka.Analyzers.Context.Core;
@@ -22,6 +23,7 @@ public sealed class EmptyCoreContext : IAkkaCoreContext
 
     public Version Version { get; } = new();
     public IAkkaCoreActorContext Actor => EmptyAkkaCoreActorContext.Instance;
+    public IAkkaCoreDispatchContext Dispatch => EmptyAkkaCoreDispatchContext.Instance;
 }
 
 /// <summary>
@@ -39,11 +41,13 @@ public sealed class AkkaCoreContext : IAkkaCoreContext
     {
         Version = version;
         Actor = AkkaCoreActorContext.Get(compilation);
+        Dispatch = AkkaCoreDispatchContext.Get(compilation);
     }
 
     /// <inheritdoc />
     public Version Version { get; }
     public IAkkaCoreActorContext Actor { get; }
+    public IAkkaCoreDispatchContext Dispatch { get; }
 
     public static IAkkaCoreContext Get(
         Compilation compilation,

@@ -26,6 +26,7 @@ public sealed class EmptyAkkaCoreActorContext : IAkkaCoreActorContext
     public INamedTypeSymbol? ITellSchedulerType => null;
     public INamedTypeSymbol? ActorRefsType => null;
     public INamedTypeSymbol? ITimerSchedulerType => null;
+    public INamedTypeSymbol? ActorRefBaseType => null;
 
     public IActorSystemContext ActorSystem => EmptyActorSystemContext.Instance;
     public IGracefulStopSupportContext GracefulStopSupportSupport => EmptyGracefulStopSupportContext.Instance;
@@ -39,6 +40,7 @@ public sealed class EmptyAkkaCoreActorContext : IAkkaCoreActorContext
     public IActorRefsContext ActorRefs => EmptyActorRefsContext.Empty;
     public ITimerSchedulerContext ITimerScheduler => EmptyTimerSchedulerContext.Instance;
     public IDslContext Dsl => EmptyDslContext.Instance;
+    public IActorRefBaseContext ActorRefBase => EmptyActorRefBaseContext.Instance;
 }
 
 public sealed class AkkaCoreActorContext : IAkkaCoreActorContext
@@ -55,6 +57,7 @@ public sealed class AkkaCoreActorContext : IAkkaCoreActorContext
     private readonly Lazy<INamedTypeSymbol?> _lazyTellSchedulerInterface;
     private readonly Lazy<INamedTypeSymbol?> _lazyActorRefsType;
     private readonly Lazy<INamedTypeSymbol?> _lazyITimerSchedulerType;
+    private readonly Lazy<INamedTypeSymbol?> _lazyActorRefBaseType;
     
     private readonly Lazy<IActorSystemContext> _lazyActorSystem;
     private readonly Lazy<IActorRefFactoryExtensionsContext> _lazyActorRefFactoryExtensions;
@@ -79,6 +82,7 @@ public sealed class AkkaCoreActorContext : IAkkaCoreActorContext
         _lazyTellSchedulerInterface = new Lazy<INamedTypeSymbol?>(() => ActorSymbolFactory.TellSchedulerInterface(compilation));
         _lazyActorRefsType = new Lazy<INamedTypeSymbol?>(() => ActorSymbolFactory.ActorRefs(compilation));
         _lazyITimerSchedulerType = new Lazy<INamedTypeSymbol?>(() => ActorSymbolFactory.TimerSchedulerInterface(compilation));
+        _lazyActorRefBaseType = new Lazy<INamedTypeSymbol?>(() => ActorSymbolFactory.ActorRefBase(compilation));
 
         _lazyActorSystem = new Lazy<IActorSystemContext>(() => ActorSystemContext.Get(this));
         _lazyActorRefFactoryExtensions = new Lazy<IActorRefFactoryExtensionsContext>(() => ActorRefFactoryExtensionsContext.Get(this));
@@ -92,6 +96,7 @@ public sealed class AkkaCoreActorContext : IAkkaCoreActorContext
         ActorRefs = ActorRefsContext.Get(this);
         ITimerScheduler = TimerSchedulerContext.Get(this);
         Dsl = DslContext.Get(compilation);
+        ActorRefBase = ActorRefBaseContext.Get(this);
     }
 
     public INamedTypeSymbol? ActorBaseType => _lazyActorBaseType.Value;
@@ -106,6 +111,7 @@ public sealed class AkkaCoreActorContext : IAkkaCoreActorContext
     public INamedTypeSymbol? ActorRefsType => _lazyActorRefsType.Value;
     public INamedTypeSymbol? GracefulStopSupportType => _lazyGracefulStopSupportType.Value;
     public INamedTypeSymbol? ITimerSchedulerType => _lazyITimerSchedulerType.Value;
+    public INamedTypeSymbol? ActorRefBaseType => _lazyActorRefBaseType.Value;
     
     public IActorSystemContext ActorSystem => _lazyActorSystem.Value;
     public IGracefulStopSupportContext GracefulStopSupportSupport => _lazyGracefulStopSupport.Value;
@@ -119,6 +125,7 @@ public sealed class AkkaCoreActorContext : IAkkaCoreActorContext
     public IActorRefsContext ActorRefs { get; }
     public ITimerSchedulerContext ITimerScheduler { get; }
     public IDslContext Dsl { get; }
+    public IActorRefBaseContext ActorRefBase { get; }
 
     public static IAkkaCoreActorContext Get(Compilation compilation)
         => new AkkaCoreActorContext(compilation);

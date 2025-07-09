@@ -196,6 +196,18 @@ internal static class CodeAnalysisExtensions
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool Overrides(this IMethodSymbol methodSymbol, IMethodSymbol refMethod)
+    {
+        if (!methodSymbol.IsOverride)
+            return false;
+        
+        while (methodSymbol.OverriddenMethod != null)
+            methodSymbol = methodSymbol.OverriddenMethod;
+
+        return ReferenceEquals(methodSymbol, refMethod);
+    }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool OverridesAny(this IMethodSymbol methodSymbol, IReadOnlyCollection<IMethodSymbol> refMethods)
     {
         if (!methodSymbol.IsOverride)

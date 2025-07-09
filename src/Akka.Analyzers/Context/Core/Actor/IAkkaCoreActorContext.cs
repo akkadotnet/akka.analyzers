@@ -25,6 +25,7 @@ public interface IAkkaCoreActorContext
     public INamedTypeSymbol? ITellSchedulerType { get; }
     public INamedTypeSymbol? ActorRefsType { get; }
     public INamedTypeSymbol? ITimerSchedulerType { get; } 
+    public INamedTypeSymbol? ActorRefBaseType { get; }
     
     public IActorSystemContext ActorSystem { get; }
     public IGracefulStopSupportContext GracefulStopSupportSupport { get; }
@@ -38,4 +39,5 @@ public interface IAkkaCoreActorContext
     public IActorRefsContext ActorRefs { get; }
     public ITimerSchedulerContext ITimerScheduler { get; }
     public IDslContext Dsl { get; }
+    public IActorRefBaseContext ActorRefBase { get; }
 }
