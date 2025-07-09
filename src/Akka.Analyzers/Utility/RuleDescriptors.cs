@@ -137,6 +137,13 @@ public static class RuleDescriptors
         defaultSeverity: DiagnosticSeverity.Error,
         messageFormat: "ReceivePersistentActor `Command` message handler delegate must not return a `Task` or be a void async delegate. Use `CommandAsync` instead.");
     
+    public static DiagnosticDescriptor Ak2006MustNotHandleISystemMessageInsideTellInternal { get; } = Rule(
+        id: "AK2006",
+        title: "Must not handle `ISystemMessage` inside `ActorRefBase.TellInternal`.", 
+        category: AnalysisCategory.ApiUsage, 
+        defaultSeverity: DiagnosticSeverity.Error,
+        messageFormat: "`ISystemMessage` must not be handled inside `ActorRefBase.TellInternal()`, it must be handled inside `InternalActorRefBase.SendSystemMessage()`.");
+    
     #endregion
 
 }
