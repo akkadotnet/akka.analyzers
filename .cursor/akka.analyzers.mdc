@@ -1,0 +1,77 @@
+# Akka.Analyzers Cursor Rule File
+
+## Analyzer and Context Patterns
+
+- **Context Classes:**  
+  - Each Akka.NET API area (e.g., Actor, Dispatch) should have a context interface (e.g., `IAkkaCoreActorContext`, `IAkkaCoreDispatchContext`) and corresponding implementation classes (`AkkaCoreActorContext`, `EmptyAkkaCoreActorContext`, etc.).
+  - `Akka` package API contexts should go into the `Akka.Analyzers.Context.Core` namespace.
+  - `Akka.Cluster` package API contexts should go into the `Akka.Analyzers.Context.Cluster` namespace.
+  - `Akka.Persistence` package API contexts should go into the `Akka.Analyzers.Context.Persistence` namespace.
+  - `Akka.Streams` package API contexts should go into the `Akka.Analyzers.Context.Streams` namespace.
+  - `Akka.Cluster.Tools` package API contexts should go into the `Akka.Analyzers.Context.ClusterTools` namespace.
+  - `Akka.Cluster.Sharding` package API contexts should go into the `Akka.Analyzers.Context.ClusterSharding` namespace.
+  - .NET Core (System packages) API contexts should go into the `Akka.Analyzers.Context.System` namespace.
+  - Sub-contexts (e.g., `IActorRefBaseContext`) should be exposed as properties on the main context and follow the same pattern.
+
+- **Symbol Resolution:**  
+  - Use symbol factory methods (e.g., `ActorSymbolFactory.ActorRefBase(compilation)`) for type lookups.
+  - Store resolved symbols as properties in the context and pass them to sub-contexts.
+
+- **Analyzer Implementation:**  
+  - Inherit from `AkkaDiagnosticAnalyzer`.
+  - Use `AnalyzeCompilation` and register syntax node actions.
+  - For override checks, use the `Overrides` extension method, or `OverridesAny` extension methods if context returns a list of methods.
+  - For type hierarchy checks, use the `IsDerivedOrImplements` extension from `CodeAnalysisExtensions`.
+
+- **Reflection-based Type Checks:**  
+  - Reflection-based checks for type assignability (e.g., `IsAssignableFrom`, `GetType()`) are not required for core analyzers and should only be added with strong justification due to risk of false positives.
+
+- **Roslyn Version Compatibility:**  
+  - When supporting multiple Roslyn versions, ensure analyzers and tests are compatible or conditionally compiled as needed.
+
+- **Diagnostic Descriptor Usage:**  
+  - All analyzers must use a `RuleDescriptors` entry for diagnostics. The diagnostic ID, title, and message should accurately reflect the rule’s intent.
+
+## Unit Test Conventions
+
+- **Test Structure:**  
+  - Use a `SuccessCases` theory for valid code.
+  - Use a `FailureCases` theory for all relevant patterns, with code snippets as C# raw string literals (`""" ... """`).
+  - Each failure case should specify the exact code span for the expected diagnostic.
+  - For multiple violations in a single test, enumerate all expected spans.
+
+- **Test Naming and Structure:**  
+  - Test class and method names should clearly indicate the analyzer and scenario. All code samples should be valid C# except for the diagnostic being tested.
+
+- **Test Code Style:**  
+  - Always include required Akka.NET types and properties (e.g., `Path` property for `ActorRefBase`).
+  - Use realistic, idiomatic Akka.NET code in test samples.
+
+## Code Fix Provider Conventions
+
+- If a code fix is provided, place it in the corresponding `Fixes/AKxxxx` folder and ensure it is covered by unit tests.
+
+## General Coding Conventions
+
+- **Null Checks:**  
+  - Use `Guard.AssertIsNotNull` for all critical parameters and context objects.
+
+- **Roslyn API Usage:**  
+  - Prefer Roslyn's operation model (`IOperation`) for robust code analysis.
+  - Use pattern matching and type checks for all relevant Roslyn operation types.
+
+- **File Organization:**  
+  - Place analyzers in the appropriate `AKxxxx` folder.
+  - Place tests in the corresponding `Analyzers/AKxxxx` test folder.
+
+- **Documentation:**  
+  - All public APIs, analyzers, and context classes should have XML doc comments.
+  - Update this `.mdc` file when new conventions are established.
+
+---
+
+_Last updated: 2024-06-09_
+description: Used for creating new Roslyn analyzer rule related to Akka.NET and its related plugins
+globs:
+alwaysApply: false
+---
