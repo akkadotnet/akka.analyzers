@@ -16,4 +16,24 @@ public static class StreamsSymbolFactory
     public static INamedTypeSymbol? AkkaStreams(Compilation compilation)
         => Guard.AssertIsNotNull(compilation)
             .GetTypeByMetadataName($"{StreamsNamespace}.ActorMaterializerExtensions");
+    
+    public static INamedTypeSymbol? FlowOperations(Compilation compilation)
+        => Guard.AssertIsNotNull(compilation)
+            .GetTypeByMetadataName($"{StreamsNamespace}.FlowOperations");
+    
+    public static INamedTypeSymbol? Sink(Compilation compilation)
+        => Guard.AssertIsNotNull(compilation)
+            .GetTypeByMetadataName($"{StreamsNamespace}.Sink");
+    
+    public static INamedTypeSymbol? SourceOperations(Compilation compilation)
+        => Guard.AssertIsNotNull(compilation)
+            .GetTypeByMetadataName($"{StreamsNamespace}.SourceOperations");
+    
+    public static INamedTypeSymbol? SubFlowOperations(Compilation compilation)
+        => Guard.AssertIsNotNull(compilation)
+            .GetTypeByMetadataName($"{StreamsNamespace}.SubFlowOperations");
+    
+    public static INamedTypeSymbol? Source(Compilation compilation)
+        => Guard.AssertIsNotNull(compilation)
+            .GetTypeByMetadataName($"{StreamsNamespace}.Source");
 }
