@@ -4,7 +4,6 @@
 //  </copyright>
 // -----------------------------------------------------------------------
 
-using System.Text;
 using Akka.Analyzers.Context;
 using Akka.Analyzers.Context.Streams;
 using Akka.Analyzers.Context.System;
@@ -58,7 +57,7 @@ public class ShouldUseImmutableEnumerableForStreamAggregateAnalyzer()
             return;
         
         // Check if the zero parameter type is an enumerable
-        if (!IsEnumerable(zeroParameterType, semanticModel.Compilation))
+        if (!IsEnumerable(zeroParameterType, akkaContext))
             return;
 
         // Check if the enumerable is immutable
@@ -146,22 +145,29 @@ public class ShouldUseImmutableEnumerableForStreamAggregateAnalyzer()
         return akkaContext.AkkaStreams.GetAllAggregateMethods().Any(m => SymbolEqualityComparer.Default.Equals(genericMethod, m.OriginalDefinition));
     }
 
-    private static bool IsEnumerable(ITypeSymbol typeSymbol, Compilation compilation)
+    // Update IsEnumerable to use the extension methods
+    private static bool IsEnumerable(ITypeSymbol typeSymbol, AkkaContext akkaContext)
     {
-        // Get the IEnumerable interface
-        var iEnumerableType = compilation.GetTypeByMetadataName("System.Collections.IEnumerable");
-        var iEnumerableGenericType = compilation.GetTypeByMetadataName("System.Collections.Generic.IEnumerable`1");
-        
+        var iEnumerableType = akkaContext.SystemCollections.IEnumerableType;
+        var iEnumerableGenericType = akkaContext.SystemCollections.IEnumerableGenericType;
         if (iEnumerableType == null || iEnumerableGenericType == null)
             return false;
-
-        // Check if the type implements IEnumerable or IEnumerable<T>
-        return typeSymbol.IsDerivedOrImplements(iEnumerableType) || 
+        return typeSymbol.IsDerivedOrImplements(iEnumerableType) ||
                typeSymbol.IsDerivedOrImplements(iEnumerableGenericType);
     }
 
     private static bool IsImmutableEnumerable(ITypeSymbol typeSymbol, AkkaContext akkaContext)
     {
+        // Allow string as an immutable enumerable
+        if (typeSymbol.SpecialType == SpecialType.System_String)
+            return true;
+
+        // Allow IImmutable* interfaces from System.Collections.Immutable
+        if (typeSymbol is INamedTypeSymbol namedType &&
+            namedType.ContainingNamespace.ToDisplayString() == "System.Collections.Immutable" &&
+            namedType.Name.StartsWith("IImmutable", StringComparison.Ordinal))
+            return true;
+
         // Get the immutable collection types from the context
         var immutableCollectionTypes = akkaContext.SystemCollectionsImmutable.GetAllImmutableCollectionTypes();
         

@@ -150,7 +150,8 @@ public static class RuleDescriptors
         category: AnalysisCategory.ApiUsage, 
         defaultSeverity: DiagnosticSeverity.Warning,
         messageFormat: "The generic parameter used as the initial state (zero) for aggregate operations must be an immutable type when it is an enumerable. " +
-                       "Consider using `System.Collections.Immutable` types instead of mutable collections.");
+                       "Consider using `System.Collections.Immutable` types instead of mutable collections. " +
+                       "You can safely ignore this warning with a pragma if you're sure that this collection is immutable.");
     
     #endregion
 
