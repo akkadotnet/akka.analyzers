@@ -28,6 +28,14 @@ public sealed class AkkaVerifier<TAnalyzer> where TAnalyzer : DiagnosticAnalyzer
         return CSharpCodeFixVerifier<TAnalyzer, EmptyCodeFixProvider, DefaultVerifier>.Diagnostic();
     }
 
+    /// <summary>
+    ///     Creates a diagnostic result for the diagnostic referenced in <see cref="TAnalyzer" />.
+    /// </summary>
+    public static DiagnosticResult Diagnostic(string id)
+    {
+        return CSharpCodeFixVerifier<TAnalyzer, EmptyCodeFixProvider, DefaultVerifier>.Diagnostic(id);
+    }
+
     public static Task VerifyAnalyzer(string source, params DiagnosticResult[] diagnostics)
     {
         return VerifyAnalyzer(new[] { source }, diagnostics);
