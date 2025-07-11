@@ -4,6 +4,7 @@
 //  </copyright>
 // -----------------------------------------------------------------------
 
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 
 namespace Akka.Analyzers.Context.Streams;
@@ -20,9 +21,10 @@ public interface IAkkaStreamsContext
     INamedTypeSymbol? SourceType { get; }
     
     IActorMaterializerExtensionsContext? ActorMaterializerExtensions { get; }
-    IFlowOperationsContext? FlowOperations { get; }
-    ISinkContext? Sink { get; }
-    ISourceOperationsContext? SourceOperations { get; }
-    ISubFlowOperationsContext? SubFlowOperations { get; }
-    ISourceContext? Source { get; }
+    IFlowOperationsContext FlowOperations { get; }
+    ISinkContext Sink { get; }
+    ISourceOperationsContext SourceOperations { get; }
+    ISubFlowOperationsContext SubFlowOperations { get; }
+    ISourceContext Source { get; }
+    
 }

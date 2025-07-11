@@ -12,6 +12,7 @@ namespace Akka.Analyzers.Context.Streams;
 public static class StreamsSymbolFactory
 {
     public const string StreamsNamespace = AkkaCoreContext.AkkaNamespace + ".Streams";
+    public const string StreamsDslNamespace = StreamsNamespace + ".Dsl";
     
     public static INamedTypeSymbol? AkkaStreams(Compilation compilation)
         => Guard.AssertIsNotNull(compilation)
@@ -19,21 +20,21 @@ public static class StreamsSymbolFactory
     
     public static INamedTypeSymbol? FlowOperations(Compilation compilation)
         => Guard.AssertIsNotNull(compilation)
-            .GetTypeByMetadataName($"{StreamsNamespace}.FlowOperations");
+            .GetTypeByMetadataName($"{StreamsDslNamespace}.FlowOperations");
     
     public static INamedTypeSymbol? Sink(Compilation compilation)
         => Guard.AssertIsNotNull(compilation)
-            .GetTypeByMetadataName($"{StreamsNamespace}.Sink");
+            .GetTypeByMetadataName($"{StreamsDslNamespace}.Sink");
     
     public static INamedTypeSymbol? SourceOperations(Compilation compilation)
         => Guard.AssertIsNotNull(compilation)
-            .GetTypeByMetadataName($"{StreamsNamespace}.SourceOperations");
+            .GetTypeByMetadataName($"{StreamsDslNamespace}.SourceOperations");
     
     public static INamedTypeSymbol? SubFlowOperations(Compilation compilation)
         => Guard.AssertIsNotNull(compilation)
-            .GetTypeByMetadataName($"{StreamsNamespace}.SubFlowOperations");
+            .GetTypeByMetadataName($"{StreamsDslNamespace}.SubFlowOperations");
     
     public static INamedTypeSymbol? Source(Compilation compilation)
         => Guard.AssertIsNotNull(compilation)
-            .GetTypeByMetadataName($"{StreamsNamespace}.Source");
+            .GetTypeByMetadataName($"{StreamsDslNamespace}.Source`2");
 }

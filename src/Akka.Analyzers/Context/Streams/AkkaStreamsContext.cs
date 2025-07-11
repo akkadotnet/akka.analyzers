@@ -4,6 +4,7 @@
 //  </copyright>
 // -----------------------------------------------------------------------
 
+using System.Collections.Immutable;
 using Akka.Analyzers;
 using Microsoft.CodeAnalysis;
 
@@ -26,11 +27,11 @@ public sealed class EmptyStreamsContext : IAkkaStreamsContext
     public INamedTypeSymbol? SourceType => null;
     
     public IActorMaterializerExtensionsContext? ActorMaterializerExtensions => EmptyActorMaterializerExtensionsContext.Instance;
-    public IFlowOperationsContext? FlowOperations => EmptyFlowOperationsContext.Instance;
-    public ISinkContext? Sink => EmptySinkContext.Instance;
-    public ISourceOperationsContext? SourceOperations => EmptySourceOperationsContext.Instance;
-    public ISubFlowOperationsContext? SubFlowOperations => EmptySubFlowOperationsContext.Instance;
-    public ISourceContext? Source => EmptySourceContext.Instance;
+    public IFlowOperationsContext FlowOperations => EmptyFlowOperationsContext.Instance;
+    public ISinkContext Sink => EmptySinkContext.Instance;
+    public ISourceOperationsContext SourceOperations => EmptySourceOperationsContext.Instance;
+    public ISubFlowOperationsContext SubFlowOperations => EmptySubFlowOperationsContext.Instance;
+    public ISourceContext Source => EmptySourceContext.Instance;
 }
 
 /// <summary>
@@ -98,9 +99,9 @@ public sealed class AkkaStreamsContext : IAkkaStreamsContext
     public INamedTypeSymbol? SourceType => _lazySourceType.Value;
     
     public IActorMaterializerExtensionsContext? ActorMaterializerExtensions => _lazyActorMaterializerExtensions.Value;
-    public IFlowOperationsContext? FlowOperations => _lazyFlowOperations.Value;
-    public ISinkContext? Sink => _lazySink.Value;
-    public ISourceOperationsContext? SourceOperations => _lazySourceOperations.Value;
-    public ISubFlowOperationsContext? SubFlowOperations => _lazySubFlowOperations.Value;
-    public ISourceContext? Source => _lazySource.Value;
+    public IFlowOperationsContext FlowOperations => _lazyFlowOperations.Value;
+    public ISinkContext Sink => _lazySink.Value;
+    public ISourceOperationsContext SourceOperations => _lazySourceOperations.Value;
+    public ISubFlowOperationsContext SubFlowOperations => _lazySubFlowOperations.Value;
+    public ISourceContext Source => _lazySource.Value;
 }
