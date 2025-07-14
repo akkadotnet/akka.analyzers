@@ -35,6 +35,8 @@ public sealed class AkkaContext
         AkkaPersistence = AkkaPersistenceContext.Get(compilation);
         AkkaStreams = AkkaStreamsContext.Get(compilation);
         SystemThreadingTasks = SystemThreadingTasksContext.Get(compilation);
+        SystemCollectionsImmutable = SystemCollectionsImmutableContext.Get(compilation);
+        SystemCollections = new SystemCollectionsContext(compilation);
     }
 
     /// <summary>
@@ -88,4 +90,8 @@ public sealed class AkkaContext
     public bool HasAkkaStreamsInstalled => AkkaStreams != EmptyStreamsContext.Instance;
     
     public ISystemThreadingTasksContext SystemThreadingTasks { get; }
+
+    public ISystemCollectionsImmutableContext SystemCollectionsImmutable { get; }
+
+    public ISystemCollectionsContext SystemCollections { get; }
 }
