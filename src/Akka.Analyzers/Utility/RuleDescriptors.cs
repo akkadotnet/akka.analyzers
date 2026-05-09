@@ -90,12 +90,24 @@ public static class RuleDescriptors
     
     public static DiagnosticDescriptor Ak1008ShouldNotUseSystemToCreateChildActor { get; } = Rule(
         id: "AK1008",
-        title: "Creating actors using `ActorSystem.ActorOf()` inside an actor.", 
-        category: AnalysisCategory.ActorDesign, 
+        title: "Creating actors using `ActorSystem.ActorOf()` inside an actor.",
+        category: AnalysisCategory.ActorDesign,
         defaultSeverity: DiagnosticSeverity.Warning,
         messageFormat: "Creating actors using `ActorSystem.ActorOf` inside an actor is discouraged because the " +
                        "resulting actor would not be the child of this actor but the system itself. Please use " +
                        "`ActorContext.ActorOf` if your intention is to create a child actor of this actor.");
+
+    public static DiagnosticDescriptor Ak1009MustNotUseConfigureAwaitFalseInsideActorReceiveHandler { get; } = Rule(
+        id: "AK1009",
+        title: "Do not use `ConfigureAwait(false)` inside an actor's async receive handler",
+        category: AnalysisCategory.ActorDesign,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        messageFormat: "`ConfigureAwait(false)` opts out of the `ActorTaskScheduler` and causes the " +
+                       "continuation to resume on a thread pool thread where the actor's `[ThreadStatic]` " +
+                       "context is not set. Subsequent access to `Context`, `Sender`, `Self`, `Persist`, " +
+                       "`Become`, etc. will throw `\"There is no active ActorContext\"`. Remove the " +
+                       "`ConfigureAwait(false)` call so the continuation flows back through the " +
+                       "`ActorTaskScheduler`.");
     #endregion
     
     #region AK2000 Rules

@@ -1,3 +1,7 @@
+#### 0.3.4 May 9th 2026 ####
+
+* [AK1009: Warn when `ConfigureAwait(false)` is used inside an actor's async receive handler](https://github.com/akkadotnet/akka.analyzers/issues/136)
+
 #### 0.3.3 June 10th 2025 ####
 
 * [AK2003, AK2004: Must not use void async delegate in `Receive` message handler](https://github.com/akkadotnet/akka.analyzers/pull/122)
