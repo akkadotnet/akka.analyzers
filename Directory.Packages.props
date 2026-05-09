@@ -20,6 +20,6 @@
     <PackageVersion Include="coverlet.collector" Version="10.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <GlobalPackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="all" />
+    <GlobalPackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.203" PrivateAssets="all" />
   </ItemGroup>
 </Project>
