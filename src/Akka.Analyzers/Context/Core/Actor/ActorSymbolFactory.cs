@@ -40,6 +40,10 @@ public static class ActorSymbolFactory
         => Guard.AssertIsNotNull(compilation)
             .GetTypeByMetadataName($"{AkkaActorNamespace}.IIndirectActorProducer");
     
+    public static INamedTypeSymbol? UntypedActor(Compilation compilation)
+        => Guard.AssertIsNotNull(compilation)
+            .GetTypeByMetadataName($"{AkkaActorNamespace}.UntypedActor");
+
     public static INamedTypeSymbol? ReceiveActor(Compilation compilation)
         => Guard.AssertIsNotNull(compilation)
             .GetTypeByMetadataName($"{AkkaActorNamespace}.ReceiveActor");

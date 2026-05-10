@@ -20,17 +20,19 @@ public interface IAkkaCoreActorContext
     public INamedTypeSymbol? PropsType { get; }
     public INamedTypeSymbol? IActorContextType { get; }
     public INamedTypeSymbol? IIndirectActorProducerType { get; }
+    public INamedTypeSymbol? UntypedActorType { get; }
     public INamedTypeSymbol? ReceiveActorType { get; }
     public INamedTypeSymbol? GracefulStopSupportType { get; }
     public INamedTypeSymbol? ITellSchedulerType { get; }
     public INamedTypeSymbol? ActorRefsType { get; }
-    public INamedTypeSymbol? ITimerSchedulerType { get; } 
+    public INamedTypeSymbol? ITimerSchedulerType { get; }
     public INamedTypeSymbol? ActorRefBaseType { get; }
-    
+
     public IActorSystemContext ActorSystem { get; }
     public IGracefulStopSupportContext GracefulStopSupportSupport { get; }
     public IActorRefFactoryExtensionsContext ActorRefFactoryExtensions { get; }
     public IIndirectActorProducerContext IIndirectActorProducer { get; }
+    public IUntypedActorContext UntypedActor { get; }
     public IReceiveActorContext ReceiveActor { get; }
     public IActorBaseContext ActorBase { get; }
     public IActorContextContext IActorContext { get; }
