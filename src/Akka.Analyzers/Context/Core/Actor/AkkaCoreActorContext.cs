@@ -21,6 +21,7 @@ public sealed class EmptyAkkaCoreActorContext : IAkkaCoreActorContext
     public INamedTypeSymbol? PropsType => null;
     public INamedTypeSymbol? IActorContextType => null;
     public INamedTypeSymbol? IIndirectActorProducerType => null;
+    public INamedTypeSymbol? UntypedActorType => null;
     public INamedTypeSymbol? ReceiveActorType => null;
     public INamedTypeSymbol? GracefulStopSupportType => null;
     public INamedTypeSymbol? ITellSchedulerType => null;
@@ -32,6 +33,7 @@ public sealed class EmptyAkkaCoreActorContext : IAkkaCoreActorContext
     public IGracefulStopSupportContext GracefulStopSupportSupport => EmptyGracefulStopSupportContext.Instance;
     public IActorRefFactoryExtensionsContext ActorRefFactoryExtensions => EmptyActorRefFactoryExtensionsContext.Instance;
     public IIndirectActorProducerContext IIndirectActorProducer => EmptyIndirectActorProducerContext.Instance;
+    public IUntypedActorContext UntypedActor => EmptyUntypedActorContext.Instance;
     public IReceiveActorContext ReceiveActor => EmptyReceiveActorContext.Instance;
     public IActorBaseContext ActorBase => EmptyActorBaseContext.Instance;
     public IActorContextContext IActorContext => EmptyActorContextContext.Instance;
@@ -52,6 +54,7 @@ public sealed class AkkaCoreActorContext : IAkkaCoreActorContext
     private readonly Lazy<INamedTypeSymbol?> _lazyPropsType;
     private readonly Lazy<INamedTypeSymbol?> _lazyActorContextType;
     private readonly Lazy<INamedTypeSymbol?> _lazyIIndirectActorProducerType;
+    private readonly Lazy<INamedTypeSymbol?> _lazyUntypedActorType;
     private readonly Lazy<INamedTypeSymbol?> _lazyReceiveActorType;
     private readonly Lazy<INamedTypeSymbol?> _lazyGracefulStopSupportType;
     private readonly Lazy<INamedTypeSymbol?> _lazyTellSchedulerInterface;
@@ -63,6 +66,7 @@ public sealed class AkkaCoreActorContext : IAkkaCoreActorContext
     private readonly Lazy<IActorRefFactoryExtensionsContext> _lazyActorRefFactoryExtensions;
     private readonly Lazy<IGracefulStopSupportContext> _lazyGracefulStopSupport;
     private readonly Lazy<IIndirectActorProducerContext> _lazyIIndirectActorProducer;
+    private readonly Lazy<IUntypedActorContext> _lazyUntypedActor;
     private readonly Lazy<IReceiveActorContext> _lazyReceiveActor;
     private readonly Lazy<IActorBaseContext> _lazyActorBase;
     private readonly Lazy<IActorContextContext> _lazyActorContext;
@@ -77,6 +81,7 @@ public sealed class AkkaCoreActorContext : IAkkaCoreActorContext
         _lazyPropsType = new Lazy<INamedTypeSymbol?>(() => ActorSymbolFactory.Props(compilation));
         _lazyActorContextType = new Lazy<INamedTypeSymbol?>(() => ActorSymbolFactory.ActorContext(compilation));
         _lazyIIndirectActorProducerType = new Lazy<INamedTypeSymbol?>(() => ActorSymbolFactory.IndirectActorProducer(compilation));
+        _lazyUntypedActorType = new Lazy<INamedTypeSymbol?>(() => ActorSymbolFactory.UntypedActor(compilation));
         _lazyReceiveActorType = new Lazy<INamedTypeSymbol?>(() => ActorSymbolFactory.ReceiveActor(compilation));
         _lazyGracefulStopSupportType = new Lazy<INamedTypeSymbol?>(() => ActorSymbolFactory.GracefulStopSupport(compilation));
         _lazyTellSchedulerInterface = new Lazy<INamedTypeSymbol?>(() => ActorSymbolFactory.TellSchedulerInterface(compilation));
@@ -88,6 +93,7 @@ public sealed class AkkaCoreActorContext : IAkkaCoreActorContext
         _lazyActorRefFactoryExtensions = new Lazy<IActorRefFactoryExtensionsContext>(() => ActorRefFactoryExtensionsContext.Get(this));
         _lazyGracefulStopSupport = new Lazy<IGracefulStopSupportContext>(() => GracefulStopSupportContext.Get(this));
         _lazyIIndirectActorProducer = new Lazy<IIndirectActorProducerContext>(() => IndirectActorProducerContext.Get(this));
+        _lazyUntypedActor = new Lazy<IUntypedActorContext>(() => UntypedActorContext.Get(this));
         _lazyReceiveActor = new Lazy<IReceiveActorContext>(() => ReceiveActorContext.Get(this));
         _lazyActorBase = new Lazy<IActorBaseContext>(() => ActorBaseContext.Get(this));
         _lazyActorContext = new Lazy<IActorContextContext>(() => ActorContextContext.Get(this));
@@ -106,6 +112,7 @@ public sealed class AkkaCoreActorContext : IAkkaCoreActorContext
     public INamedTypeSymbol? PropsType => _lazyPropsType.Value;
     public INamedTypeSymbol? IActorContextType => _lazyActorContextType.Value;
     public INamedTypeSymbol? IIndirectActorProducerType => _lazyIIndirectActorProducerType.Value;
+    public INamedTypeSymbol? UntypedActorType => _lazyUntypedActorType.Value;
     public INamedTypeSymbol? ReceiveActorType => _lazyReceiveActorType.Value;
     public INamedTypeSymbol? ITellSchedulerType => _lazyTellSchedulerInterface.Value;
     public INamedTypeSymbol? ActorRefsType => _lazyActorRefsType.Value;
@@ -117,6 +124,7 @@ public sealed class AkkaCoreActorContext : IAkkaCoreActorContext
     public IGracefulStopSupportContext GracefulStopSupportSupport => _lazyGracefulStopSupport.Value;
     public IActorRefFactoryExtensionsContext ActorRefFactoryExtensions => _lazyActorRefFactoryExtensions.Value;
     public IIndirectActorProducerContext IIndirectActorProducer => _lazyIIndirectActorProducer.Value;
+    public IUntypedActorContext UntypedActor => _lazyUntypedActor.Value;
     public IReceiveActorContext ReceiveActor => _lazyReceiveActor.Value;
     public IActorBaseContext ActorBase => _lazyActorBase.Value;
     public IActorContextContext IActorContext => _lazyActorContext.Value;
