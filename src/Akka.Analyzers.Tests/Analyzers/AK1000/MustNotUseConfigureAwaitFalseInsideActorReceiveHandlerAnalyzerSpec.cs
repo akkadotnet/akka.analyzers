@@ -71,6 +71,60 @@ public class NotAnActor
 }
 """,
 
+        // ConfigureAwait(false) in a non-handler method on an actor class is fine —
+        // outside the ReceiveAsync lambda the ActorTaskScheduler is not in play.
+"""
+using System.Net.Http;
+using Akka.Actor;
+using System.Threading.Tasks;
+
+public sealed class MyActor : ReceiveActor
+{
+    private readonly HttpClient _client = new();
+
+    public MyActor()
+    {
+        ReceiveAsync<string>(async url =>
+        {
+            await DoWorkAsync(url);
+        });
+    }
+
+    private async Task DoWorkAsync(string url)
+    {
+        await _client.GetAsync(url).ConfigureAwait(false);
+    }
+}
+""",
+
+        // ConfigureAwait(false) in a static helper called from a Receive lambda is fine
+"""
+using System.Net.Http;
+using Akka.Actor;
+using System.Threading.Tasks;
+
+public sealed class MyActor : ReceiveActor
+{
+    public MyActor()
+    {
+        ReceiveAsync<string>(async url =>
+        {
+            await Helpers.FetchAsync(url);
+        });
+    }
+}
+
+public static class Helpers
+{
+    private static readonly HttpClient Client = new();
+
+    public static async Task FetchAsync(string url)
+    {
+        await Client.GetAsync(url).ConfigureAwait(false);
+    }
+}
+""",
+
         // ConfigureAwait(false) inside Task.Run nested in ReceiveAsync is fine — Task.Run is already off the actor scheduler
 """
 using System.Net.Http;
