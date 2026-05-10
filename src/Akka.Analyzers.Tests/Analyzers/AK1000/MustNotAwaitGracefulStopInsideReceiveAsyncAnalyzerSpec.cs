@@ -171,7 +171,55 @@ public class MyActor: ReceiveActor
     }
 }
 """,
-        
+
+        // Method exists on the actor with await Self.GracefulStop() but is NEVER bound as a handler.
+        // The lambda-only check has always missed this; the cache-based check should also leave it alone
+        // because the method isn't in the cache.
+"""
+using System;
+using Akka.Actor;
+using System.Threading.Tasks;
+
+public class MyActor : ReceiveActor
+{
+    public MyActor()
+    {
+        // No ReceiveAsync(StopMe) registration anywhere
+        ReceiveAsync<string>(async msg => { await Task.Yield(); });
+    }
+
+    private async Task StopMe(string msg) // not a handler
+    {
+        await Self.GracefulStop(TimeSpan.FromSeconds(3));
+    }
+}
+""",
+
+        // Nested anonymous async lambda inside a method-group handler: Task.Run is off the actor
+        // scheduler, so ConfigureAwait/await semantics inside the inner lambda are decoupled from
+        // the actor context. Should NOT flag.
+"""
+using System;
+using Akka.Actor;
+using System.Threading.Tasks;
+
+public class MyActor : ReceiveActor
+{
+    public MyActor()
+    {
+        ReceiveAsync<string>(StopMe);
+    }
+
+    private async Task StopMe(string msg)
+    {
+        await Task.Run(async () =>
+        {
+            await Self.GracefulStop(TimeSpan.FromSeconds(3)); // not flagged — inside Task.Run lambda
+        });
+    }
+}
+""",
+
     };
 
     public static readonly
@@ -452,6 +500,91 @@ public sealed class MyActor : ReceiveActor
     }
 }
 """, (9, 38, 9, 86)),
+
+            // Method-group binding: ReceiveAsync<T>(StopMe) where StopMe body has await Self.GracefulStop()
+            (
+"""
+using System;
+using Akka.Actor;
+using System.Threading.Tasks;
+
+public sealed class MyActor : ReceiveActor
+{
+    public MyActor()
+    {
+        ReceiveAsync<string>(StopMe);
+    }
+
+    private async Task StopMe(string msg)
+    {
+        await Self.GracefulStop(TimeSpan.FromSeconds(3));
+    }
+}
+""", (14, 9, 14, 57)),
+
+            // Method-group binding via CommandAsync<T> on a ReceivePersistentActor
+            (
+"""
+using System;
+using Akka.Actor;
+using Akka.Persistence;
+using System.Threading.Tasks;
+
+public sealed class MyActor : ReceivePersistentActor
+{
+    public MyActor()
+    {
+        CommandAsync<string>(StopMe);
+    }
+
+    private async Task StopMe(string msg)
+    {
+        await Self.GracefulStop(TimeSpan.FromSeconds(3));
+    }
+
+    public override string PersistenceId => "p";
+}
+""", (15, 9, 15, 57)),
+
+            // Method-group binding via UntypedActor.RunTask with Func<Task> overload
+            (
+"""
+using System;
+using Akka.Actor;
+using System.Threading.Tasks;
+
+public sealed class MyActor : UntypedActor
+{
+    protected override void OnReceive(object message) { RunTask(StopMe); }
+
+    private async Task StopMe()
+    {
+        await Self.GracefulStop(TimeSpan.FromSeconds(3));
+    }
+}
+""", (11, 9, 11, 57)),
+
+            // Nested local async function inside a method-group handler — same actor scheduler context
+            (
+"""
+using System;
+using Akka.Actor;
+using System.Threading.Tasks;
+
+public sealed class MyActor : ReceiveActor
+{
+    public MyActor() { ReceiveAsync<string>(StopMe); }
+
+    private async Task StopMe(string msg)
+    {
+        async Task Inner()
+        {
+            await Self.GracefulStop(TimeSpan.FromSeconds(3));
+        }
+        await Inner();
+    }
+}
+""", (13, 13, 13, 61)),
         };
 
     [Theory]
@@ -471,5 +604,41 @@ public sealed class MyActor : ReceiveActor
             .WithSeverity(DiagnosticSeverity.Error);
 
         return Verify.VerifyAnalyzer(d.testCode, expected);
+    }
+
+    [Fact]
+    public Task MethodGroupBoundAcrossFiles()
+    {
+        const string actorFile = """
+            using Akka.Actor;
+            using System.Threading.Tasks;
+
+            public sealed class MyActor : ReceiveActor
+            {
+                public MyActor() { ReceiveAsync<string>(Helpers.StopHandler); }
+            }
+            """;
+
+        const string helpersFile = """
+            using System;
+            using Akka.Actor;
+            using System.Threading.Tasks;
+
+            public static class Helpers
+            {
+                public static async Task StopHandler(string msg)
+                {
+                    var self = ActorRefs.Nobody;
+                    await self.GracefulStop(TimeSpan.FromSeconds(3));
+                }
+            }
+            """;
+
+        // Helpers.StopHandler is bound as a handler in the actor file but its body lives in
+        // a separate file. Verify the compilation-wide cache picks it up. The method uses a
+        // local IActorRef variable instead of Self because it's static; the analyzer's
+        // `IsAccessingActorSelf` check requires Self/Context.Self, so this will NOT fire.
+        // Useful negative case proving the analyzer still gates on the access pattern.
+        return Verify.VerifyAnalyzer(new[] { actorFile, helpersFile });
     }
 }
