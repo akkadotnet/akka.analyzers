@@ -169,6 +169,28 @@ public class MyAwaitable
     public Task ConfigureAwait(bool flag) => Task.CompletedTask;
 }
 """,
+
+        // ActorTaskScheduler.RunTask without ConfigureAwait(false) inside should pass cleanly.
+"""
+using Akka.Actor;
+using Akka.Dispatch;
+using System.Threading.Tasks;
+
+public sealed class MyActor : UntypedActor
+{
+    protected override void OnReceive(object message)
+    {
+        if (message is string str)
+        {
+            ActorTaskScheduler.RunTask(async () =>
+            {
+                await Task.Delay(10);
+                Sender.Tell(str);
+            });
+        }
+    }
+}
+""",
     };
 
     public static readonly
@@ -323,6 +345,26 @@ public sealed class MyActor : ReceiveActor
     }
 }
 """, (12, 42, 12, 63)),
+
+            // ConfigureAwait(false) inside ActorTaskScheduler.RunTask on an UntypedActor — RunTask schedules
+            // the lambda's continuation back onto the ActorTaskScheduler, same as ReceiveAsync.
+            (
+"""
+using Akka.Actor;
+using Akka.Dispatch;
+using System.Threading.Tasks;
+
+public sealed class MyActor : UntypedActor
+{
+    protected override void OnReceive(object message)
+    {
+        ActorTaskScheduler.RunTask(async () =>
+        {
+            await Task.FromResult(0).ConfigureAwait(false);
+        });
+    }
+}
+""", (11, 38, 11, 59)),
         };
 
     [Theory]

@@ -127,10 +127,9 @@ internal static class CodeAnalysisExtensions
 
     /// <summary>
     /// Check if a syntax node is within a lambda expression that is an argument to one of the
-    /// async actor message handler registration methods: <c>ReceiveAsync</c>, <c>ReceiveAnyAsync</c>,
-    /// <c>CommandAsync</c>, or <c>CommandAnyAsync</c>. Continuations of awaits inside these lambdas
-    /// are scheduled back onto Akka.NET's <c>ActorTaskScheduler</c> and therefore preserve actor
-    /// context.
+    /// actor APIs that schedule continuations back onto Akka.NET's <c>ActorTaskScheduler</c>:
+    /// <c>ReceiveAsync</c>, <c>ReceiveAnyAsync</c>, <c>CommandAsync</c>, <c>CommandAnyAsync</c>,
+    /// or <c>ActorBase.RunTask</c>.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsInsideAsyncActorHandlerLambda(
@@ -145,8 +144,18 @@ internal static class CodeAnalysisExtensions
             return false;
 
         return methodSymbol.IsReceiveAsyncInvocation(akkaContext.AkkaCore)
+               || methodSymbol.IsRunTaskInvocation(akkaContext.AkkaCore)
                || methodSymbol.IsPersistentCommandAsyncInvocation(akkaContext);
     }
+
+    /// <summary>
+    /// Check if a method symbol is one of the static <c>ActorTaskScheduler.RunTask</c> overloads.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsRunTaskInvocation(
+        this IMethodSymbol methodSymbol,
+        IAkkaCoreContext akkaContext)
+        => methodSymbol.MatchesAny(akkaContext.Dispatch.ActorTaskSchedulerRunTask);
 
     /// <summary>
     /// Check if a method symbol is one of the <c>ReceivePersistentActor.CommandAsync</c> or

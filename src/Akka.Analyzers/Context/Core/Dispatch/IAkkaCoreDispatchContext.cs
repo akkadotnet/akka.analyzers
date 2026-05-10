@@ -4,6 +4,7 @@
 //  </copyright>
 // -----------------------------------------------------------------------
 
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 
 namespace Akka.Analyzers.Context.Core.Dispatch;
@@ -13,4 +14,8 @@ public interface IAkkaCoreDispatchContext
 {
     // Only focus on the ISystemMessage interface type for now
     public INamedTypeSymbol? ISystemMessageType { get; }
+
+    public INamedTypeSymbol? ActorTaskSchedulerType { get; }
+
+    public ImmutableArray<IMethodSymbol> ActorTaskSchedulerRunTask { get; }
 } 
