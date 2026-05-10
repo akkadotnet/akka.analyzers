@@ -170,10 +170,9 @@ public class MyAwaitable
 }
 """,
 
-        // ActorTaskScheduler.RunTask without ConfigureAwait(false) inside should pass cleanly.
+        // UntypedActor.RunTask without ConfigureAwait(false) inside should pass cleanly.
 """
 using Akka.Actor;
-using Akka.Dispatch;
 using System.Threading.Tasks;
 
 public sealed class MyActor : UntypedActor
@@ -182,7 +181,7 @@ public sealed class MyActor : UntypedActor
     {
         if (message is string str)
         {
-            ActorTaskScheduler.RunTask(async () =>
+            RunTask(async () =>
             {
                 await Task.Delay(10);
                 Sender.Tell(str);
@@ -346,25 +345,24 @@ public sealed class MyActor : ReceiveActor
 }
 """, (12, 42, 12, 63)),
 
-            // ConfigureAwait(false) inside ActorTaskScheduler.RunTask on an UntypedActor — RunTask schedules
-            // the lambda's continuation back onto the ActorTaskScheduler, same as ReceiveAsync.
+            // ConfigureAwait(false) inside UntypedActor.RunTask — RunTask schedules the
+            // lambda's continuation back onto the actor's task scheduler, same as ReceiveAsync.
             (
 """
 using Akka.Actor;
-using Akka.Dispatch;
 using System.Threading.Tasks;
 
 public sealed class MyActor : UntypedActor
 {
     protected override void OnReceive(object message)
     {
-        ActorTaskScheduler.RunTask(async () =>
+        RunTask(async () =>
         {
             await Task.FromResult(0).ConfigureAwait(false);
         });
     }
 }
-""", (11, 38, 11, 59)),
+""", (10, 38, 10, 59)),
         };
 
     [Theory]

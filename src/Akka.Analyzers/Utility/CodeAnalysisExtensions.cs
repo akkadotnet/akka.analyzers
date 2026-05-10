@@ -149,13 +149,15 @@ internal static class CodeAnalysisExtensions
     }
 
     /// <summary>
-    /// Check if a method symbol is one of the static <c>ActorTaskScheduler.RunTask</c> overloads.
+    /// Check if a method symbol is one of the protected <c>UntypedActor.RunTask</c> overloads.
+    /// These are forwarders to <c>ActorTaskScheduler.RunTask</c> and schedule the lambda's
+    /// continuation back through the actor's task scheduler.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsRunTaskInvocation(
         this IMethodSymbol methodSymbol,
         IAkkaCoreContext akkaContext)
-        => methodSymbol.MatchesAny(akkaContext.Dispatch.ActorTaskSchedulerRunTask);
+        => methodSymbol.MatchesAny(akkaContext.Actor.UntypedActor.RunTask);
 
     /// <summary>
     /// Check if a method symbol is one of the <c>ReceivePersistentActor.CommandAsync</c> or
