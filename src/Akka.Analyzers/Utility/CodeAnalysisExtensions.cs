@@ -49,8 +49,8 @@ internal static class CodeAnalysisExtensions
     }
     
     /// <summary>
-    /// Check if a syntax node is within a lambda expression that is an argument for either 
-    /// `ReceiveAsync` or `ReceiveAnyAsync` method invocation 
+    /// Check if a syntax node is within a lambda expression that is an argument for either
+    /// `ReceiveAsync` or `ReceiveAnyAsync` method invocation
     /// </summary>
     /// <param name="node">The syntax node being analyzed</param>
     /// <param name="semanticModel">The semantic model</param>
@@ -62,14 +62,33 @@ internal static class CodeAnalysisExtensions
         SemanticModel semanticModel,
         IAkkaCoreContext akkaContext)
     {
-        // Traverse up the syntax tree to find the first lambda expression ancestor
-        var lambdaExpression = node.FirstAncestorOrSelf<LambdaExpressionSyntax>();
-
-        // Check if this lambda expression is an argument to an invocation expression
-        if (lambdaExpression?.Parent is not ArgumentSyntax { Parent: ArgumentListSyntax { Parent: InvocationExpressionSyntax invocationExpression } }) 
+        if (!TryGetEnclosingLambdaInvocation(node, out var invocationExpression))
             return false;
 
         return invocationExpression.IsReceiveAsyncInvocation(semanticModel, akkaContext);
+    }
+
+    /// <summary>
+    /// Walk up to the first ancestor lambda; if that lambda is a direct argument to an invocation,
+    /// return that invocation. Pure syntactic check — no semantic-model work.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool TryGetEnclosingLambdaInvocation(
+        SyntaxNode node,
+        out InvocationExpressionSyntax invocationExpression)
+    {
+        var lambdaExpression = node.FirstAncestorOrSelf<LambdaExpressionSyntax>();
+        if (lambdaExpression?.Parent is ArgumentSyntax
+            {
+                Parent: ArgumentListSyntax { Parent: InvocationExpressionSyntax inv }
+            })
+        {
+            invocationExpression = inv;
+            return true;
+        }
+
+        invocationExpression = null!;
+        return false;
     }
 
     /// <summary>
@@ -119,23 +138,14 @@ internal static class CodeAnalysisExtensions
         SemanticModel semanticModel,
         AkkaContext akkaContext)
     {
-        // Traverse up the syntax tree to find the first lambda expression ancestor
-        var lambdaExpression = node.FirstAncestorOrSelf<LambdaExpressionSyntax>();
-
-        // Check if this lambda expression is an argument to an invocation expression
-        if (lambdaExpression?.Parent is not ArgumentSyntax
-            {
-                Parent: ArgumentListSyntax { Parent: InvocationExpressionSyntax invocationExpression }
-            })
+        if (!TryGetEnclosingLambdaInvocation(node, out var invocationExpression))
             return false;
 
         if (semanticModel.GetSymbolInfo(invocationExpression).Symbol is not IMethodSymbol methodSymbol)
             return false;
 
-        if (methodSymbol.IsReceiveAsyncInvocation(akkaContext.AkkaCore))
-            return true;
-
-        return methodSymbol.IsPersistentCommandAsyncInvocation(akkaContext);
+        return methodSymbol.IsReceiveAsyncInvocation(akkaContext.AkkaCore)
+               || methodSymbol.IsPersistentCommandAsyncInvocation(akkaContext);
     }
 
     /// <summary>
@@ -150,16 +160,19 @@ internal static class CodeAnalysisExtensions
         if (!akkaContext.HasAkkaPersistenceInstalled)
             return false;
 
+        var receivePersistent = akkaContext.AkkaPersistence.ReceivePersistentActor;
+
+        if (methodSymbol.MatchesAny(receivePersistent.CommandAsync))
+            return true;
+
+        var commandAnyAsync = receivePersistent.CommandAnyAsync;
+        if (commandAnyAsync is null)
+            return false;
+
         var from = methodSymbol.ConstructedFrom;
         while (!ReferenceEquals(from, from.ConstructedFrom))
             from = from.ConstructedFrom;
-
-        var commandAsync = akkaContext.AkkaPersistence.ReceivePersistentActor.CommandAsync;
-        if (commandAsync.Any(s => ReferenceEquals(from, s)))
-            return true;
-
-        var commandAnyAsync = akkaContext.AkkaPersistence.ReceivePersistentActor.CommandAnyAsync;
-        return commandAnyAsync is not null && ReferenceEquals(from, commandAnyAsync);
+        return ReferenceEquals(from, commandAnyAsync);
     }
     
     public static bool IsAccessingActorSelf(

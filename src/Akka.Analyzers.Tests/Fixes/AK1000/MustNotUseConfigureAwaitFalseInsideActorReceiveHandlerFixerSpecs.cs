@@ -57,7 +57,7 @@ public class MustNotUseConfigureAwaitFalseInsideActorReceiveHandlerFixerSpecs
             """;
 
         var expectedDiagnostic = Verify.Diagnostic()
-            .WithSpan(13, 32, 13, 75)
+            .WithSpan(13, 54, 13, 75)
             .WithArguments();
 
         return Verify.VerifyCodeFix(before, after,
@@ -113,7 +113,7 @@ public class MustNotUseConfigureAwaitFalseInsideActorReceiveHandlerFixerSpecs
             """;
 
         var expectedDiagnostic = Verify.Diagnostic()
-            .WithSpan(13, 32, 13, 75)
+            .WithSpan(13, 54, 13, 75)
             .WithArguments();
 
         return Verify.VerifyCodeFix(before, after,

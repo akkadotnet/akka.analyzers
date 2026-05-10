@@ -102,12 +102,9 @@ public static class RuleDescriptors
         title: "Do not use `ConfigureAwait(false)` inside an actor's async receive handler",
         category: AnalysisCategory.ActorDesign,
         defaultSeverity: DiagnosticSeverity.Warning,
-        messageFormat: "`ConfigureAwait(false)` opts out of the `ActorTaskScheduler` and causes the " +
-                       "continuation to resume on a thread pool thread where the actor's `[ThreadStatic]` " +
-                       "context is not set. Subsequent access to `Context`, `Sender`, `Self`, `Persist`, " +
-                       "`Become`, etc. will throw `\"There is no active ActorContext\"`. Remove the " +
-                       "`ConfigureAwait(false)` call so the continuation flows back through the " +
-                       "`ActorTaskScheduler`.");
+        messageFormat: "`ConfigureAwait(false)` bypasses the `ActorTaskScheduler` and resumes the continuation " +
+                       "on a thread pool thread where the actor's context is not set. Remove the " +
+                       "`ConfigureAwait(false)` call so the continuation flows back through the actor's scheduler.");
     #endregion
     
     #region AK2000 Rules

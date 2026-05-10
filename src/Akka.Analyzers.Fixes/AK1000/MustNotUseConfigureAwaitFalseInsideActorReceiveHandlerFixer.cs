@@ -52,7 +52,6 @@ public class MustNotUseConfigureAwaitFalseInsideActorReceiveHandlerFixer()
         MemberAccessExpressionSyntax memberAccess,
         CancellationToken cancellationToken)
     {
-        // Replace `someTask.ConfigureAwait(false)` with `someTask`, preserving trivia.
         var replacement = memberAccess.Expression
             .WithLeadingTrivia(invocationExpr.GetLeadingTrivia())
             .WithTrailingTrivia(invocationExpr.GetTrailingTrivia());

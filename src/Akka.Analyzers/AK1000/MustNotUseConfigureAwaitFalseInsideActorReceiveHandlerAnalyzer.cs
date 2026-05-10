@@ -5,10 +5,12 @@
 // -----------------------------------------------------------------------
 
 using Akka.Analyzers.Context;
+using Akka.Analyzers.Context.System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Text;
 
 namespace Akka.Analyzers;
 
@@ -17,7 +19,6 @@ public class MustNotUseConfigureAwaitFalseInsideActorReceiveHandlerAnalyzer()
     : AkkaDiagnosticAnalyzer(RuleDescriptors.Ak1009MustNotUseConfigureAwaitFalseInsideActorReceiveHandler)
 {
     private const string ConfigureAwaitMethodName = "ConfigureAwait";
-    private const string SystemThreadingTasksNamespace = "System.Threading.Tasks";
 
     public override void AnalyzeCompilation(CompilationStartAnalysisContext context, AkkaContext akkaContext)
     {
@@ -28,14 +29,12 @@ public class MustNotUseConfigureAwaitFalseInsideActorReceiveHandlerAnalyzer()
         {
             var invocationExpr = (InvocationExpressionSyntax)ctx.Node;
 
-            // Method call must be `<expr>.ConfigureAwait(<arg>)`
             if (invocationExpr.Expression is not MemberAccessExpressionSyntax memberAccess)
                 return;
 
             if (memberAccess.Name.Identifier.Text != ConfigureAwaitMethodName)
                 return;
 
-            // Argument must be a literal `false`
             if (invocationExpr.ArgumentList.Arguments.Count != 1)
                 return;
 
@@ -43,37 +42,39 @@ public class MustNotUseConfigureAwaitFalseInsideActorReceiveHandlerAnalyzer()
                 || !literal.IsKind(SyntaxKind.FalseLiteralExpression))
                 return;
 
-            // Resolve the symbol and confirm it's Task/Task<T>/ValueTask/ValueTask<T>.ConfigureAwait
+            // Cheap syntactic prune before any semantic lookups: bail out if not inside a lambda
+            // that's an argument to some invocation. Eliminates the overwhelming common case
+            // (top-level methods, synchronous helpers) without resolving any symbols.
+            if (!CodeAnalysisExtensions.TryGetEnclosingLambdaInvocation(invocationExpr, out _))
+                return;
+
             if (ctx.SemanticModel.GetSymbolInfo(invocationExpr.Expression).Symbol is not IMethodSymbol methodSymbol)
                 return;
 
-            if (!IsTaskConfigureAwait(methodSymbol))
+            if (!IsTaskConfigureAwait(methodSymbol, akkaContext.SystemThreadingTasks))
                 return;
 
-            // The call must be inside a ReceiveAsync/ReceiveAnyAsync/CommandAsync/CommandAnyAsync handler lambda
             if (!invocationExpr.IsInsideAsyncActorHandlerLambda(ctx.SemanticModel, akkaContext))
                 return;
 
-            var diagnostic = Diagnostic.Create(
+            var location = Location.Create(
+                invocationExpr.SyntaxTree,
+                TextSpan.FromBounds(memberAccess.Name.SpanStart, invocationExpr.Span.End));
+            ctx.ReportDiagnostic(Diagnostic.Create(
                 RuleDescriptors.Ak1009MustNotUseConfigureAwaitFalseInsideActorReceiveHandler,
-                invocationExpr.GetLocation());
-            ctx.ReportDiagnostic(diagnostic);
+                location));
         }, SyntaxKind.InvocationExpression);
     }
 
-    private static bool IsTaskConfigureAwait(IMethodSymbol methodSymbol)
+    private static bool IsTaskConfigureAwait(IMethodSymbol methodSymbol, ISystemThreadingTasksContext taskContext)
     {
         if (methodSymbol.Name != ConfigureAwaitMethodName)
             return false;
 
-        var containingType = methodSymbol.ContainingType;
-        if (containingType is null)
-            return false;
-
-        if (containingType.ContainingNamespace?.ToDisplayString() != SystemThreadingTasksNamespace)
-            return false;
-
-        var typeName = containingType.Name;
-        return typeName is "Task" or "ValueTask";
+        var containingDefinition = methodSymbol.ContainingType.OriginalDefinition;
+        return ReferenceEquals(containingDefinition, taskContext.TaskType)
+               || ReferenceEquals(containingDefinition, taskContext.TaskOfTType)
+               || ReferenceEquals(containingDefinition, taskContext.ValueTaskType)
+               || ReferenceEquals(containingDefinition, taskContext.ValueTaskOfTType);
     }
 }

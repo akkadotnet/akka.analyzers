@@ -141,7 +141,7 @@ public sealed class MyActor : ReceiveActor
         });
     }
 }
-""", (13, 32, 13, 75)),
+""", (13, 54, 13, 75)),
 
             // ConfigureAwait(false) inside ReceiveAnyAsync
             (
@@ -163,7 +163,7 @@ public sealed class MyActor : ReceiveActor
         });
     }
 }
-""", (13, 32, 13, 86)),
+""", (13, 65, 13, 86)),
 
             // ConfigureAwait(false) inside CommandAsync<T> on ReceivePersistentActor
             (
@@ -186,7 +186,7 @@ public sealed class MyPersistentActor : ReceivePersistentActor
 
     public override string PersistenceId => "p1";
 }
-""", (13, 32, 13, 75)),
+""", (13, 54, 13, 75)),
 
             // ConfigureAwait(false) inside CommandAnyAsync on ReceivePersistentActor
             (
@@ -209,7 +209,7 @@ public sealed class MyPersistentActor : ReceivePersistentActor
 
     public override string PersistenceId => "p1";
 }
-""", (13, 32, 13, 86)),
+""", (13, 65, 13, 86)),
 
             // ConfigureAwait(false) on a Task<T>-returning expression
             (
@@ -227,7 +227,7 @@ public sealed class MyActor : ReceiveActor
         });
     }
 }
-""", (10, 19, 10, 59)),
+""", (10, 38, 10, 59)),
 
             // ConfigureAwait(false) on a ValueTask
             (
@@ -245,7 +245,7 @@ public sealed class MyActor : ReceiveActor
         });
     }
 }
-""", (10, 19, 10, 56)),
+""", (10, 35, 10, 56)),
 
             // ConfigureAwait(false) inside a nested local async function inside ReceiveAsync<T>
             (
@@ -268,7 +268,7 @@ public sealed class MyActor : ReceiveActor
         });
     }
 }
-""", (12, 23, 12, 63)),
+""", (12, 42, 12, 63)),
         };
 
     [Theory]
