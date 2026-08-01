@@ -23,7 +23,7 @@
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <RoslynVersion>4.8.0</RoslynVersion>
+    <RoslynVersion>4.9.2</RoslynVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)\logo.png" Pack="true" Visible="false" PackagePath="\" />
