@@ -6,6 +6,7 @@
 
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
+using Akka.Analyzers.Context;
 using Akka.Analyzers.Context.Core;
 using Akka.Analyzers.Context.Core.Actor;
 using Microsoft.CodeAnalysis;
@@ -48,8 +49,8 @@ internal static class CodeAnalysisExtensions
     }
     
     /// <summary>
-    /// Check if a syntax node is within a lambda expression that is an argument for either 
-    /// `ReceiveAsync` or `ReceiveAnyAsync` method invocation 
+    /// Check if a syntax node is within a lambda expression that is an argument for either
+    /// `ReceiveAsync` or `ReceiveAnyAsync` method invocation
     /// </summary>
     /// <param name="node">The syntax node being analyzed</param>
     /// <param name="semanticModel">The semantic model</param>
@@ -61,14 +62,33 @@ internal static class CodeAnalysisExtensions
         SemanticModel semanticModel,
         IAkkaCoreContext akkaContext)
     {
-        // Traverse up the syntax tree to find the first lambda expression ancestor
-        var lambdaExpression = node.FirstAncestorOrSelf<LambdaExpressionSyntax>();
-
-        // Check if this lambda expression is an argument to an invocation expression
-        if (lambdaExpression?.Parent is not ArgumentSyntax { Parent: ArgumentListSyntax { Parent: InvocationExpressionSyntax invocationExpression } }) 
+        if (!TryGetEnclosingLambdaInvocation(node, out var invocationExpression))
             return false;
 
         return invocationExpression.IsReceiveAsyncInvocation(semanticModel, akkaContext);
+    }
+
+    /// <summary>
+    /// Walk up to the first ancestor lambda; if that lambda is a direct argument to an invocation,
+    /// return that invocation. Pure syntactic check — no semantic-model work.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool TryGetEnclosingLambdaInvocation(
+        SyntaxNode node,
+        out InvocationExpressionSyntax invocationExpression)
+    {
+        var lambdaExpression = node.FirstAncestorOrSelf<LambdaExpressionSyntax>();
+        if (lambdaExpression?.Parent is ArgumentSyntax
+            {
+                Parent: ArgumentListSyntax { Parent: InvocationExpressionSyntax inv }
+            })
+        {
+            invocationExpression = inv;
+            return true;
+        }
+
+        invocationExpression = null!;
+        return false;
     }
 
     /// <summary>
@@ -95,14 +115,75 @@ internal static class CodeAnalysisExtensions
         this IMethodSymbol methodSymbol,
         IAkkaCoreContext akkaContext)
     {
-        // Go up the chain to make sure that we have the base generic method symbol declaration it originated from 
+        // Go up the chain to make sure that we have the base generic method symbol declaration it originated from
         var from = methodSymbol.ConstructedFrom;
         while (!ReferenceEquals(from, from.ConstructedFrom))
             from = from.ConstructedFrom;
-        
+
         // Check if the method name is `ReceiveAsync` or `ReceiveAnyAsync` and it is defined inside the ReceiveActor class
         var refSymbols = akkaContext.Actor.ReceiveActor.ReceiveAsync.AddRange(akkaContext.Actor.ReceiveActor.ReceiveAnyAsync);
         return refSymbols.Any(s => ReferenceEquals(from, s));
+    }
+
+    /// <summary>
+    /// Check if a syntax node is within a lambda expression that is an argument to one of the
+    /// actor APIs that schedule continuations back onto Akka.NET's <c>ActorTaskScheduler</c>:
+    /// <c>ReceiveAsync</c>, <c>ReceiveAnyAsync</c>, <c>CommandAsync</c>, <c>CommandAnyAsync</c>,
+    /// or <c>ActorBase.RunTask</c>.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsInsideAsyncActorHandlerLambda(
+        this SyntaxNode node,
+        SemanticModel semanticModel,
+        AkkaContext akkaContext)
+    {
+        if (!TryGetEnclosingLambdaInvocation(node, out var invocationExpression))
+            return false;
+
+        if (semanticModel.GetSymbolInfo(invocationExpression).Symbol is not IMethodSymbol methodSymbol)
+            return false;
+
+        return methodSymbol.IsReceiveAsyncInvocation(akkaContext.AkkaCore)
+               || methodSymbol.IsRunTaskInvocation(akkaContext.AkkaCore)
+               || methodSymbol.IsPersistentCommandAsyncInvocation(akkaContext);
+    }
+
+    /// <summary>
+    /// Check if a method symbol is one of the protected <c>UntypedActor.RunTask</c> overloads.
+    /// These are forwarders to <c>ActorTaskScheduler.RunTask</c> and schedule the lambda's
+    /// continuation back through the actor's task scheduler.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsRunTaskInvocation(
+        this IMethodSymbol methodSymbol,
+        IAkkaCoreContext akkaContext)
+        => methodSymbol.MatchesAny(akkaContext.Actor.UntypedActor.RunTask);
+
+    /// <summary>
+    /// Check if a method symbol is one of the <c>ReceivePersistentActor.CommandAsync</c> or
+    /// <c>ReceivePersistentActor.CommandAnyAsync</c> overloads.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsPersistentCommandAsyncInvocation(
+        this IMethodSymbol methodSymbol,
+        AkkaContext akkaContext)
+    {
+        if (!akkaContext.HasAkkaPersistenceInstalled)
+            return false;
+
+        var receivePersistent = akkaContext.AkkaPersistence.ReceivePersistentActor;
+
+        if (methodSymbol.MatchesAny(receivePersistent.CommandAsync))
+            return true;
+
+        var commandAnyAsync = receivePersistent.CommandAnyAsync;
+        if (commandAnyAsync is null)
+            return false;
+
+        var from = methodSymbol.ConstructedFrom;
+        while (!ReferenceEquals(from, from.ConstructedFrom))
+            from = from.ConstructedFrom;
+        return ReferenceEquals(from, commandAnyAsync);
     }
     
     public static bool IsAccessingActorSelf(
