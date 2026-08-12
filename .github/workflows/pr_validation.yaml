@@ -53,4 +53,16 @@ jobs:
           fi
 
       - name: "dotnet pack"
-        run: dotnet pack -c Release
+        run: dotnet pack -c Release -o ./bin/nuget
+
+      - name: "Install Akka.Analyzers into .NET Framework Canary"
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        working-directory: ./test/Akka.Analyzers.NetFxInstallCanary
+        run: |
+          # Install Akka.Analyzers package
+          dotnet add package Akka.Analyzers
+
+          # Restore and build the project
+          dotnet restore
+          dotnet build
