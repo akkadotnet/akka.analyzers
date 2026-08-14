@@ -21,9 +21,22 @@ public class ShouldUseIWithTimersInsteadOfScheduleTellAnalyzer(): AkkaDiagnostic
         Guard.AssertIsNotNull(context);
         Guard.AssertIsNotNull(akkaContext);
         
+        // Per-compilation state, hoisted out of the per-node action. Rejecting by name matters most
+        // here: this rule resolved the enclosing class symbol as well as the invocation, per call site.
+        var scheduleTellOnce = akkaContext.AkkaCore.Actor.ITellScheduler.ScheduleTellOnce;
+        var scheduleTellRepeatedly = akkaContext.AkkaCore.Actor.ITellScheduler.ScheduleTellRepeatedly;
+        var scheduleTellNames = scheduleTellOnce.AddRange(scheduleTellRepeatedly).MethodNames();
+        if (scheduleTellNames.IsEmpty)
+            return;
+
         context.RegisterSyntaxNodeAction(ctx =>
         {
             var invocationExpr = (InvocationExpressionSyntax)ctx.Node;
+
+            // Reject by name before binding.
+            if (!invocationExpr.CouldInvokeAnyOf(scheduleTellNames))
+                return;
+
             var semanticModel = ctx.SemanticModel;
             
             var classDeclaration = invocationExpr.FirstAncestorOrSelf<ClassDeclarationSyntax>();
@@ -47,16 +60,14 @@ public class ShouldUseIWithTimersInsteadOfScheduleTellAnalyzer(): AkkaDiagnostic
             // Check if the method name is `ScheduleTellOnce` or `ScheduleTellRepeatedly`
             ArgumentSyntax? receiver = null;
             ArgumentSyntax? sender = null;
-            var refSymbols = akkaContext.AkkaCore.Actor.ITellScheduler.ScheduleTellOnce;
-            if (refSymbols.Any(s => ReferenceEquals(methodSymbol, s)))
+            if (scheduleTellOnce.Any(s => ReferenceEquals(methodSymbol, s)))
             {
                 receiver = invocationExpr.ArgumentList.Arguments[1];
                 sender = invocationExpr.ArgumentList.Arguments[3];
             }
             else
             {
-                refSymbols = akkaContext.AkkaCore.Actor.ITellScheduler.ScheduleTellRepeatedly;
-                if (refSymbols.Any(s => ReferenceEquals(methodSymbol, s)))
+                if (scheduleTellRepeatedly.Any(s => ReferenceEquals(methodSymbol, s)))
                 {
                     receiver = invocationExpr.ArgumentList.Arguments[2];
                     sender = invocationExpr.ArgumentList.Arguments[4];

@@ -36,17 +36,23 @@ public class MustNotUseAutomaticallyHandledMessagesInsideMessageExtractorAnalyze
             AnalyzeMethodDeclaration(ctx, akkaContext);
         }, SyntaxKind.MethodDeclaration);
 
+        // Per-compilation state; without the type there is nothing to match at all.
+        var hashCodeMessageExtractorSymbol =
+            context.Compilation.GetTypeByMetadataName("Akka.Cluster.Sharding.HashCodeMessageExtractor");
+        if (hashCodeMessageExtractorSymbol == null)
+            return; // couldn't find the type
+
         context.RegisterSyntaxNodeAction(ctx =>
         {
             var invocationExpr = (InvocationExpressionSyntax)ctx.Node;
+
+            // The only match is HashCodeMessageExtractor.Create; reject by name before binding.
+            if (invocationExpr.InvokedSimpleName() != "Create")
+                return;
+
             var semanticModel = ctx.SemanticModel;
             if (semanticModel.GetSymbolInfo(invocationExpr).Symbol is not IMethodSymbol methodSymbol)
                 return; // couldn't find the symbol, bail out quickly
-
-            var hashCodeMessageExtractorSymbol =
-                context.Compilation.GetTypeByMetadataName("Akka.Cluster.Sharding.HashCodeMessageExtractor");
-            if (hashCodeMessageExtractorSymbol == null)
-                return; // couldn't find the type
 
             if (SymbolEqualityComparer.Default.Equals(methodSymbol.ContainingType, hashCodeMessageExtractorSymbol) &&
                 methodSymbol is { IsStatic: true, Name: "Create" })

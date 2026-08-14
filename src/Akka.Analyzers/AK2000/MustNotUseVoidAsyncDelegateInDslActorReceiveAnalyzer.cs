@@ -21,23 +21,30 @@ public class MustNotUseVoidAsyncDelegateInDslActorReceiveAnalyzer()
         Guard.AssertIsNotNull(context);
         Guard.AssertIsNotNull(akkaContext);
 
+        // Per-compilation state, hoisted out of the per-node action.
+        var targetMethods = akkaContext.AkkaCore.Actor.Dsl.IActorDsl.Receive;
+        var targetMethodNames = targetMethods.MethodNames();
+        if (targetMethodNames.IsEmpty)
+            return;
+        var actionSymbol = context.Compilation.GetTypeByMetadataName("System.Action`2");
+
         context.RegisterSyntaxNodeAction(ctx =>
         {
             var inv = (InvocationExpressionSyntax)ctx.Node;
+
+            // Reject by name before binding.
+            if (!inv.CouldInvokeAnyOf(targetMethodNames))
+                return;
+
             if(ctx.SemanticModel.GetSymbolInfo(inv.Expression).Symbol is not IMethodSymbol method)
                 return;
 
             if (method.IsGenericMethod)
                 method = method.OriginalDefinition;
-            
-            var compilation = context.Compilation;
 
-
-            if (!akkaContext.AkkaCore.Actor.Dsl.IActorDsl.Receive.Any(m => ReferenceEquals(method, m)))
+            if (!targetMethods.Any(m => ReferenceEquals(method, m)))
                 return;
 
-            var actionSymbol = compilation.GetTypeByMetadataName("System.Action`2");
-            
             var index = 0;
             foreach (var p in method.Parameters)
             {

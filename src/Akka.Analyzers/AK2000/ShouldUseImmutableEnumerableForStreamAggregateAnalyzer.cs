@@ -4,6 +4,7 @@
 //  </copyright>
 // -----------------------------------------------------------------------
 
+using System.Collections.Immutable;
 using Akka.Analyzers.Context;
 using Akka.Analyzers.Context.Streams;
 using Akka.Analyzers.Context.System;
@@ -33,22 +34,38 @@ public class ShouldUseImmutableEnumerableForStreamAggregateAnalyzer()
         Guard.AssertIsNotNull(context);
         Guard.AssertIsNotNull(akkaContext);
 
+        // Hoisted out of the per-node action, which built a ten-element List and copied it into an
+        // ImmutableArray per call site.
+        var aggregateMethods = akkaContext.AkkaStreams.GetAllAggregateMethods();
+        var aggregateMethodNames = aggregateMethods.MethodNames();
+        if (aggregateMethodNames.IsEmpty)
+            return;
+
         context.RegisterSyntaxNodeAction(ctx =>
         {
-            AnalyzeInvocationExpression(ctx, akkaContext);
+            AnalyzeInvocationExpression(ctx, akkaContext, aggregateMethods, aggregateMethodNames);
         }, SyntaxKind.InvocationExpression);
     }
 
-    private static void AnalyzeInvocationExpression(SyntaxNodeAnalysisContext ctx, AkkaContext akkaContext)
+    private static void AnalyzeInvocationExpression(
+        SyntaxNodeAnalysisContext ctx,
+        AkkaContext akkaContext,
+        ImmutableArray<IMethodSymbol> aggregateMethods,
+        ImmutableHashSet<string> aggregateMethodNames)
     {
         var invocationExpr = (InvocationExpressionSyntax)ctx.Node;
+
+        // Reject by name before binding.
+        if (!invocationExpr.CouldInvokeAnyOf(aggregateMethodNames))
+            return;
+
         var semanticModel = ctx.SemanticModel;
         
         if (semanticModel.GetSymbolInfo(invocationExpr).Symbol is not IMethodSymbol methodSymbol)
             return;
 
         // Check if this is an aggregate method from any of the Streams contexts
-        if (!IsAggregateMethod(methodSymbol, akkaContext))
+        if (!IsAggregateMethod(methodSymbol, aggregateMethods))
             return;
 
         // Get the zero parameter type by checking the method signature
@@ -127,7 +144,7 @@ public class ShouldUseImmutableEnumerableForStreamAggregateAnalyzer()
         return null;
     }
 
-    private static bool IsAggregateMethod(IMethodSymbol methodSymbol, AkkaContext akkaContext)
+    private static bool IsAggregateMethod(IMethodSymbol methodSymbol, ImmutableArray<IMethodSymbol> aggregateMethods)
     {
         var originalMethod = methodSymbol;
         // For static methods, we need to check ReducedFrom to get the original method
@@ -142,7 +159,7 @@ public class ShouldUseImmutableEnumerableForStreamAggregateAnalyzer()
         var genericMethod = originalMethod.OriginalDefinition;
 
         // Check if this method is any of the aggregate methods from our contexts (compare generic definitions)
-        return akkaContext.AkkaStreams.GetAllAggregateMethods().Any(m => SymbolEqualityComparer.Default.Equals(genericMethod, m.OriginalDefinition));
+        return aggregateMethods.Any(m => SymbolEqualityComparer.Default.Equals(genericMethod, m.OriginalDefinition));
     }
 
     // Update IsEnumerable to use the extension methods

@@ -21,9 +21,20 @@ public class ShouldNotUseReceiveAsyncWithoutAsyncLambdaAnalyzer(): AkkaDiagnosti
         Guard.AssertIsNotNull(context);
         Guard.AssertIsNotNull(akkaContext);
 
+        // Per-compilation state, hoisted out of the per-node action.
+        var receiveActor = akkaContext.AkkaCore.Actor.ReceiveActor;
+        var receiveAsyncNames = receiveActor.ReceiveAsync.AddRange(receiveActor.ReceiveAnyAsync).MethodNames();
+        if (receiveAsyncNames.IsEmpty)
+            return;
+
         context.RegisterSyntaxNodeAction(ctx =>
         {
             var invocationExpr = (InvocationExpressionSyntax)ctx.Node;
+
+            // Reject by name before binding.
+            if (!invocationExpr.CouldInvokeAnyOf(receiveAsyncNames))
+                return;
+
             var semanticModel = ctx.SemanticModel;
             
             // check that the invocation is a valid ReceiveAsync or ReceiveAnyAsync method

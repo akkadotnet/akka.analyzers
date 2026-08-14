@@ -23,9 +23,25 @@ public class MustNotAwaitGracefulStopInsideReceiveAsyncAnalyzer()
         Guard.AssertIsNotNull(context);
         Guard.AssertIsNotNull(akkaContext);
 
+        // Per-compilation state, hoisted out of the per-node action.
+        var gracefulStopMethods = akkaContext.AkkaCore.Actor.GracefulStopSupportSupport.GracefulStop;
+        var gracefulStopNames = gracefulStopMethods.MethodNames();
+        if (gracefulStopNames.IsEmpty)
+            return;
+
         context.RegisterSyntaxNodeAction(ctx =>
         {
             var invocationExpr = (InvocationExpressionSyntax)ctx.Node;
+
+            // Check 1: GracefulStop() must not be awaited. Done first -- pure syntax, and it
+            // discards nearly every invocation.
+            if (invocationExpr.Parent is not AwaitExpressionSyntax awaitExpression)
+                return;
+
+            // Reject by name before binding.
+            if (!invocationExpr.CouldInvokeAnyOf(gracefulStopNames))
+                return;
+
             var semanticModel = ctx.SemanticModel;
             var akkaCore = akkaContext.AkkaCore;
             
@@ -36,12 +52,7 @@ public class MustNotAwaitGracefulStopInsideReceiveAsyncAnalyzer()
             methodSymbol = methodSymbol.ReducedFrom ?? methodSymbol;
             
             // Method must be one of the GracefulStop() extension methods
-            var refSymbols = akkaCore.Actor.GracefulStopSupportSupport.GracefulStop;
-            if(!refSymbols.Any(s => ReferenceEquals(methodSymbol, s)))
-                return;
-            
-            // Check 1: GracefulStop() should not be awaited
-            if (invocationExpr.Parent is not AwaitExpressionSyntax awaitExpression)
+            if(!gracefulStopMethods.Any(s => ReferenceEquals(methodSymbol, s)))
                 return;
 
             // Check 2: Ensure called within ReceiveAsync<T> or ReceiveAnyAsync lambda expression

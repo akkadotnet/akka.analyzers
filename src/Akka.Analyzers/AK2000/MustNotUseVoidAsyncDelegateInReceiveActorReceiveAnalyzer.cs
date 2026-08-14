@@ -21,21 +21,30 @@ public class MustNotUseVoidAsyncDelegateInReceiveActorReceiveAnalyzer()
         Guard.AssertIsNotNull(context);
         Guard.AssertIsNotNull(akkaContext);
 
+        // Per-compilation state, hoisted out of the per-node action.
+        var targetMethods = akkaContext.AkkaCore.Actor.ReceiveActor.Receive;
+        var targetMethodNames = targetMethods.MethodNames();
+        if (targetMethodNames.IsEmpty)
+            return;
+        var actionSymbol = context.Compilation.GetTypeByMetadataName("System.Action`1");
+
         context.RegisterSyntaxNodeAction(ctx =>
         {
             var inv = (InvocationExpressionSyntax)ctx.Node;
+
+            // Reject by name before binding.
+            if (!inv.CouldInvokeAnyOf(targetMethodNames))
+                return;
+
             if(ctx.SemanticModel.GetSymbolInfo(inv.Expression).Symbol is not IMethodSymbol method)
                 return;
 
             if (method.IsGenericMethod)
                 method = method.OriginalDefinition;
             
-            var compilation = context.Compilation;
-            if (!akkaContext.AkkaCore.Actor.ReceiveActor.Receive.Any(m => SymbolEqualityComparer.Default.Equals(method, m)))
+            if (!targetMethods.Any(m => SymbolEqualityComparer.Default.Equals(method, m)))
                 return;
-            
-            var actionSymbol = compilation.GetTypeByMetadataName("System.Action`1");
-            
+
             var index = 0;
             foreach (var p in method.Parameters)
             {
