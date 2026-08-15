@@ -228,4 +228,43 @@ internal static class CodeAnalysisExtensions
         return refMethods.Any(m => ReferenceEquals(m, methodSymbol));
     }
 
+    /// <summary>
+    ///     The invoked method's simple name, read straight from the syntax tree without binding.
+    /// </summary>
+    /// <remarks>
+    ///     An analyzer registered on <see cref="SyntaxKind.InvocationExpression"/> runs for every
+    ///     call site in the compilation, and binding each one dominates its runtime. When a rule
+    ///     matches only a handful of names, comparing this first rejects nearly every node for the
+    ///     price of a string lookup.
+    ///     <para>
+    ///     Null for calls that do not name a method directly -- invoking a delegate expression, for
+    ///     instance. Those bind to the delegate's Invoke, so a rule's symbol comparison rejects them
+    ///     anyway.
+    ///     </para>
+    /// </remarks>
+    public static string? InvokedSimpleName(this InvocationExpressionSyntax invocation)
+        => invocation.Expression switch
+        {
+            MemberAccessExpressionSyntax memberAccess => memberAccess.Name.Identifier.ValueText,
+            MemberBindingExpressionSyntax memberBinding => memberBinding.Name.Identifier.ValueText,
+            SimpleNameSyntax simpleName => simpleName.Identifier.ValueText, // IdentifierName and GenericName
+            _ => null
+        };
+
+    /// <summary>
+    ///     Distinct names of <paramref name="methods"/>, to pre-filter with. Tolerates the default
+    ///     (uninitialized) array that the empty contexts return.
+    /// </summary>
+    public static ImmutableHashSet<string> MethodNames<TSymbol>(this ImmutableArray<TSymbol> methods)
+        where TSymbol : ISymbol
+        => methods.IsDefaultOrEmpty
+            ? ImmutableHashSet<string>.Empty
+            : methods.Select(m => m.Name).ToImmutableHashSet();
+
+    /// <summary>
+    ///     True if <paramref name="invocation"/> might call one of <paramref name="names"/>.
+    ///     Deliberately conservative: a match still has to be confirmed against the method symbols.
+    /// </summary>
+    public static bool CouldInvokeAnyOf(this InvocationExpressionSyntax invocation, ImmutableHashSet<string> names)
+        => invocation.InvokedSimpleName() is { } name && names.Contains(name);
 }

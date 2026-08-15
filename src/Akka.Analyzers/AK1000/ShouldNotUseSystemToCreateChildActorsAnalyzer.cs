@@ -22,9 +22,26 @@ public class ShouldNotUseSystemToCreateChildActorsAnalyzer()
         Guard.AssertIsNotNull(context);
         Guard.AssertIsNotNull(akkaContext);
 
+        // Both methods this rule matches are named ActorOf.
+        var actorOfNames = new[]
+            {
+                akkaContext.AkkaCore.Actor.ActorSystem.ActorOf,
+                akkaContext.AkkaCore.Actor.ActorRefFactoryExtensions.ActorOf
+            }
+            .Where(m => m is not null)
+            .Select(m => m!.Name)
+            .ToImmutableHashSet();
+        if (actorOfNames.IsEmpty)
+            return;
+
         context.RegisterSyntaxNodeAction(ctx =>
         {
             var invocationExpression = (InvocationExpressionSyntax)ctx.Node;
+
+            // Reject by name before binding.
+            if (!invocationExpression.CouldInvokeAnyOf(actorOfNames))
+                return;
+
             var semanticModel = ctx.SemanticModel;
             
             // Get the member symbol from the invocation expression

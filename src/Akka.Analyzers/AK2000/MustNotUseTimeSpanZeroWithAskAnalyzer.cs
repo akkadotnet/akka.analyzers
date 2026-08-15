@@ -25,6 +25,10 @@ public class MustNotUseTimeSpanZeroWithAskAnalyzer()
         {
             var invocationExpr = (InvocationExpressionSyntax)ctx.Node;
 
+            // The symbol check below only matches Ask; reject by name before binding.
+            if (invocationExpr.InvokedSimpleName() != "Ask")
+                return;
+
             if (ctx.SemanticModel.GetSymbolInfo(invocationExpr).Symbol is IMethodSymbol { Name: "Ask" } methodSymbol &&
                 methodSymbol.Parameters.Any(p => p.Type.ToString() == "System.TimeSpan?"))
                 foreach (var argument in invocationExpr.ArgumentList.Arguments)

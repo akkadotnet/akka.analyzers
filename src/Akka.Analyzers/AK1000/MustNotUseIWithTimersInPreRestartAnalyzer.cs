@@ -21,18 +21,30 @@ public class MustNotUseIWithTimersInPreRestartAnalyzer(): AkkaDiagnosticAnalyzer
         Guard.AssertIsNotNull(context);
         Guard.AssertIsNotNull(akkaContext);
         
+        // Hoisted out of the per-node action, which rebuilt both arrays per call site.
+        var iWithTimers = akkaContext.AkkaCore.Actor.ITimerScheduler;
+        var timerMethods = iWithTimers.StartPeriodicTimer.AddRange(iWithTimers.StartSingleTimer);
+        var timerMethodNames = timerMethods.MethodNames();
+        if (timerMethodNames.IsEmpty)
+            return;
+        var actorBase = akkaContext.AkkaCore.Actor.ActorBase;
+        var preRestartMethods = new[] { actorBase.PreRestart!, actorBase.AroundPreRestart! }.ToImmutableArray();
+
         context.RegisterSyntaxNodeAction(ctx =>
         {
             var invocationExpr = (InvocationExpressionSyntax)ctx.Node;
+
+            // Reject by name before binding.
+            if (!invocationExpr.CouldInvokeAnyOf(timerMethodNames))
+                return;
+
             var semanticModel = ctx.SemanticModel;
 
             if (semanticModel.GetSymbolInfo(invocationExpr).Symbol is not IMethodSymbol methodInvocationSymbol)
                 return;
             
             // Invocation expression must be either `ITimerScheduler.StartPeriodicTimer()` or `ITimerScheduler.StartSingleTimer()`
-            var iWithTimers = akkaContext.AkkaCore.Actor.ITimerScheduler;
-            var refMethods = iWithTimers.StartPeriodicTimer.AddRange(iWithTimers.StartSingleTimer);
-            if (!methodInvocationSymbol.MatchesAny(refMethods))
+            if (!methodInvocationSymbol.MatchesAny(timerMethods))
                 return;
             
             // Grab the enclosing method declaration
@@ -45,9 +57,7 @@ public class MustNotUseIWithTimersInPreRestartAnalyzer(): AkkaDiagnosticAnalyzer
                 return;
             
             // Method declaration must be `ActorBase.PreRestart()` or `ActorBase.AroundPreRestart()`
-            var actorBase = akkaContext.AkkaCore.Actor.ActorBase;
-            refMethods = new[] { actorBase.PreRestart!, actorBase.AroundPreRestart! }.ToImmutableArray();
-            if (!methodDeclarationSymbol.OverridesAny(refMethods))
+            if (!methodDeclarationSymbol.OverridesAny(preRestartMethods))
                 return;
 
             var diagnostic = Diagnostic.Create(

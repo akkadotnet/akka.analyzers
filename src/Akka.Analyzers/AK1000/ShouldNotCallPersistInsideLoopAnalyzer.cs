@@ -20,24 +20,34 @@ public class ShouldNotCallPersistInsideLoopAnalyzer(): AkkaDiagnosticAnalyzer(Ru
         Guard.AssertIsNotNull(context);
         Guard.AssertIsNotNull(akkaContext);
         
+        // Nothing to match without Akka.Persistence, and returning before registering spares such
+        // solutions a per-node callback for every invocation in the compilation.
+        if (!akkaContext.HasAkkaPersistenceInstalled)
+            return;
+
+        // Hoisted out of the per-node action, where the AddRange allocated a fresh ImmutableArray
+        // per call site.
+        var eventsourcedContext = akkaContext.AkkaPersistence.Eventsourced;
+        var refMethods = eventsourcedContext.Persist.AddRange(eventsourcedContext.PersistAsync);
+        var refMethodNames = refMethods.MethodNames();
+        if (refMethodNames.IsEmpty)
+            return;
+
         context.RegisterSyntaxNodeAction(ctx =>
         {
-            // No need to check if Akka.Persistence is not installed
-            if (!akkaContext.HasAkkaPersistenceInstalled)
-                return;
-            
             var invocationExpression = (InvocationExpressionSyntax)ctx.Node;
+
+            // Reject by name before binding.
+            if (!invocationExpression.CouldInvokeAnyOf(refMethodNames))
+                return;
+
             var semanticModel = ctx.SemanticModel;
             
             // Get the member symbol from the invocation expression
             if(semanticModel.GetSymbolInfo(invocationExpression.Expression).Symbol is not IMethodSymbol methodInvocationSymbol)
                 return;
-        
-            var persistenceContext = akkaContext.AkkaPersistence;
-            
+
             // Check if the method name is `Persist` or `PersistAsync`
-            var eventsourcedContext = persistenceContext.Eventsourced;
-            var refMethods = eventsourcedContext.Persist.AddRange(eventsourcedContext.PersistAsync);
             if (!methodInvocationSymbol.MatchesAny(refMethods))
                 return;
 
