@@ -1,3 +1,13 @@
+#### 0.4.0 October 27th 2026 ####
+
+* Upgraded to .NET 10: SDK pin now 10.0.403, test projects target `net10.0` (net472 coverage retained)
+* Bumped `Microsoft.NET.Test.Sdk` to 18.11.0, `xunit.runner.visualstudio` to 4.0.1, `coverlet.collector` to 10.1.0, `NuGet.Frameworks` to 7.9.0, `Microsoft.SourceLink.GitHub` to 10.0.403
+* Bumped `Microsoft.CodeAnalysis.CSharp.Analyzer.Testing` / `CodeFix.Testing` to 1.1.4
+* Pinned `System.Security.Cryptography.Pkcs` to 9.0.22 to override a vulnerable transitive dependency pulled in by the analyzer testing packages
+* Removed unused `Akka.Hosting` and `xunit.abstractions` central package entries
+* Fixed `publish_nuget.yml` referencing an undefined `DOTNET_VERSION` variable, which now reads `global.json`
+* Bumped `actions/checkout` to v7, `actions/setup-dotnet` to v6, `AButler/upload-release-assets` to v4
+
 #### 0.3.3 June 10th 2025 ####
 
 * [AK2003, AK2004: Must not use void async delegate in `Receive` message handler](https://github.com/akkadotnet/akka.analyzers/pull/122)

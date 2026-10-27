@@ -23,13 +23,13 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           lfs: true
           fetch-depth: 0
 
       - name: "Install .NET SDK"
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v6
         with:
           global-json-file: "./global.json"
 
@@ -47,7 +47,7 @@ jobs:
         shell: bash
         run: |
           if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
-            dotnet test -c Release --framework net8.0
+            dotnet test -c Release --framework net10.0
           else
             dotnet test -c Release
           fi
