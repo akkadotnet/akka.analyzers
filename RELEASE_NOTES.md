@@ -5,7 +5,7 @@
 * Bumped `Microsoft.CodeAnalysis.CSharp.Analyzer.Testing` / `CodeFix.Testing` to 1.1.4
 * Pinned `System.Security.Cryptography.Pkcs` to 9.0.22 to override a vulnerable transitive dependency pulled in by the analyzer testing packages
 * Removed unused `Akka.Hosting` and `xunit.abstractions` central package entries
-* Fixed `publish_nuget.yml` referencing an undefined `DOTNET_VERSION` variable; it now reads `global.json`
+* Fixed `publish_nuget.yml` referencing an undefined `DOTNET_VERSION` variable, which now reads `global.json`
 * Bumped `actions/checkout` to v7, `actions/setup-dotnet` to v6, `AButler/upload-release-assets` to v4
 
 #### 0.3.3 June 10th 2025 ####
