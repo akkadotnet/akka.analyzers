@@ -5,12 +5,12 @@ version: 'v0.0.3'
 workflows:
     '.github/workflows/pr_validation.yaml':
         - 'actions/checkout@v7.0.1'
-        - 'actions/setup-dotnet@v6.0.0'
+        - 'actions/setup-dotnet@v6.1.0'
     '.github/workflows/publish_nuget.yml':
         - 'abutler/upload-release-assets@v4.0.0'
         - 'actions/checkout@v7.0.1'
         - 'actions/create-release@v1.1.4'
-        - 'actions/setup-dotnet@v6.0.0'
+        - 'actions/setup-dotnet@v6.1.0'
 dependencies:
     'abutler/upload-release-assets@v4.0.0':
         ref: 'v4.0.0'
@@ -27,8 +27,8 @@ dependencies:
         commit: 'sha1-0cb9c9b65d5d1901c1f53e5e66eaf4afd303e70e'
         owner_id: 44036562
         repo_id: 208154123
-    'actions/setup-dotnet@v6.0.0':
-        ref: 'v6.0.0'
-        commit: 'sha1-a98b56852c35b8e3190ac28c8c2271da59106c68'
+    'actions/setup-dotnet@v6.1.0':
+        ref: 'v6.1.0'
+        commit: 'sha1-0f4a354dd5547a28c70b7853dbd95d5b67886e73'
         owner_id: 44036562
         repo_id: 192625306
